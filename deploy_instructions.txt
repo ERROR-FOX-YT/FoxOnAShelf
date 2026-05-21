@@ -1,0 +1,96 @@
+==============================================================
+Booked™ — Instrucciones rápidas de inicialización LOCAL
+© 2026 Jeison Sossa, Santiago López, Leyder Montoya — MIT
+==============================================================
+
+Booked es una página web. Estas instrucciones explican cómo ejecutarla
+localmente. NO se usan plataformas de despliegue externas.
+
+------------------------------------------------------------------
+REQUISITOS
+------------------------------------------------------------------
+- Node.js 18 o superior
+- Git
+- (Opcional) PostgreSQL 13+ si quieres usar BD real.
+  Sin Postgres puedes correr todo en modo JSON (DB_MODE=json).
+
+------------------------------------------------------------------
+PASO 1. Copiar .env
+------------------------------------------------------------------
+Desde la raíz del proyecto (carpeta Booked/):
+
+  Linux / macOS:    cp .env.example .env
+  Windows (PS):     Copy-Item .env.example .env
+
+Abre .env y revisa:
+  - DB_MODE=json          (demo sin Postgres) -- POR DEFECTO
+  - DB_MODE=postgres      (si tienes Postgres)
+  - DATABASE_URL=...      (sólo si DB_MODE=postgres)
+  - JWT_SECRET=...        (cambia el valor por una cadena propia)
+  - PORT=4000             (backend)
+  - FRONTEND_URL=http://localhost:3000
+
+Generar JWT_SECRET aleatorio (cualquiera de estas):
+  node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+  openssl rand -hex 48
+
+------------------------------------------------------------------
+PASO 2. Backend
+------------------------------------------------------------------
+  cd backend
+  npm install
+  npm run seed        # crea/actualiza datos (Postgres o JSON local)
+  npm start           # http://localhost:4000
+
+Los seeds son idempotentes: re-ejecutar no duplica nada.
+
+------------------------------------------------------------------
+PASO 3. Frontend
+------------------------------------------------------------------
+En OTRA terminal:
+
+  cd frontend
+  npm install
+  npm run dev         # http://localhost:3000
+
+------------------------------------------------------------------
+PASO 4. Probar
+------------------------------------------------------------------
+- Abre http://localhost:3000
+- Ingresa con cualquiera de las 3 cuentas de prueba:
+    usuarioTest@booked.com  /  admin123   (autor de los libros, NO mod)
+    admin@booked.com        /  admin123   (admin + moderator)
+    adminFox@booked.com     /  admin123   (admin + moderator, adminFox)
+- Para ver el panel exclusivo: /admin/moderation
+- Health check del backend:
+    node scripts/healthcheck.js
+    (devuelve exit 0 si todo OK)
+
+------------------------------------------------------------------
+PASO 5. Postgres real (opcional)
+------------------------------------------------------------------
+  CREATE DATABASE booked_db;
+Pon en .env:
+  DATABASE_URL=postgres://usuario:password@localhost:5432/booked_db
+  DB_MODE=postgres
+Luego:
+  cd backend && npm run seed && npm start
+
+------------------------------------------------------------------
+PASO 6. Supabase (opcional)
+------------------------------------------------------------------
+1. Crea un proyecto vacío.
+2. Pega la cadena Postgres en DATABASE_URL.
+3. En el editor SQL del panel, pega y ejecuta:
+     database/migrations/001_create_tables.sql
+4. (Opcional) database/seeds/seed_books_and_users.sql
+   o ejecuta:   node database/seeds/seed.js
+
+------------------------------------------------------------------
+NOTAS
+------------------------------------------------------------------
+- Las contraseñas de las cuentas de prueba están aquí SÓLO para demo.
+- En producción cambia JWT_SECRET, activa HTTPS y RLS.
+- El proyecto NO usa Vercel, Netlify, Heroku, Render ni similares.
+- Tampoco se usan Jest ni Rocket.
+==============================================================

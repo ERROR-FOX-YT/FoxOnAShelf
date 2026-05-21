@@ -1,0 +1,17 @@
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.env.local
+
+# Builds
+frontend/dist/
+backend/dist/
+
+# Storage de runtime (subidas en demo)
+backend/storage/*
+!backend/storage/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
