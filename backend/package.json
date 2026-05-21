@@ -1,0 +1,27 @@
+{
+  "name": "booked-backend",
+  "version": "1.0.0",
+  "description": "Booked™ - Backend (Node.js + Express)",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "seed": "node ../database/seeds/seed.js",
+    "healthcheck": "node ../scripts/healthcheck.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.7.2",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.11.5",
+    "uuid": "^9.0.1"
+  }
+}
