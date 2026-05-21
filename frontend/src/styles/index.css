@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+body {
+  @apply bg-parchment text-ink font-sans antialiased;
+  background-image: radial-gradient(circle at 20% 0%, rgba(123,75,39,0.06), transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(200,162,107,0.10), transparent 50%);
+}
+.dark body {
+  @apply bg-nightGray text-nightInk;
+  background-image: radial-gradient(circle at 20% 0%, rgba(200,162,107,0.05), transparent 50%);
+}
+
+.btn        { @apply px-4 py-2 rounded-md font-medium transition-all; }
+.btn-primary{ @apply btn bg-bookedBrown text-parchment hover:bg-opacity-90; }
+.btn-ghost  { @apply btn border border-bookedBrown/40 hover:bg-bookedBrown/10; }
+.card       { @apply rounded-xl bg-white/70 dark:bg-black/30 backdrop-blur shadow-sm border border-bookedBrown/15; }
+.input      { @apply w-full px-3 py-2 rounded-md border border-bookedBrown/30 bg-white/80 dark:bg-black/30 focus:outline-none focus:ring-2 focus:ring-bookedAccent; }
+.toast      { @apply fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm; }
+.toast-ok   { @apply toast bg-emerald-700 text-white; }
+.toast-err  { @apply toast bg-red-700 text-white; }
+.toast-info { @apply toast bg-bookedBrown text-parchment; }
+
+a { @apply hover:text-bookedBrown dark:hover:text-bookedAccent; }
