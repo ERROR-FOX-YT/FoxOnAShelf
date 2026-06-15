@@ -1,11 +1,37 @@
 const express = require('express');
+const { body, param, validationResult } = require('express-validator');
 const db    = require('../db');
-const { auth } = require('../middlewares/auth');
+const { auth, requireAdmin } = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.get('/:id', async (req, res, next) => {
-  try {
+router.get('/', auth, requireAdmin,
+  async (req, res, next) => {
+    try {
+      const { q, role, page } = req.query;
+      const result = await db.listUsers({ q, role, page: parseInt(page) || 1 });
+      res.json(result);
+    } catch (e) { next(e); }
+  });
+
+router.get('/find/:email', auth, requireAdmin,
+  param('email').isEmail(),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: 'Correo inválido', code: 400 });
+    try {
+      const u = await db.getUserByEmail(req.params.email);
+      if (!u) return res.status(404).json({ error: 'Usuario no encontrado', code: 404 });
+      res.json({ user: { id: u.id, email: u.email, display_name: u.display_name, role: u.role } });
+    } catch (e) { next(e); }
+  });
+
+router.get('/:id',
+  param('id').isString().isLength({ min: 1 }),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
+    try {
     const u = await db.getUserById(req.params.id);
     if (!u) return res.status(404).json({ error: 'Usuario no encontrado', code: 404 });
     res.json({ user: { id: u.id, email: u.email, display_name: u.display_name,
@@ -14,15 +40,119 @@ router.get('/:id', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.put('/:id', auth, async (req, res, next) => {
-  try {
-    if (req.user.sub !== req.params.id && req.user.role !== 'admin')
-      return res.status(403).json({ error: 'No autorizado', code: 403 });
-    // Sólo permitimos contact_info y display_name vía este endpoint demo
-    if (req.body.contact_info !== undefined)
-      await db.updateUserContactInfo(req.params.id, req.body.contact_info);
-    res.json({ ok: true });
-  } catch (e) { next(e); }
-});
+router.put('/:id', auth,
+  param('id').isString().isLength({ min: 1 }),
+  body('contact_info').optional().isString().isLength({ max: 4000 }),
+  body('display_name').optional().isString().isLength({ min: 1, max: 100 }),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
+    try {
+      if (req.user.sub !== req.params.id && req.user.role !== 'admin')
+        return res.status(403).json({ error: 'No autorizado', code: 403 });
+      if (req.body.contact_info !== undefined)
+        await db.updateUserContactInfo(req.params.id, req.body.contact_info);
+      if (req.body.display_name !== undefined)
+        await db.updateUserDisplayName(req.params.id, req.body.display_name);
+      res.json({ ok: true });
+    } catch (e) { next(e); }
+  });
+
+// Eliminar usuario → lo mueve a la papelera (soft delete con recuperación)
+router.delete('/:id', auth, requireAdmin,
+  param('id').isString().isLength({ min: 1 }),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
+    try {
+      const target = await db.getUserById(req.params.id);
+      if (!target) return res.status(404).json({ error: 'Usuario no encontrado', code: 404 });
+      if (target.id === req.user.sub) return res.status(403).json({ error: 'No puedes eliminarte a ti mismo', code: 403 });
+      if (target.role === 'admin') return res.status(403).json({ error: 'No puedes eliminar a otro administrador', code: 403 });
+      const result = await db.deleteUser(req.params.id, { adminEmail: req.user.email });
+      if (!result) return res.status(404).json({ error: 'Usuario no encontrado', code: 404 });
+      await db.logModeration({ actor_email: req.user.email, action: 'delete-user',
+                               target: target.email, ip: req.ip });
+      res.json({ ok: true, message: 'Usuario enviado a la papelera. Período de recuperación: 30 días.',
+                 trashed: result.trashed });
+    } catch (e) { next(e); }
+  });
+
+// ---- PAPELERA (TRASH MANAGEMENT) ----
+
+// Listar usuarios en la papelera
+router.get('/trash/list', auth, requireAdmin,
+  async (req, res, next) => {
+    try {
+      const list = await db.listTrash();
+      res.json({ trash: list });
+    } catch (e) { next(e); }
+  });
+
+// Obtener detalle de una entrada de la papelera
+router.get('/trash/:id', auth, requireAdmin,
+  param('id').isString().isLength({ min: 1 }),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: 'ID inválido', code: 400 });
+    try {
+      const entry = await db.getTrashEntry(req.params.id);
+      if (!entry) return res.status(404).json({ error: 'Entrada no encontrada en la papelera', code: 404 });
+      res.json({ entry: {
+        id: entry.id,
+        user_email: entry.user_email,
+        trashed_at: entry.trashed_at,
+        expires_at: entry.expires_at,
+        trashed_by: entry.trashed_by,
+        expired: entry.expired,
+        user: entry.user,
+        data: entry.data
+      } });
+    } catch (e) { next(e); }
+  });
+
+// Restaurar usuario desde la papelera
+router.post('/trash/:id/restore', auth, requireAdmin,
+  param('id').isString().isLength({ min: 1 }),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: 'ID inválido', code: 400 });
+    try {
+      const result = await db.restoreFromTrash(req.params.id);
+      if (!result) return res.status(404).json({ error: 'Entrada no encontrada en la papelera', code: 404 });
+      if (result.error === 'expired')
+        return res.status(410).json({ error: 'El período de recuperación ha expirado. Debes eliminarlo permanentemente.', code: 410 });
+      if (result.error === 'email_in_use')
+        return res.status(409).json({ error: 'El email ya está registrado por otro usuario. No se puede restaurar.', code: 409 });
+      await db.logModeration({ actor_email: req.user.email, action: 'restore-user',
+                               target: result.user_email || 'unknown', ip: req.ip });
+      res.json({ ok: true, message: 'Usuario restaurado exitosamente' });
+    } catch (e) { next(e); }
+  });
+
+// Eliminar permanentemente de la papelera
+router.delete('/trash/:id', auth, requireAdmin,
+  param('id').isString().isLength({ min: 1 }),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: 'ID inválido', code: 400 });
+    try {
+      const entry = await db.getTrashEntry(req.params.id);
+      if (!entry) return res.status(404).json({ error: 'Entrada no encontrada en la papelera', code: 404 });
+      await db.permanentDeleteTrash(req.params.id);
+      await db.logModeration({ actor_email: req.user.email, action: 'permanent-delete-user',
+                               target: entry.user_email, ip: req.ip });
+      res.json({ ok: true, message: 'Usuario eliminado permanentemente' });
+    } catch (e) { next(e); }
+  });
+
+// Limpiar entradas expiradas de la papelera
+router.post('/trash/cleanup', auth, requireAdmin,
+  async (req, res, next) => {
+    try {
+      const result = await db.cleanupExpiredTrash();
+      res.json({ ok: true, deleted: result.deleted, message: result.deleted + ' entradas expiradas eliminadas' });
+    } catch (e) { next(e); }
+  });
 
 module.exports = router;

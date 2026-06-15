@@ -1,7 +1,7 @@
 {
-  "name": "booked-backend",
+  "name": "bookshelf-backend",
   "version": "1.0.0",
-  "description": "Booked™ - Backend (Node.js + Express)",
+  "description": "BookShelf™ - Backend (Node.js + Express)",
   "private": true,
   "main": "src/server.js",
   "scripts": {

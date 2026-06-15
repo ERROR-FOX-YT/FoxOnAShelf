@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import BookCard from './BookCard.jsx';
-import { cardEntrance } from './animations/animations.js';
+import { bookEntrance } from './animations/animations.js';
 
 export default function BookList({ books }) {
   const ref = useRef(null);
   useEffect(() => {
     if (ref.current && books && books.length) {
-      cardEntrance(ref.current.querySelectorAll('[data-book-card]'));
+      bookEntrance(ref.current.querySelectorAll('[data-book-card]'));
     }
   }, [books]);
 

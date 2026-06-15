@@ -1,14 +1,26 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 
 const ToastCtx = createContext(null);
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const timersRef = useRef(new Map());
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(t => clearTimeout(t));
+      timersRef.current.clear();
+    };
+  }, []);
 
   const push = useCallback((kind, msg, ttl = 3000) => {
     const id = Date.now() + Math.random();
     setToasts(t => [...t, { id, kind, msg }]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), ttl);
+    const timer = setTimeout(() => {
+      timersRef.current.delete(id);
+      setToasts(t => t.filter(x => x.id !== id));
+    }, ttl);
+    timersRef.current.set(id, timer);
   }, []);
 
   const api = {

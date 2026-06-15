@@ -3,24 +3,1163 @@
 @tailwind utilities;
 
 html, body, #root { height: 100%; }
-body {
-  @apply bg-parchment text-ink font-sans antialiased;
-  background-image: radial-gradient(circle at 20% 0%, rgba(123,75,39,0.06), transparent 50%),
-                    radial-gradient(circle at 100% 100%, rgba(200,162,107,0.10), transparent 50%);
-}
-.dark body {
-  @apply bg-nightGray text-nightInk;
-  background-image: radial-gradient(circle at 20% 0%, rgba(200,162,107,0.05), transparent 50%);
+
+/* ============================================================
+   SISTEMA DE TEMAS — Pergamino Moderno (claro) / Noche Bioluminiscente (oscuro)
+   Variables CSS con transición automática
+   ============================================================ */
+:root {
+  --bg-base:             #FDFBF7;
+  --bg-surface:          #F4EFE6;
+  --text-main:           #2D2A26;
+  --text-muted:          #7A756D;
+  --border-subtle:       rgba(139, 69, 19, 0.10);
+  --accent-main:         #008A7F;
+  --accent-main-rgb:     0, 138, 127;
+  --accent-main-ink:     #006B62;
+  --accent-glow:         0 4px 14px rgba(0, 138, 127, 0.30);
+  --accent-glow-strong:  0 6px 20px rgba(0, 138, 127, 0.40);
+  --accent-secondary:    #FF6B6B;
+  --accent-secondary-rgb: 255, 107, 107;
+  --card-shadow:         0 2px 6px rgba(139, 69, 19, 0.08), 0 1px 2px rgba(139, 69, 19, 0.05);
+  --card-shadow-hover:   0 6px 16px rgba(0, 138, 127, 0.20), 0 2px 4px rgba(139, 69, 19, 0.10);
 }
 
+.dark {
+  --bg-base:             #111827;
+  --bg-surface:          #1F2937;
+  --text-main:           #F3F4F6;
+  --text-muted:          #9CA3AF;
+  --border-subtle:       rgba(255, 255, 255, 0.05);
+  --accent-main:         #00D0C0;
+  --accent-main-rgb:     0, 208, 192;
+  --accent-main-ink:     #00D0C0;
+  --accent-glow:         0 4px 14px rgba(0, 208, 192, 0.40);
+  --accent-glow-strong:  0 6px 20px rgba(0, 208, 192, 0.55);
+  --accent-secondary:    #FF7A7A;
+  --accent-secondary-rgb: 255, 122, 122;
+  --card-shadow:         0 2px 6px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.20);
+  --card-shadow-hover:   0 6px 16px rgba(0, 208, 192, 0.25), 0 2px 4px rgba(0, 0, 0, 0.20);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bg-base:             #111827;
+    --bg-surface:          #1F2937;
+    --text-main:           #F3F4F6;
+    --text-muted:          #9CA3AF;
+    --border-subtle:       rgba(255, 255, 255, 0.05);
+    --accent-main:         #00D0C0;
+    --accent-main-rgb:     0, 208, 192;
+    --accent-main-ink:     #00D0C0;
+    --accent-glow:         0 4px 14px rgba(0, 208, 192, 0.40);
+    --accent-glow-strong:  0 6px 20px rgba(0, 208, 192, 0.55);
+    --accent-secondary:    #FF7A7A;
+    --accent-secondary-rgb: 255, 122, 122;
+    --card-shadow:         0 2px 6px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.20);
+    --card-shadow-hover:   0 6px 16px rgba(0, 208, 192, 0.25), 0 2px 4px rgba(0, 0, 0, 0.20);
+  }
+}
+
+body {
+  font-family: -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  background-image: radial-gradient(circle at 20% 0%, rgba(0, 138, 127, 0.05), transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(255, 107, 107, 0.06), transparent 50%);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* === Override de Tailwind bookshelfBrown → variables del tema === */
+.text-bookshelfBrown         { color: var(--accent-main); }
+.bg-bookshelfBrown           { background-color: var(--accent-main); }
+.border-bookshelfBrown       { border-color: var(--accent-main); }
+.border-bookshelfBrown\/30   { border-color: rgba(var(--accent-main-rgb), 0.30); }
+.border-bookshelfBrown\/40   { border-color: rgba(var(--accent-main-rgb), 0.40); }
+.border-bookshelfBrown\/15   { border-color: rgba(var(--accent-main-rgb), 0.15); }
+.bg-bookshelfBrown\/10       { background-color: rgba(var(--accent-main-rgb), 0.10); }
+.bg-bookshelfBrown\/30       { background-color: rgba(var(--accent-main-rgb), 0.30); }
+
+/* === Utility: acento secundario (coral) para favoritos/estrellas === */
+.text-accent-secondary       { color: var(--accent-secondary); }
+.fill-accent-secondary       { fill: var(--accent-secondary); }
+
+/* === Badge/Tag: fondo 15% opacidad, texto 100% acento === */
+.rm-tag,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(var(--accent-main-rgb), 0.15);
+  color: var(--accent-main);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.20rem 0.65rem;
+  border-radius: 9999px;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* === Estilos base heredados (compatibilidad con Tailwind) === */
 .btn        { @apply px-4 py-2 rounded-md font-medium transition-all; }
-.btn-primary{ @apply btn bg-bookedBrown text-parchment hover:bg-opacity-90; }
-.btn-ghost  { @apply btn border border-bookedBrown/40 hover:bg-bookedBrown/10; }
-.card       { @apply rounded-xl bg-white/70 dark:bg-black/30 backdrop-blur shadow-sm border border-bookedBrown/15; }
-.input      { @apply w-full px-3 py-2 rounded-md border border-bookedBrown/30 bg-white/80 dark:bg-black/30 focus:outline-none focus:ring-2 focus:ring-bookedAccent; }
+.btn-primary{
+  background-color: var(--accent-main);
+  color: var(--bg-base);
+  border: none;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(var(--accent-main-rgb), 0.30), 0 1px 2px rgba(0,0,0,0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px) scale(1.015);
+  box-shadow: 0 6px 20px rgba(var(--accent-main-rgb), 0.40), 0 2px 4px rgba(0,0,0,0.08);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+  filter: brightness(0.95);
+}
+.btn-ghost  { @apply btn; border: 1px solid rgba(var(--accent-main-rgb), 0.40); }
+.btn-ghost:hover { background-color: rgba(var(--accent-main-rgb), 0.10); }
+.card       {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  box-shadow: var(--card-shadow);
+  transition: background-color 0.3s ease, box-shadow 0.18s ease;
+  color: var(--text-main);
+}
+.input      {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.input:focus {
+  border-color: var(--accent-main);
+  box-shadow: 0 0 0 3px rgba(var(--accent-main-rgb), 0.20);
+  background-color: var(--bg-base);
+}
 .toast      { @apply fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm; }
 .toast-ok   { @apply toast bg-emerald-700 text-white; }
 .toast-err  { @apply toast bg-red-700 text-white; }
-.toast-info { @apply toast bg-bookedBrown text-parchment; }
+.toast-info {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  font-size: 0.875rem;
+  background-color: var(--accent-main);
+  color: var(--bg-base);
+}
 
-a { @apply hover:text-bookedBrown dark:hover:text-bookedAccent; }
+a { color: inherit; }
+a:hover { color: var(--accent-main); }
+
+/* === Tarjetas (Libros, Estadísticas, Capítulos) === */
+.rm-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.3s ease;
+  color: var(--text-main);
+}
+.rm-card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* === Botón principal "Entrar" === */
+.rm-btn-primary {
+  background-color: var(--accent-main);
+  color: var(--bg-base);
+  border: none;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: 10px;
+  box-shadow: var(--accent-glow), 0 1px 2px rgba(0,0,0,0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+}
+.rm-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px) scale(1.015);
+  box-shadow: var(--accent-glow-strong), 0 2px 4px rgba(0,0,0,0.08);
+}
+.rm-btn-primary:active {
+  transform: translateY(0) scale(0.99);
+  filter: brightness(0.95);
+}
+
+/* === Botón secundario (favoritos / estrellas) === */
+.rm-btn-secondary {
+  background-color: transparent;
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary);
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+.rm-btn-secondary:hover {
+  background-color: rgba(var(--accent-secondary-rgb), 0.12);
+  box-shadow: 0 2px 10px rgba(var(--accent-secondary-rgb), 0.35);
+  transform: translateY(-1px);
+}
+
+/* === Icono de favorito activo === */
+.rm-fav-active {
+  color: var(--accent-secondary);
+  fill: var(--accent-secondary);
+  transition: color 0.2s ease, fill 0.2s ease;
+}
+
+/* === Tarjeta de capítulo interactiva === */
+.rm-chapter {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, background-color 0.3s ease;
+  color: var(--text-main);
+  cursor: pointer;
+}
+.rm-chapter:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-main);
+  box-shadow: 0 4px 12px rgba(var(--accent-main-rgb), 0.12);
+}
+.rm-chapter:hover .rm-chapter-title {
+  color: var(--accent-main);
+}
+.rm-chapter-title {
+  transition: color 0.18s ease;
+}
+
+/* === Barra de búsqueda === */
+.rm-search {
+  background-color: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 0.55rem 0.9rem;
+  color: var(--text-main);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  outline: none;
+  width: 100%;
+}
+.rm-search::placeholder {
+  color: var(--text-muted);
+}
+.rm-search:focus {
+  background-color: #FFFFFF;
+  border-color: var(--accent-main);
+  box-shadow: 0 0 0 3px rgba(var(--accent-main-rgb), 0.20);
+}
+
+/* === Tema oscuro: ajustes específicos para .rm-search === */
+.dark .rm-search,
+:root:not(.light) .rm-search {
+  background-color: rgba(31, 41, 55, 0.85);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+.dark .rm-search:focus,
+:root:not(.light) .rm-search:focus {
+  background-color: rgba(31, 41, 55, 0.95);
+  border-color: var(--accent-main);
+  box-shadow: 0 0 0 3px rgba(var(--accent-main-rgb), 0.25);
+}
+
+/* ============================================================
+   MODO LECTURA - Temas personalizables
+   Se aplican en el contenedor .reader-active según la elección
+   ============================================================ */
+.reader-active { transition: background-color 0.4s, color 0.4s, border-color 0.4s; }
+
+/* Temas: fondo + color de texto + color de bordes */
+.reader-parchment {
+  background-color: #F5E9D4;
+  color: #1F2937;
+}
+.reader-sepia {
+  background-color: #E8DCC0;
+  color: #3E2C1C;
+}
+.reader-night {
+  background-color: #1A1A1A;
+  color: #E6E7E8;
+}
+.reader-snow {
+  background-color: #FAFAFA;
+  color: #111111;
+}
+.reader-forest {
+  background-color: #2A3B2D;
+  color: #E8E0CC;
+}
+
+/* Familias tipográficas */
+.reader-font-serif  { font-family: Georgia, 'Times New Roman', serif; }
+.reader-font-sans   { font-family: -apple-system, system-ui, sans-serif; }
+.reader-font-mono   { font-family: 'Fira Code', Consolas, monospace; }
+
+/* Anchos de línea */
+.reader-narrow  { max-width: 38rem; }
+.reader-medium  { max-width: 50rem; }
+.reader-wide    { max-width: 64rem; }
+
+/* Cursor invisible en modo lectura (cuando hay inactividad) */
+.reader-cursor-hidden { cursor: none; }
+
+/* Tarjetas de capítulos arrastrables (pre-lectura) */
+.chapter-card {
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+.chapter-strip {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.chapter-strip::-webkit-scrollbar { height: 6px; }
+.chapter-strip::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-main-rgb), 0.30);
+  border-radius: 3px;
+}
+
+/* Swatch de colores para personalización */
+.swatch {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.swatch:hover { transform: scale(1.08); }
+.swatch.active { border-color: var(--accent-main); box-shadow: 0 0 0 2px var(--bg-base) inset; }
+
+/* === Página de lectura: scrollbar decorativo dentro de los bordes redondeados === */
+.reader-page {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb, rgba(0,0,0,0.35)) transparent;
+  scroll-behavior: smooth;
+  padding-right: 14px;
+  padding-bottom: 14px;
+}
+.reader-page::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.reader-page::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 16px 4px;
+  border-radius: 4px;
+}
+.reader-page::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb, rgba(0,0,0,0.2));
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.25s ease, transform 0.25s ease;
+  min-height: 40px;
+}
+.reader-page::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover, rgba(0,0,0,0.4));
+  transform: scaleX(1.15);
+}
+.reader-page::-webkit-scrollbar-thumb:active {
+  background: var(--sb-thumb-hover, rgba(0,0,0,0.5));
+  transform: scaleX(1.25);
+}
+.reader-page::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* === Textura de pergamino: ruido SVG + fibras + manchas de envejecimiento === */
+.parchment-page {
+  position: relative;
+}
+.parchment-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  /* fibras de papel finas en dos direcciones */
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(123, 75, 39, 0.05) 0px,
+      rgba(123, 75, 39, 0.05) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(80, 50, 20, 0.06) 0px,
+      rgba(80, 50, 20, 0.06) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  z-index: 0;
+}
+.parchment-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  /* ruido granular + manchas + oscurecimiento de bordes */
+  background-image:
+    /* ruido granular SVG sutil */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.20  0 0 0 0 0.08  0 0 0 0.12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    /* manchas grandes suaves (humedad) */
+    radial-gradient(circle at 25% 30%, rgba(123, 75, 39, 0.10), transparent 30%),
+    radial-gradient(circle at 75% 70%, rgba(123, 75, 39, 0.12), transparent 35%),
+    /* esquinas oscurecidas (envejecimiento) */
+    radial-gradient(ellipse at 0% 0%, rgba(123, 75, 39, 0.22), transparent 35%),
+    radial-gradient(ellipse at 100% 0%, rgba(123, 75, 39, 0.20), transparent 35%),
+    radial-gradient(ellipse at 0% 100%, rgba(123, 75, 39, 0.24), transparent 40%),
+    radial-gradient(ellipse at 100% 100%, rgba(123, 75, 39, 0.28), transparent 40%),
+    /* viñeta interior */
+    radial-gradient(ellipse at center, transparent 60%, rgba(80, 50, 20, 0.20) 100%);
+  background-size: 180px 180px, auto, auto, auto, auto, auto, auto, auto;
+  background-blend-mode: multiply, multiply, multiply, multiply, multiply, multiply, multiply, normal;
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+.parchment-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   FONDO PRINCIPAL — Solo en Home, Explore y Announcements
+   Modo claro: FondoBookShelfClaro.jpeg
+   Modo oscuro: FondoBookShelfOscuro.jpeg
+   Se activa con clase .has-main-bg en <body>
+   ============================================================ */
+body.has-main-bg {
+  background:
+    linear-gradient(rgba(253, 251, 247, 0.70), rgba(253, 251, 247, 0.70)),
+    url('/FondoBookShelfClaro.jpeg') center / cover fixed no-repeat #FDFBF7;
+}
+.dark body.has-main-bg {
+  background:
+    linear-gradient(rgba(17, 24, 39, 0.90), rgba(17, 24, 39, 0.90)),
+    url('/FondoBookShelfOscuro.jpeg') center / cover fixed no-repeat #111827;
+}
+
+
+
+/* ============================================================
+   BOOK CARD — Skeuomorphic Open-Book Card
+   Adapted from the open-book reference: parchment page,
+   spine binding, decorative chapter ornaments, 3D depth,
+   and responsive single-column fallback.
+   ============================================================ */
+
+:root {
+  --book-decor:       #8B4513;
+  --book-decor-dim:   #8B4513;
+  --book-spine-light: #7A4A2E;
+  --book-spine-mid:   #6B3F26;
+  --book-spine-dark:  #5A3520;
+  --book-bg-start:    #F5E9D4;
+  --book-bg-end:      #EDE0C8;
+  --book-shadow:      rgba(80, 50, 20, 0.12);
+  --book-shadow-hover: rgba(80, 50, 20, 0.20);
+  --book-text:        #2D2A26;
+  --book-text-muted:  #6B5D4E;
+  --book-inset:       rgba(139, 90, 43, 0.06);
+}
+
+.dark {
+  --book-decor:       #D4A857;
+  --book-decor-dim:   #B8924A;
+  --book-spine-light: #B8860B;
+  --book-spine-mid:   #A0750A;
+  --book-spine-dark:  #8B6914;
+  --book-bg-start:    #2A2520;
+  --book-bg-end:      #322C25;
+  --book-shadow:      rgba(0, 0, 0, 0.30);
+  --book-shadow-hover: rgba(0, 0, 0, 0.40);
+  --book-text:        #E8E0CC;
+  --book-text-muted:  #A09880;
+  --book-inset:       rgba(180, 140, 80, 0.05);
+}
+
+/* --- Card container: looks like an open parchment book --- */
+.book-card {
+  position: relative;
+  display: block;
+  background: linear-gradient(165deg, var(--book-bg-start) 0%, var(--book-bg-end) 60%, var(--book-bg-start) 100%);
+  border-radius: 3px 14px 14px 3px;
+  padding: 1.25rem 1.25rem 1rem 1.5rem;
+  color: var(--book-text);
+  text-decoration: none;
+  cursor: pointer;
+
+  box-shadow:
+    -1px 0 0 0 var(--book-spine-mid),
+    3px 3px 0 0 rgba(80, 50, 20, 0.12),
+    inset 0 0 24px var(--book-inset),
+    0 4px 14px var(--book-shadow),
+    0 1px 3px rgba(80, 50, 20, 0.08);
+
+  transform: perspective(800px) rotateY(0deg) translateZ(0);
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  transition:
+    transform 0.35s cubic-bezier(.34,1.56,.64,1),
+    box-shadow 0.35s ease,
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Spine strip on the left edge */
+.book-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg,
+    var(--book-spine-dark) 0%,
+    var(--book-spine-light) 30%,
+    var(--book-spine-mid) 55%,
+    var(--book-spine-dark) 100%
+  );
+  border-radius: 3px 0 0 3px;
+  box-shadow: inset -1px 0 0 rgba(0,0,0,0.15);
+}
+
+/* Subtle page-edge highlight on the right */
+.book-card::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255,255,240,0.35) 10%,
+    rgba(255,255,240,0.35) 90%,
+    transparent 100%
+  );
+  border-radius: 0 2px 2px 0;
+  pointer-events: none;
+}
+
+/* Hover: book opens with 3D rotation */
+.book-card:hover {
+  transform: perspective(800px) rotateY(-4deg) translateZ(12px);
+  box-shadow:
+    -2px 0 0 0 var(--book-spine-mid),
+    8px 6px 0 0 rgba(80, 50, 20, 0.08),
+    inset 0 0 24px var(--book-inset),
+    0 14px 36px var(--book-shadow-hover),
+    0 4px 8px rgba(80, 50, 20, 0.12);
+}
+
+/* Touch devices: no 3D rotation (keep stable) */
+@media (hover: none) {
+  .book-card:hover {
+    transform: none;
+  }
+}
+
+/* --- Decorative header ornaments (chapter-title style) --- */
+.book-card__decor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 18px;
+}
+
+.book-card__decor-line {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--book-decor-dim) 20%,
+    var(--book-decor) 50%,
+    var(--book-decor-dim) 80%,
+    transparent 100%
+  );
+  opacity: 0.35;
+}
+
+.book-card__decor-diamond {
+  width: 7px;
+  height: 7px;
+  background: var(--book-decor);
+  transform: rotate(45deg);
+  opacity: 0.45;
+  flex-shrink: 0;
+}
+
+.book-card__decor-dot {
+  width: 3px;
+  height: 3px;
+  background: var(--book-decor);
+  border-radius: 50%;
+  opacity: 0.30;
+  flex-shrink: 0;
+}
+
+/* --- Title like chapter-title in reference --- */
+.book-card__title {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--book-text);
+  font-weight: 700;
+  line-height: 1.25;
+  transition: color 0.2s ease;
+}
+
+.book-card:hover .book-card__title {
+  color: color-mix(in srgb, var(--book-text) 80%, var(--book-decor) 20%);
+}
+
+/* --- Meta info (author, category, age) --- */
+.book-card__meta {
+  color: var(--book-text-muted);
+}
+
+/* --- Stats row --- */
+.book-card__stats {
+  display: flex;
+  gap: 0.75rem;
+  color: var(--book-text-muted);
+  font-size: 0.75rem;
+}
+
+/* --- Entrance animation for book cards --- */
+@keyframes bookEntrance {
+  0% {
+    opacity: 0;
+    transform: perspective(800px) rotateY(8deg) translateZ(-20px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: perspective(800px) rotateY(-2deg) translateZ(4px) scale(1.005);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(800px) rotateY(0deg) translateZ(0) scale(1);
+  }
+}
+
+.book-card-entrance {
+  animation: bookEntrance 0.6s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+
+/* ============================================================
+   📖  READING MODE — Open Book layout by Erin E. Sullivan
+   Adapted: CSS variables → theme system, SCSS → flat CSS
+   ============================================================ */
+
+/* Page navigation bar */
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 2rem 1rem;
+  user-select: none;
+  position: relative;
+  z-index: 5;
+}
+
+.page-nav__btn {
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: #fff;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.page-nav__btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.08);
+}
+
+.page-nav__btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.page-nav__label {
+  font-size: 0.80rem;
+  color: rgba(255,255,255,0.65);
+  min-width: 6rem;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 767px) {
+  .page-nav { padding: 0.5rem 1rem 0.75rem; }
+}
+
+/* ---------- Page mode toggle button ---------- */
+.page-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+  user-select: none;
+}
+
+.page-mode-toggle--active {
+  background: var(--accent-main);
+  color: var(--bg-base);
+  border-color: var(--accent-main);
+}
+
+.page-mode-toggle--inactive {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+}
+
+.page-mode-toggle--inactive:hover {
+  background: rgba(var(--accent-main-rgb), 0.10);
+  color: var(--accent-main);
+  border-color: var(--accent-main);
+}
+
+/* ============================================================
+   BOOK OUTER — brown leather border + spine
+   ============================================================ */
+
+.book-outer {
+  position: relative;
+  margin: 1em;
+  max-width: 58em;
+  width: 100%;
+}
+
+.book-outer::before {
+  background-color: #8B4513;
+  border-radius: .25em;
+  bottom: -1em; content: ''; left: -1em;
+  position: absolute; right: -1em; top: -1em; z-index: 0;
+}
+
+.book-outer::after {
+  background: linear-gradient(to right,transparent 0%,rgba(0,0,0,.2)46%,rgba(0,0,0,.5)49%,rgba(0,0,0,.6)50%,rgba(0,0,0,.5)51%,rgba(0,0,0,.2)52%,transparent 100%);
+  bottom: -1em; content: ''; left: 50%;
+  position: absolute; top: -1em;
+  transform: translate(-50%,0); width: 4em; z-index: 2; pointer-events: none;
+}
+
+/* ============================================================
+   OPEN-BOOK — Erin E. Sullivan exact layout
+   ============================================================ */
+
+.open-book {
+  background: #fff;
+  box-shadow: rgba(0,0,0,.5) 0 1em 3em;
+  color: #000;
+  padding: 2em;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  perspective: 2000px;
+}
+
+.open-book * {
+  position: relative;
+}
+
+.open-book *::selection {
+  background: rgba(222,255,0,.75);
+}
+
+.open-book header {
+  padding-bottom: 1em;
+}
+
+.open-book header *,
+.open-book footer * {
+  font: 700 1em/1.25 'Playfair Display', serif;
+  letter-spacing: .125em;
+  margin: 0;
+}
+
+.open-book header * {
+  font-size: .75em;
+  text-transform: uppercase;
+}
+
+.open-book footer {
+  padding-top: 1em;
+}
+
+.open-book footer #page-numbers {
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  padding: 0;
+}
+
+.open-book header > *:last-child,
+.open-book footer > *:last-child {
+  text-align: right;
+}
+
+/* Decorative header/footer ribbons */
+.open-book header::before,
+.open-book header::after,
+.open-book footer::before,
+.open-book footer::after {
+  background: #fff;
+  border-radius: 25%;
+  content: '';
+  height: 2em;
+  position: absolute;
+  z-index: -1;
+  width: calc(50% + 2em);
+}
+
+.open-book header::before,
+.open-book footer::before,
+.open-book footer::after { border-top-left-radius: 0; }
+.open-book header::after,
+.open-book footer::before,
+.open-book footer::after { border-top-right-radius: 0; }
+.open-book header::before,
+.open-book header::after,
+.open-book footer::after { border-bottom-right-radius: 0; }
+.open-book header::before,
+.open-book header::after,
+.open-book footer::before { border-bottom-left-radius: 0; }
+
+.open-book header::before,
+.open-book header::after { top: -2.65em; }
+
+.open-book header::before,
+.open-book footer::before { right: 50%; }
+
+.open-book header::before { transform: rotate(-2deg); }
+
+.open-book header::after,
+.open-book footer::after { left: 50%; }
+
+.open-book header::after { transform: rotate(2deg); }
+
+.open-book footer::before,
+.open-book footer::after { bottom: -2.65em; }
+
+.open-book footer::before { transform: rotate(2deg); }
+
+.open-book footer::after { transform: rotate(-2deg); }
+
+/* Chapter title — lives inside left page */
+.open-book .chapter-title {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M0,32L32,0l32,32L32,64L0,32z M8,32l24,24l24-24L32,8L8,32z M16,32l16-16l16,16L32,48L16,32z M24,32l8,8l8-8l-8-8L24,32z'/%3E%3C/svg%3E") bottom center no-repeat;
+  background-size: .5em .5em;
+  font: 700 3em/1.25 'Playfair Display', serif;
+  letter-spacing: .125em;
+  margin: 0 0 1em 0;
+  padding: 1em 0 1.5em;
+  position: relative;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.open-book .chapter-title::after {
+  border-top: .05em solid #000;
+  bottom: .5em;
+  content: '';
+  display: block;
+  left: 10%;
+  position: absolute;
+  width: 80%;
+}
+
+/* Layout header/footer */
+.open-book > * {
+  position: relative;
+  z-index: 1;
+}
+.open-book header,
+.open-book footer {
+  column-count: 2;
+  column-gap: 6em;
+}
+
+/* Article / content area — flex container so pages fill available height */
+.open-book article {
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  color: #333;
+  font: 400 1em/1.5 'Crimson Text', Georgia, serif;
+}
+
+/* Page content area — two pages side by side, fills article */
+.open-book .page-content-area {
+  display: flex;
+  gap: 6em;
+  justify-content: center;
+  flex: 1;
+}
+
+/* Each page — physical book page with internal margins and overflow clip */
+.open-book .page-content-area > div {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 28.125em;
+  height: 100%;
+  overflow: hidden;
+  padding: 2em 1.8em;
+  box-sizing: border-box;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+.open-book .page-content-area > div {
+  margin: 0 !important;
+}
+
+/* Professional typography for paragraphs inside pages */
+.open-book .page-content-area p {
+  text-align: justify;
+  text-indent: 3em;
+  margin: 0 0 0.5em 0;
+  line-height: 1.8;
+  orphans: 3;
+  widows: 3;
+}
+
+/* Images inside pages */
+.open-book .page-content-area img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+}
+
+/* Drop cap */
+.open-book .chapter-title + p:first-of-type { text-indent: 0; }
+
+.open-book .chapter-title + p:first-of-type::first-letter {
+  float: left;
+  font: 700 3em/.65 'Playfair Display', Georgia, serif;
+  padding: .15em .05em 0 0;
+  text-transform: uppercase;
+}
+
+/* Lists */
+.open-book article > ul,
+.open-book article > ol { padding-left: 4em; }
+.open-book article > ul ul { padding-left: 1em; }
+
+/* Links */
+.open-book a { color: inherit; text-decoration: underline; }
+
+/* Marks */
+.open-book mark { background: rgba(222,255,0,.75); }
+.open-book mark.pink { background: rgba(255,69,190,.5); }
+.open-book mark.blue { background: rgba(73,179,255,.5); }
+.open-book mark.green { background: rgba(67,226,15,.5); }
+.open-book mark.orange { background: rgba(255,134,9,.5); }
+
+/* Strikethrough */
+.open-book s,
+.open-book strike { color: rgba(0,0,0,.5); }
+
+/* Superscript corrections */
+.open-book sup {
+  color: #cc0000;
+  font-family: 'Rock Salt', cursive;
+  left: 0;
+  margin-top: -1em !important;
+  max-width: 100% !important;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+}
+
+/* Definition list */
+.open-book dl {
+  border: solid 0 #ccc;
+  border-width: .0625em 0;
+  break-inside: avoid-column;
+  margin: 1em auto;
+  padding: 1em 0;
+  max-width: 28.125em;
+}
+
+/* Two columns on desktop */
+@media only screen and (min-width: 50em) {
+  .open-book {
+    padding: 1.75em 3.5em 0.75em;
+  }
+}
+
+/* ============================================================
+   PAGE TURN ANIMATION
+   ============================================================ */
+
+.page-turn-layer {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+  transform-style: preserve-3d;
+  display: none;
+  transition: transform 0.85s cubic-bezier(.645, .045, .355, 1);
+}
+
+.page-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.page-face-front {
+  background: linear-gradient(to right, #f5f0e8, #fff);
+  box-shadow: inset -6px 0 18px rgba(0,0,0,.09);
+}
+
+.page-face-back {
+  background: linear-gradient(to left, #f5f0e8, #fff);
+  transform: rotateY(180deg);
+  box-shadow: inset 6px 0 18px rgba(0,0,0,.09);
+}
+
+.page-face-front,
+.page-face-back {
+  padding: 1.5em 1em;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: .85em;
+  font-family: 'Crimson Text', Georgia, serif;
+  color: #333;
+  line-height: 1.8;
+  text-align: justify;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.page-face-front img,
+.page-face-back img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+}
+
+.page-face-front p,
+.page-face-back p {
+  margin: 0 0 0.5em 0;
+  text-indent: 2em;
+}
+
+/* Nav controls */
+.nav-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .75em 1.25em;
+  background: rgba(0,0,0,.35);
+  border-radius: 0 0 6px 6px;
+  margin-top: .3em;
+  position: relative;
+  z-index: 10;
+}
+
+.nav-btn {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.22);
+  color: #e5e5e5;
+  padding: .45em 1.2em;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Crimson Text', serif;
+  font-size: 1em;
+  letter-spacing: .05em;
+  transition: background .2s, transform .1s;
+  user-select: none;
+}
+
+.nav-btn:hover:not(:disabled) { background: rgba(255,255,255,.22); }
+.nav-btn:active:not(:disabled) { transform: scale(.97); }
+.nav-btn:disabled { opacity: .35; cursor: default; }
+
+.page-indicator {
+  color: rgba(255,255,255,.55);
+  font-family: 'Playfair Display', serif;
+  font-size: .85em;
+  letter-spacing: .08em;
+}
+
+/* Cover / Title / TOC page components */
+.page__cover-img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.page__cover-content { position: relative; z-index: 1; }
+.page__title { background-image: linear-gradient(180deg, transparent 0%, rgba(139,90,43,0.03) 100%); }
+
+.page__toc-item { transition: background 0.15s, color 0.15s; }
+.page__toc-item:hover { background: rgba(139,90,43,0.06); }
+.dark .page__toc-item:hover { background: rgba(212,168,87,0.08); }
+.page__toc-item--active { font-weight: 700; }
+
+@keyframes moveUp {
+  from { transform: translateY(12px) scale(1.02); }
+  to   { transform: translateY(0)     scale(1); }
+}
+@keyframes moveDown {
+  from { transform: translateY(-12px) scale(1.02); }
+  to   { transform: translateY(0)     scale(1); }
+}
+.anim-move-up   { animation: moveUp 1s cubic-bezier(0.22, 1, 0.36, 1) both; transform-origin: center center; }
+.anim-move-down { animation: moveDown 1s cubic-bezier(0.22, 1, 0.36, 1) both; transform-origin: center center; }
+.anim-settle    { animation: none; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+body.egg-locked { pointer-events: none; user-select: none; }
+body.egg-locked form.card { filter: saturate(0.3) brightness(0.96); }

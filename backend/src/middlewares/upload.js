@@ -1,5 +1,5 @@
 /**
- * Booked™ - Subida de archivos (imágenes + archivos de texto para conversión).
+ * BookShelf™ - Subida de archivos (imágenes + archivos de texto para conversión).
  */
 const fs     = require('fs');
 const path   = require('path');

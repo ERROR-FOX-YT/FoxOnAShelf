@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Booked™ - seed.js
+ * BookShelf™ - seed.js
  * Inserta los datos de ejemplo de forma idempotente.
  *
  * Estrategia:
@@ -14,7 +14,7 @@
 
 const fs       = require('fs');
 const path     = require('path');
-const bcrypt   = require('bcryptjs');
+const bcrypt   = require(path.resolve(__dirname, '..', '..', 'backend', 'node_modules', 'bcryptjs'));
 
 const DB_MODE  = process.env.DB_MODE || (process.env.DATABASE_URL ? 'postgres' : 'json');
 
@@ -23,19 +23,24 @@ const HASH     = bcrypt.hashSync(PASSWORD, 10);
 
 const users = [
   { id: '11111111-1111-1111-1111-111111111111',
-    email: 'usuarioTest@booked.com', display_name: 'Usuario Test',
-    role: 'creator', is_admin_fox: false, password_hash: HASH,
+    email: 'usuarioTest@bookshelf.app', display_name: 'Usuario Test',
+    role: 'creator', password_hash: HASH,
     contact_info: null, avatar_url: null,
     created_at: new Date().toISOString() },
   { id: '22222222-2222-2222-2222-222222222222',
-    email: 'admin@booked.com', display_name: 'Administrador',
-    role: 'admin', is_admin_fox: false, password_hash: HASH,
-    contact_info: 'Discord oficial: https://discord.gg/j543pdNhae | contacto@booked.example',
+    email: 'admin@bookshelf.app', display_name: 'Administrador',
+    role: 'admin', password_hash: HASH,
+    contact_info: 'Discord oficial: https://discord.gg/j543pdNhae | contacto@bookshelf.example',
     avatar_url: null,
     created_at: new Date().toISOString() },
   { id: '33333333-3333-3333-3333-333333333333',
-    email: 'adminFox@booked.com', display_name: 'Admin Fox',
-    role: 'admin', is_admin_fox: true, password_hash: HASH,
+    email: 'adminFox@bookshelf.app', display_name: 'Admin Fox',
+    role: 'admin', password_hash: HASH,
+    contact_info: null, avatar_url: null,
+    created_at: new Date().toISOString() },
+  { id: '44444444-4444-4444-4444-444444444444',
+    email: 'userTest@bookshelf.app', display_name: 'Usuario Regular',
+    role: 'user', password_hash: HASH,
     contact_info: null, avatar_url: null,
     created_at: new Date().toISOString() }
 ];
@@ -58,13 +63,13 @@ const books = [
     description: 'Poemas sobre amistad, escuela y descubrir el mundo.',
     category: 'poesia', age_group: 'adolescente' },
   { id: 'aaaaaaaa-0003-0000-0000-000000000001',
-    title: 'Café de las 5:00', subtitle: 'Relatos cortos',
-    description: 'Colección de cuentos breves sobre vida adulta en Colombia.',
+    title: 'Cenizas del Ayer', subtitle: 'Novela adulto contemporánea',
+    description: 'Una reflexión sobre pérdida, memoria y segundas oportunidades.',
     category: 'narrativa', age_group: 'adulto' },
   { id: 'aaaaaaaa-0003-0000-0000-000000000002',
-    title: 'La última pluma', subtitle: 'Novela de fantasía adulta',
-    description: 'Una historia de fantasía sobre el último escriba de un imperio en ruinas.',
-    category: 'fantasia', age_group: 'adulto' }
+    title: 'El Último Vagón', subtitle: 'Relato adulto contemporáneo',
+    description: 'Dos desconocidos conversan en un tren y cambian sus vidas.',
+    category: 'narrativa', age_group: 'adulto' }
 ].map(b => ({
   ...b,
   author_id: '11111111-1111-1111-1111-111111111111',
@@ -82,17 +87,17 @@ const books = [
 
 const chapters = [
   ['bbbbbbbb-0001-0000-0000-000000000001', books[0].id, 'Capítulo 1 — La hoja despierta',
-   'Era una mañana tibia cuando las letras del bosque empezaron a moverse...\n\nLa pequeña Luna escuchó un susurro entre las hojas.'],
+   'Era una mañana tibia cuando las letras del bosque empezaron a moverse...\n\nLa pequeña Luna escuchó un susurro entre las hojas. Las palabras brillaban con luz propia y danzaban alrededor de los árboles.\n\n—Ven —dijo una letra dorada—, te llevaré al corazón del bosque.\n\nY así comenzó la aventura más maravillosa que Luna jamás había imaginado.'],
   ['bbbbbbbb-0001-0000-0000-000000000002', books[1].id, 'Capítulo 1 — Cuenta conmigo',
-   'La maestra Lupa enseñaba que cada número tenía un secreto...'],
+   'La maestra Lupa enseñaba que cada número tenía un secreto. El 1 era el inicio de todo, el 2 la compañía, el 3 la magia.\n\n—Hoy descubriremos por qué el 7 es el número más curioso —dijo Lupa, ajustando sus gafas redondas.\n\nLos niños se sentaron en círculo, listos para aprender jugando.'],
   ['bbbbbbbb-0002-0000-0000-000000000001', books[2].id, 'Capítulo 1 — El norte perdido',
-   'Cuando Camila abrió la mochila, su brújula ya no señalaba ningún lado.'],
-  ['bbbbbbbb-0002-0000-0000-000000000002', books[3].id, 'Poemas',
-   'A veces el recreo / es la única estrofa / donde caben todos.'],
-  ['bbbbbbbb-0003-0000-0000-000000000001', books[4].id, 'Café de las 5:00',
-   'La taza humeaba sobre la mesa, y el día apenas comenzaba a aclararse...'],
-  ['bbbbbbbb-0003-0000-0000-000000000002', books[5].id, 'Capítulo 1 — El último escriba',
-   'En las ruinas del imperio sólo quedaba una mano dispuesta a escribir.']
+   'Cuando Camila abrió la mochila, su brújula ya no señalaba ningún lado. La aguja giraba sin rumbo, como si hubiera olvidado su propósito.\n\n—Esto no me gusta —murmuró.\n\nA su alrededor, el bosque se extendía denso y desconocido.\n\n—Tranquila —dijo una voz detrás de ella—. Tal vez la brújula no esté rota. Tal vez el norte se haya movido.'],
+  ['bbbbbbbb-0002-0000-0000-000000000002', books[3].id, 'Poemas del Recreo',
+   'A veces el recreo / es la única estrofa / donde caben todos.\n\nEl timbre suena / y estallan las risas / como versos libres.\n\nEn la cancha / las voces se mezclan / formando un coro / que nadie dirige.\n\nEl cielo azul / es el techo / de esta clase sin paredes.\n\nY cuando vuelve el silencio / cada quien guarda / un poema en el bolsillo.'],
+  ['bbbbbbbb-0003-0000-0000-000000000001', books[4].id, 'Capítulo 1 — El eco del ayer',
+   'Las cenizas aún flotaban en el aire cuando Elena comprendió que no habría vuelta atrás. La casa de su abuela ya no existía, pero los recuerdos seguían ahí, incólumes.\n\nRecogió una fotografía carbonizada en una esquina.\n\n—Tenía razón —susurró.\n\nY entre los escombros, empezó a reconstruir lo que el tiempo había desgastado.'],
+  ['bbbbbbbb-0003-0000-0000-000000000002', books[5].id, 'Capítulo 1 — El encuentro',
+   'El vagón estaba prácticamente vacío. Solo un hombre de mirada cansada ocupaba el asiento del fondo, junto a la ventana. Carla dudó un segundo antes de sentarse frente a él.\n\n—Buenas noches —dijo ella, rompiendo el silencio.\n\nEl hombre levantó la vista. Tenía los ojos color miel y una sonrisa que parecía guardar más preguntas que respuestas.\n\n—¿Cree en las segundas oportunidades? —preguntó él, sin preámbulos.\n\nCarla no supo qué responder. Pero intuyó que esa conversación cambiaría algo en ella.']
 ].map(([id, book_id, title, content], idx) => ({
   id, book_id, title, content,
   order: 1, is_early_access: false,
@@ -102,7 +107,7 @@ const chapters = [
 const announcements = [
   { id: 'cccccccc-0000-0000-0000-000000000001',
     admin_id: '22222222-2222-2222-2222-222222222222',
-    title: 'Bienvenido a Booked',
+    title: 'Bienvenido a BookShelf',
     content: 'Plataforma de lectura digital abierta y justa. Comienza explorando libros gratuitos.',
     image_path: null, visible: true,
     created_at: new Date().toISOString() }
@@ -118,15 +123,14 @@ async function seedPostgres() {
 
   for (const u of users) {
     await client.query(
-      `INSERT INTO users (id,email,password_hash,display_name,role,is_admin_fox,contact_info)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+      `INSERT INTO users (id,email,password_hash,display_name,role,contact_info)
+       VALUES ($1,$2,$3,$4,$5,$6)
        ON CONFLICT (email) DO UPDATE
          SET password_hash=EXCLUDED.password_hash,
              display_name=EXCLUDED.display_name,
              role=EXCLUDED.role,
-             is_admin_fox=EXCLUDED.is_admin_fox,
              contact_info=COALESCE(EXCLUDED.contact_info,users.contact_info)`,
-      [u.id, u.email, u.password_hash, u.display_name, u.role, u.is_admin_fox, u.contact_info]
+      [u.id, u.email, u.password_hash, u.display_name, u.role, u.contact_info]
     );
   }
 
@@ -163,7 +167,7 @@ async function seedPostgres() {
   }
 
   await client.end();
-  console.log('[seed] Postgres listo. Cuentas: usuarioTest@booked.com, admin@booked.com, adminFox@booked.com (admin123).');
+  console.log('[seed] Postgres listo. Cuentas: usuarioTest@bookshelf.app, admin@bookshelf.app (admin123).');
 }
 
 function seedJson() {
@@ -173,7 +177,10 @@ function seedJson() {
   let db = { users:[], books:[], chapters:[], images:[], favorites:[], ratings:[],
              comments:[], collections:[], collection_books:[], notifications:[],
              announcements:[], metrics:[], banned_users:[], token_blacklist:[],
-             moderation_logs:[] };
+             moderation_logs:[], book_views:[],
+             refresh_tokens:[],
+             categories:['fantasía','poesía','narrativa','educativa'],
+             bookmarks:[] };
   if (fs.existsSync(target)) {
     try { db = JSON.parse(fs.readFileSync(target, 'utf8')); }
     catch (e) { console.warn('db.json corrupto, regenerando.'); }
@@ -196,7 +203,7 @@ function seedJson() {
 
   fs.writeFileSync(target, JSON.stringify(db, null, 2));
   console.log('[seed] db.json regenerado en', target);
-  console.log('[seed] Cuentas: usuarioTest@booked.com, admin@booked.com, adminFox@booked.com  (contraseña: admin123)');
+  console.log('[seed] Cuentas: usuarioTest@bookshelf.app, admin@bookshelf.app  (contraseña: admin123)');
 }
 
 (async () => {

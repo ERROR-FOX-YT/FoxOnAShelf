@@ -1,4 +1,4 @@
-# Booked™ — Plataforma de lectura digital
+# BookShelf™ — Plataforma de lectura digital
 
 > © 2026 **Jeison Sossa**, **Santiago López**, **Leyder Montoya**. Todos los derechos reservados. — MIT License
 
@@ -6,7 +6,7 @@ Plataforma web de lectura digital abierta y justa: incentiva la lectura y la
 creatividad narrativa evitando prácticas abusivas. Pensada para iniciar en
 Colombia, modular, escalable y fácil de modificar.
 
-> **Importante:** Booked es **exclusivamente una página web**, no una aplicación
+> **Importante:** BookShelf es **exclusivamente una página web**, no una aplicación
 > nativa. Todo el proyecto corre localmente con Git y las instrucciones de este
 > README. No depende de ninguna plataforma de despliegue externa.
 
@@ -16,18 +16,20 @@ Colombia, modular, escalable y fácil de modificar.
 
 | Capa       | Tecnología                                                |
 |------------|-----------------------------------------------------------|
-| Frontend   | React 18 + Vite + TailwindCSS + anime.js + react-router-dom |
+| Frontend   | React 18 + Vite + TailwindCSS + anime.js + react-router-dom + Recharts |
 | Backend    | Node.js + Express + JWT + bcryptjs + multer + express-validator |
 | Base datos | PostgreSQL 13+ (o Supabase). Fallback demo: JSON local.   |
 | Conversión | mammoth (.docx), parser propio (.md/.txt/.rtf)            |
 | Export CSV | csv-writer                                                |
+| Categorías | CRUD completo desde panel admin + asignación desde moderación |
+| Lector     | ReadingMode (fullscreen portal, teclas, scroll progreso, preferencias localStorage) |
 
 ---
 
 ## Estructura del repo
 
 ```
-Booked/
+BookShelf/
 ├─ frontend/    React + Vite + Tailwind + animejs
 ├─ backend/     Node.js + Express, auth JWT, moderación, conversión
 ├─ database/    Migraciones SQL y seeds idempotentes
@@ -52,7 +54,7 @@ Booked/
 
 ```bash
 # 1) Clona o copia el repo
-cd Booked
+cd BookShelf
 
 # 2) Variables de entorno
 cp .env.example .env       # en Windows PowerShell: Copy-Item .env.example .env
@@ -67,10 +69,10 @@ npm start                  # http://localhost:4000
 # 4) Frontend (en otra terminal)
 cd ../frontend
 npm install
-npm run dev                # http://localhost:3000
+npm run dev                # http://localhost:3100
 ```
 
-Abre [http://localhost:3000](http://localhost:3000).
+Abre [http://localhost:3100](http://localhost:3100).
 
 ---
 
@@ -78,17 +80,25 @@ Abre [http://localhost:3000](http://localhost:3000).
 
 > Sólo para demo. **No usar en producción.**
 
-| Email                    | Contraseña | Rol                             | Notas |
-|--------------------------|------------|---------------------------------|-------|
-| usuarioTest@booked.com   | admin123   | creator                         | Autor de todos los libros de ejemplo. No es moderador. |
-| admin@booked.com         | admin123   | admin + moderator               | Administrador principal. |
-| adminFox@booked.com      | admin123   | admin + moderator (adminFox)    | Administrador principal. |
+| Email                    | Contraseña | Rol                     | Notas |
+|--------------------------|------------|-------------------------|-------|
+| usuarioTest@bookshelf.app   | admin123   | creator                 | Autor de todos los libros de ejemplo. No es moderador. |
+| admin@bookshelf.app         | admin123   | admin + moderator       | Administrador principal. |
+| adminFox@bookshelf.app      | admin123   | admin + moderator       | Segundo administrador (privilegios idénticos a admin). |
 
-`admin` y `adminFox` tienen los mismos privilegios; **ninguno puede eliminar al
-otro ni a sí mismo**.
+Los administradores **no pueden eliminarse entre sí ni a sí mismos**.
 
 Para entrar al panel de moderación: inicia sesión con cualquiera de los dos y
 navega a `/admin/moderation`.
+
+**Cuenta moderadora** (puede crear anuncios, moderar libros y asignar categorías):
+| Email                    | Contraseña | Rol       | Notas |
+|--------------------------|------------|-----------|-------|
+| lopezsanty2008@gmail.com    | admin123   | moderator | Creada manualmente para pruebas de moderación. |
+
+> Los moderadores pueden crear anuncios y asignar categorías a libros sin categorizar.
+> Sólo los administradores pueden crear/eliminar categorías, gestionar moderadores,
+> exportar CSV, editar información de contacto y destacar anuncios.
 
 ---
 
@@ -101,10 +111,27 @@ navega a `/admin/moderation`.
 | Libros vistos      | **0**         | Las vistas se cuentan al abrir cada libro. |
 | Favoritos          | **0**         | No se siembran likes falsos. |
 | Baneados           | **0**         | banned_users empieza vacío. |
+| Categorías         | **4**         | fantasía, poesía, narrativa, educativa. |
 
 Las métricas se derivan **en vivo** desde la BD (ver `routes/metrics.js`).
 
 ---
+
+## Anuncios
+
+Los anuncios pueden ser creados por **administradores** y **moderadores**.
+
+- **Administradores**: el anuncio se muestra con fondo degradado dorado y
+  la etiqueta **Admin**. El texto de autoría ("Publicado por") es editable
+  desde el panel BookShelf — incluso se puede dejar vacío para ocultarlo.
+- **Moderadores**: el anuncio se muestra con fondo simple y la etiqueta
+  **Moderador**. El autor es su `display_name`.
+- **Anuncio destacado**: cualquier anuncio (admin o moderador) puede ser
+  marcado como **destacado** (★) por un administrador. El destacado aparece
+  primero en la página de inicio y en el tablón de anuncios.
+- **Último anuncio visible**: el anuncio no destacado más reciente siempre se
+  muestra completo (no colapsado), para que los lectores vean siempre lo último.
+- Los anuncios anteriores se pliegan bajo un `<details>`.
 
 ## Animaciones
 
@@ -123,9 +150,17 @@ Desde el editor (`/book/:id/edit`) puedes subir:
 
 - Texto: `.txt`, `.md`, `.docx`, `.rtf` — se parsea y se divide en capítulos
   (detección de `# Encabezado`, `Capítulo N` o saltos triples).
-- Imágenes: `.jpg`, `.jpeg`, `.png`, `.webp` — se posicionan con ImageManager.
+- Imágenes: `.jpg`, `.jpeg`, `.png`, `.webp` — se suben a la biblioteca personal
+  con nombre custom (`@img:nombre`) y se insertan desde el ImageManager en el editor
+  o con la referencia `@img:nombre_custom` en el contenido del capítulo.
+- Las imágenes de usuario se gestionan desde la página `/library` (Mis imágenes) o
+  desde el ImageManager en el editor de cada libro.
 
 Límite: **5 MB** por archivo (`MAX_UPLOAD_SIZE_BYTES` en `.env`).
+
+> El editor carga las categorías disponibles desde la API; los autores pueden
+> asignar una categoría existente o dejar el libro como
+> **"En espera de categorización"** para que moderadores/admin la asignen después.
 
 El archivo original se guarda en `backend/storage/`. Puede mantenerse **privado**
 (sólo visible para el autor) o liberarse para descarga pública (`original_public`
@@ -133,31 +168,78 @@ en el editor).
 
 ---
 
-## Límite de 2 minutos para publicar
+## Conteo de vistas
 
-Al crear un libro, el autor tiene **2 minutos** para confirmar la publicación.
-Pasado ese tiempo, debe editarlo y reintentar. La validación ocurre tanto en
-frontend (cuenta regresiva visible) como en backend (`PUT /api/books/:id`).
+Las vistas se cuentan **10 segundos después** de que un usuario abre la página
+del libro (`/book/:id`). Esto evita inflar el contador por rebotes (bounces).
+
+- **Usuarios autenticados**: sólo se cuenta **1 vista** por sesión (el backend
+  lleva un registro `book_views` para evitar duplicados).
+- **Usuarios anónimos (ghost)**: cada carga de página cuenta como 1 vista (no
+  hay forma de identificar al visitante).
+- **Reset de vistas**: los administradores ven un botón **"Reiniciar vistas"**
+  en la página del libro que pone `views=0` y limpia el tracking `book_views`,
+  permitiendo que los mismos usuarios vuelvan a contar.
+
+## Favoritos (bookmarks)
+
+Los usuarios autenticados pueden marcar libros como favoritos (toggle) desde
+la página del libro. Los marcadores aparecen en su perfil (`/profile`). Los
+libros eliminados no aparecen en la lista de marcadores.
+
+## Comentarios
+
+Los usuarios autenticados pueden comentar en cualquier libro. Los comentarios
+pueden ser eliminados por su autor, moderadores o administradores (botón ✕
+visible según permisos).
 
 ---
 
-## Pestaña exclusiva de moderación
+## Panel BookShelf (admin)
 
-Ruta: **`/admin/moderation`**. Visible sólo para `admin` y `adminFox`.
+Ruta: **`/admin`**. Visible sólo para administradores.
 
 Incluye:
 
-- Lista de baneados con motivo, apelación, fechas.
-- Banear por correo + motivo (revoca sesiones activas vía `token_blacklist`).
-- Desbanear (mantiene historial).
-- Apelación única automática cuando un baneado intenta iniciar sesión.
-- Exportar CSV (columnas: `email, reason, appeal, banned_at, unbanned_at`).
-- Editar información y contactos (incluye link al Discord
-  `https://discord.gg/j543pdNhae`).
-- Lista de moderadores con reglas de visibilidad/eliminación:
-  - `admin` y `adminFox` son administradores principales y **están protegidos**.
-  - Moderadores regulares no ven a admin/adminFox.
-  - Sólo `admin` ve la lista completa y puede gestionar moderadores regulares.
+- **Métricas en vivo**: autores, libros, vistas totales.
+- **Gestión de categorías**: crear y eliminar categorías (al eliminar, los
+  libros con esa categoría pasan a **"En espera de categorización"**).
+- **Gestión de anuncios**: destacar/quitar destacado de anuncios y personalizar
+  el texto **"Publicado por"** (incluso vacío para ocultarlo).
+- **Gestión de moderadores**: añadir/eliminar moderadores con reglas de
+  protección entre administradores.
+
+## Panel de moderación
+
+Ruta: **`/admin/moderation`**. Accesible para administradores y moderadores.
+
+Incluye:
+
+- **Libros sin categoría**: lista de libros con estado
+  **"En espera de categorización"** y selector para asignar una categoría.
+- **Tabla global de usuarios**: lista completa con filtros por rol (Todos, Usuarios, Escritores,
+  Moderadores, Admins, Baneados, Eliminados), búsqueda por nombre o correo, y badge de estado
+  (Baneado, Desbaneado, Anteriormente eliminado, Sin registrar).
+- **Semi-formulario de ban inline**: aparece debajo de la fila del usuario seleccionado, con
+  campo de motivo, cancelar y banear — sin cambiar de pantalla.
+- **Historial completo de baneos**: acordeón de un solo nivel que muestra todos los eventos
+  de ban/desban/eliminación por email, con detalles (motivo, fechas, quién baneó/desbaneó, apelación).
+- **Cuentas eliminadas**: sección separada que lista correos eliminados, con detección de
+  reutilización (si el correo fue registrado de nuevo por otro usuario), badge "Reutilizado —
+  display_name (rol)" o "Correo libre". Admin puede eliminar el registro de ban.
+- **Cuentas pre-baneadas**: usuarios que existen en `banned_users` pero no en `users`
+  (nunca se registraron) — se muestran con badge "Sin registrar" y nombre "(sin registro)".
+- **Banear/desbanear**: cada ban inserta un nuevo registro (historial preservado).
+  Apelación múltiple: cada envío sobrescribe la apelación del ban activo.
+- **Eliminar registro de ban** (sólo admin): borra todos los registros del email
+  (solo si no hay bans activos). El `moderation_logs` conserva el historial.
+- **Eliminar usuario** (sólo admin): `DELETE /api/users/:id` — elimina todos sus
+  datos y marca `deleted_at` en `banned_users` (el email queda libre para re-registro).
+- **Exportar CSV** (sólo admin): columnas `email, reason, appeal, banned_at, unbanned_at`.
+- **Lista de moderadores y admins**: con tabs, reorden drag-free (↑/↓), añadir/eliminar
+  moderadores con reglas de protección entre administradores.
+- **Editar información y contactos** (sólo admin): incluye link al Discord
+  `https://discord.gg/j543pdNhae`.
 
 Ver `docs/roles_permissions.md` para la matriz completa.
 
@@ -166,15 +248,21 @@ Ver `docs/roles_permissions.md` para la matriz completa.
 ## Seguridad mínima (presentación)
 
 - Contraseñas: `bcryptjs` 10 rondas.
-- Tokens: JWT HS256, expira en `JWT_EXPIRES_IN`.
+- Tokens: JWT HS256 (access token, expira según `JWT_EXPIRES_IN`) + refresh token UUID (30 días, con rotation).
+- Auto-refresh en 401: el frontend renueva el access token silenciosamente antes de perder la sesión.
+- Logout server-side: revoca todos los refresh tokens y blacklistea el access token actual.
 - Sesiones revocables: `token_blacklist` + cutoff por email al banear.
 - Inputs validados con `express-validator`.
+- **Rate limiting**: 5 registros/minuto y 10 login attempts/minuto por IP en endpoints de auth.
 - Consultas parametrizadas con `pg`.
+- Protección contra path traversal en subida de archivos (resolución de ruta
+  contra `STORAGE_PATH`).
+- Categorías escapadas contra inyección LIKE (`%` y `_` escapados con `ESCAPE`).
 - CORS restringido a `FRONTEND_URL`.
 - Auditoría: `moderation_logs` (actor, acción, target, IP, timestamp).
 
 > ⚠ Para producción real: rotar `JWT_SECRET`, activar HTTPS, habilitar RLS en
-> Supabase, configurar tasa de peticiones (rate limiting) y monitoreo.
+> Supabase, activar rate limiting persistente (Redis) y monitoreo.
 
 ---
 
@@ -207,5 +295,5 @@ No incluimos pipeline real; en su lugar, prácticas recomendadas para el equipo
 
 MIT. Ver [LICENSE](LICENSE).
 
-Booked™ — Plataforma de lectura digital
+BookShelf™ — Plataforma de lectura digital
 © 2026 Jeison Sossa, Santiago López, Leyder Montoya.

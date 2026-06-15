@@ -4,7 +4,7 @@ function ErrorBase({ code, title, msg }) {
   const nav = useNavigate();
   return (
     <div className="max-w-md mx-auto px-4 py-20 text-center">
-      <div className="font-serif text-7xl font-bold text-bookedBrown">{code}</div>
+      <div className="font-serif text-7xl font-bold text-bookshelfBrown">{code}</div>
       <h1 className="font-serif text-2xl font-bold mt-2">{title}</h1>
       <p className="opacity-80 mt-2">{msg}</p>
       <div className="mt-6 flex justify-center gap-2">

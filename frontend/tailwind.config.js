@@ -9,8 +9,8 @@ export default {
         ink:          '#1F2937',
         nightGray:    '#2B2F33',
         nightInk:     '#E6E7E8',
-        bookedBrown:  '#7B4B27',
-        bookedAccent: '#C8A26B'
+        bookshelfBrown:  '#7B4B27',
+        bookshelfAccent: '#C8A26B'
       },
       fontFamily: {
         serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],

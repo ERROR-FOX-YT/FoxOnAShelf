@@ -1,5 +1,5 @@
 -- =====================================================================
--- Booked™ - Plataforma de lectura digital
+-- BookShelf™ - Plataforma de lectura digital
 -- Migración 001: creación de tablas, índices y RLS de ejemplo
 -- Compatible con Postgres 13+ / Supabase
 -- =====================================================================
@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url      text,
     role            text NOT NULL DEFAULT 'user'
                     CHECK (role IN ('ghost','user','creator','moderator','admin','system')),
-    is_admin_fox    boolean NOT NULL DEFAULT false,
     contact_info    text,
     created_at      timestamptz NOT NULL DEFAULT now()
 );
@@ -143,13 +142,27 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- ANNOUNCEMENTS
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS announcements (
-    id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    admin_id    uuid REFERENCES users(id) ON DELETE SET NULL,
-    title       text NOT NULL,
-    content     text NOT NULL,
-    image_path  text,
-    visible     boolean NOT NULL DEFAULT true,
-    created_at  timestamptz NOT NULL DEFAULT now()
+    id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    admin_id            uuid REFERENCES users(id) ON DELETE SET NULL,
+    title               text NOT NULL,
+    content             text NOT NULL,
+    image_path          text,
+    visible             boolean NOT NULL DEFAULT true,
+    featured            boolean NOT NULL DEFAULT false,
+    created_by_name     text,
+    created_by_role     text DEFAULT 'admin',
+    published_by        text,
+    created_at          timestamptz NOT NULL DEFAULT now()
+);
+
+-- ---------------------------------------------------------------------
+-- BOOK VIEWS (para evitar conteos duplicados por usuario)
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS book_views (
+    user_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    book_id     uuid NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+    created_at  timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, book_id)
 );
 
 -- ---------------------------------------------------------------------
@@ -172,7 +185,20 @@ CREATE TABLE IF NOT EXISTS banned_users (
     appeal              text,
     appeal_submitted    boolean NOT NULL DEFAULT false,
     banned_at           timestamptz NOT NULL DEFAULT now(),
-    unbanned_at         timestamptz
+    unbanned_at         timestamptz,
+    deleted_at          timestamptz       -- administratively deleted
+);
+
+-- ---------------------------------------------------------------------
+-- REFRESH TOKENS (rotación JWT)
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id         uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token           text UNIQUE NOT NULL,
+    expires_at      timestamptz NOT NULL,
+    used_at         timestamptz,
+    created_at      timestamptz NOT NULL DEFAULT now()
 );
 
 -- ---------------------------------------------------------------------

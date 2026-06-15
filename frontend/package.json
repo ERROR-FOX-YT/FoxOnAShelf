@@ -1,7 +1,7 @@
 {
-  "name": "booked-frontend",
+  "name": "bookshelf-frontend",
   "version": "1.0.0",
-  "description": "Booked™ - Frontend (React + Vite + Tailwind)",
+  "description": "BookShelf™ - Frontend (React + Vite + Tailwind)",
   "private": true,
   "type": "module",
   "scripts": {

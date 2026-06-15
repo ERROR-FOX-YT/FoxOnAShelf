@@ -1,52 +1,91 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, bindRuntime, criticalPost } from '../api/client';
-import { useToast } from './ToastContext';
+import { api, bindRuntime, criticalPost } from '../api/client.js';
+import { useToast } from './ToastContext.jsx';
 
 const AuthCtx = createContext(null);
-
-const SAVED_KEY = 'booked.savedAccounts'; // hasta 3 cuentas guardadas
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const toast    = useToast();
 
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('booked.user') || 'null'); }
+    try { return JSON.parse(localStorage.getItem('bookshelf.user') || 'null'); }
     catch { return null; }
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => { bindRuntime({ toast, navigate }); }, [toast, navigate]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('bookshelf.user');
+    if (!stored) { setLoading(false); return; }
+    let cancelled = false;
+    try {
+      const u = JSON.parse(stored);
+      if (u && u.id) {
+        api.get('/api/users/' + u.id).then(r => {
+          if (cancelled) return;
+          if (r.__error) {
+            if (r.code === 401) {
+              localStorage.removeItem('bookshelf.token');
+              localStorage.removeItem('bookshelf.refreshToken');
+              localStorage.removeItem('bookshelf.user');
+              setUser(null);
+            }
+          } else if (r.user) {
+            localStorage.setItem('bookshelf.user', JSON.stringify(r.user));
+            setUser(r.user);
+          }
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
+    } catch {
+      if (!cancelled) setLoading(false);
+    }
+    return () => { cancelled = true; };
+  }, []);
 
   async function login(email, password) {
     const r = await api.post('/api/auth/login', { email, password });
     if (r && r.__error) {
-      if (r.banned && r.can_appeal) return { banned: true, can_appeal: true, reason: r.reason };
-      if (r.banned)                 return { banned: true, can_appeal: false, reason: r.reason };
-      return { error: r.error };
+      if (r.banned) return { banned: true, can_appeal: r.can_appeal, reason: r.reason };
+      if (r.code === 401)            return { error: 'Credenciales inválidas' };
+      return { error: r.error || 'Error al iniciar sesión' };
     }
-    localStorage.setItem('booked.token', r.token);
-    localStorage.setItem('booked.user', JSON.stringify(r.user));
+    localStorage.setItem('bookshelf.token', r.token);
+    localStorage.setItem('bookshelf.refreshToken', r.refreshToken);
+    localStorage.setItem('bookshelf.user', JSON.stringify(r.user));
     setUser(r.user);
-    rememberAccount(r.user);
     toast.ok('Sesión iniciada');
     return { ok: true };
   }
 
   async function register(email, password, display_name) {
     const r = await criticalPost('/api/auth/register', { email, password, display_name });
-    if (r && r.__error) return { error: r.error };
-    localStorage.setItem('booked.token', r.token);
-    localStorage.setItem('booked.user', JSON.stringify(r.user));
+    if (r && r.__error) return { error: r.error, easter_egg: r.easter_egg };
+    localStorage.setItem('bookshelf.token', r.token);
+    localStorage.setItem('bookshelf.refreshToken', r.refreshToken);
+    localStorage.setItem('bookshelf.user', JSON.stringify(r.user));
     setUser(r.user);
-    rememberAccount(r.user);
     toast.ok('Cuenta creada');
     return { ok: true };
   }
 
   function logout() {
-    localStorage.removeItem('booked.token');
-    localStorage.removeItem('booked.user');
+    const token = localStorage.getItem('bookshelf.token');
+    if (token) {
+      fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+      }).catch(() => {});
+    }
+    localStorage.removeItem('bookshelf.token');
+    localStorage.removeItem('bookshelf.refreshToken');
+    localStorage.removeItem('bookshelf.user');
+    localStorage.removeItem('bookshelf.savedAccounts');
     setUser(null);
     toast.info('Sesión cerrada');
     navigate('/login');
@@ -58,27 +97,13 @@ export function AuthProvider({ children }) {
     return { ok: true };
   }
 
-  function rememberAccount(u) {
-    try {
-      const list = JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
-      const filtered = list.filter(x => x.email.toLowerCase() !== u.email.toLowerCase());
-      const next = [{ email: u.email, display_name: u.display_name }, ...filtered].slice(0, 3);
-      localStorage.setItem(SAVED_KEY, JSON.stringify(next));
-    } catch {}
-  }
-
-  function savedAccounts() {
-    try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); }
-    catch { return []; }
-  }
-
-  function isAdmin()   { return user && user.role === 'admin'; }
-  function isAdminFox(){ return user && user.role === 'admin' && user.is_admin_fox; }
-  function isCreator() { return user && (user.role === 'creator' || user.role === 'admin'); }
+  function isAdmin()      { return user && user.role === 'admin'; }
+  function isModerator()  { return user && ['admin','moderator'].includes(user.role); }
+  function canCreate()    { return !!user; }
 
   return (
-    <AuthCtx.Provider value={{ user, login, register, logout, submitAppeal,
-                               savedAccounts, isAdmin, isAdminFox, isCreator }}>
+    <AuthCtx.Provider value={{ user, loading, login, register, logout, submitAppeal,
+                               isAdmin, isModerator, canCreate }}>
       {children}
     </AuthCtx.Provider>
   );

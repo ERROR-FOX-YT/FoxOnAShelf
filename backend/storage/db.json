@@ -1,0 +1,2219 @@
+{
+  "users": [
+    {
+      "id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "email": "lopezsanty2008@gmail.com",
+      "password_hash": "$2a$10$s3SrMx36h0kSZGw8GwH1DezJljaJrgPXR8XeLxQMmMVb.4KstCPSq",
+      "display_name": "usuario nuevo :D",
+      "role": "moderator",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-05-26T19:20:56.305Z",
+      "team_sort": 3
+    },
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "email": "usuarioTest@bookshelf.app",
+      "password_hash": "$2a$10$XdurvvBaZ6Wx/le0nilgYuWj353c7h8YI8kJ4XmODxer9WdAnXZZy",
+      "display_name": "Usuario Test",
+      "role": "creator",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-06-08T17:44:05.519Z"
+    },
+    {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "email": "adminFox@bookshelf.app",
+      "password_hash": "$2a$10$XdurvvBaZ6Wx/le0nilgYuWj353c7h8YI8kJ4XmODxer9WdAnXZZy",
+      "display_name": "ERROR_FOX",
+      "role": "admin",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "hide_email": true,
+      "team_sort": 4
+    },
+    {
+      "id": "27dd299a-2e7c-48dc-a4f0-5c198c76e9b3",
+      "email": "moderador@bookshelf.app",
+      "password_hash": "$2a$10$SoOkFdAYZuo6qodZCOpskOblRBPS0ktHPsj3gjV39sXaoqLSM7rr2",
+      "display_name": "SoyelModesto",
+      "role": "moderator",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-06-09T00:39:21.747Z",
+      "hide_email": false,
+      "team_sort": 2
+    },
+    {
+      "id": "5292ac81-7640-4a18-8df6-fae819eab53a",
+      "email": "bantest@bookshelf.app",
+      "password_hash": "$2a$10$Ozq.8GAw4aFOWVfehV6kJeogks15jrzNk92zS/gsJId4mc65YEev.",
+      "display_name": "Baniadorado",
+      "role": "user",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-06-09T02:44:18.146Z"
+    },
+    {
+      "id": "327c8afd-9062-4027-a6c6-9d64dd6005f6",
+      "email": "usuariocomun@bookshelf.app",
+      "password_hash": "$2a$10$d8Qf4xSYIizymQMOT8Rs1ee7897GuxFBsx3dFAaNAXIPcNPN1/LQa",
+      "display_name": "usuariocomun",
+      "role": "user",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-06-09T03:29:33.598Z"
+    },
+    {
+      "id": "9b32b99b-483c-40c4-a1b8-7d2a6ad7b87a",
+      "email": "adminLMG@bookshelf.app",
+      "password_hash": "$2a$10$nA2SZx81w.gEaU8ZiVuRlOhZfPIrTjlU6vG21qbOCMkfzC0rmA.o6",
+      "display_name": "Leyder",
+      "role": "admin",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-06-15T03:01:23.719Z",
+      "updated_at": "2026-06-15T03:01:23.719Z"
+    },
+    {
+      "id": "9309f5dd-7a14-4261-9f64-01417e52b954",
+      "email": "adminSlayer@bookshelf.app",
+      "password_hash": "$2a$10$aG.MF/3O2EDChucza/R02OV2e9TvMoYuhwuV7.x1sJ3za217xIm9m",
+      "display_name": "Slayer",
+      "role": "admin",
+      "avatar_url": null,
+      "contact_info": null,
+      "created_at": "2026-06-15T03:01:23.788Z",
+      "updated_at": "2026-06-15T03:01:23.788Z"
+    }
+  ],
+  "books": [
+    {
+      "id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "favorite_count": 0,
+      "views": 1,
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "original_file": null,
+      "original_public": false,
+      "cover_url": null,
+      "created_at": "2026-05-26T19:21:45.309Z",
+      "updated_at": "2026-06-06T05:28:45.025Z",
+      "title": "Cepallo",
+      "description": "Ipsum me soba el Ipsum, oe, como es esto",
+      "category": "narrativa",
+      "age_group": "adulto",
+      "author_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "subtitle": "owel"
+    },
+    {
+      "id": "aaaaaaaa-0001-0000-0000-000000000001",
+      "title": "El Bosque de las Letras",
+      "subtitle": "Cuento ilustrado para soñar",
+      "description": "Un cuento corto para niños sobre un bosque donde las palabras cobran vida.",
+      "category": "fantasia",
+      "age_group": "infantil",
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "views": 0,
+      "favorite_count": 0,
+      "author_id": "11111111-1111-1111-1111-111111111111",
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "updated_at": "2026-06-08T17:44:05.520Z",
+      "original_public": false,
+      "cover_url": null,
+      "original_file": null
+    },
+    {
+      "id": "aaaaaaaa-0001-0000-0000-000000000002",
+      "title": "La Maestra Lupa",
+      "subtitle": "Aprender jugando",
+      "description": "Historia educativa sobre la curiosidad y los números.",
+      "category": "educativa",
+      "age_group": "infantil",
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "views": 0,
+      "favorite_count": 1,
+      "author_id": "11111111-1111-1111-1111-111111111111",
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "updated_at": "2026-06-08T17:44:05.520Z",
+      "cover_url": null,
+      "original_file": null,
+      "original_public": false
+    },
+    {
+      "id": "aaaaaaaa-0002-0000-0000-000000000001",
+      "title": "Brújula Rota",
+      "subtitle": "Aventura adolescente",
+      "description": "Una novela corta sobre crecer y encontrar dirección.",
+      "category": "narrativa",
+      "age_group": "adolescente",
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "views": 1,
+      "favorite_count": 0,
+      "author_id": "11111111-1111-1111-1111-111111111111",
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "updated_at": "2026-06-08T17:44:05.520Z",
+      "cover_url": null,
+      "original_file": null,
+      "original_public": false
+    },
+    {
+      "id": "aaaaaaaa-0002-0000-0000-000000000002",
+      "title": "Versos del Recreo",
+      "subtitle": "Poemario adolescente",
+      "description": "Poemas sobre amistad, escuela y descubrir el mundo.",
+      "category": "poesia",
+      "age_group": "adolescente",
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "views": 1,
+      "favorite_count": 0,
+      "author_id": "11111111-1111-1111-1111-111111111111",
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "updated_at": "2026-06-08T17:44:05.520Z",
+      "cover_url": null,
+      "original_file": null,
+      "original_public": false
+    },
+    {
+      "id": "aaaaaaaa-0003-0000-0000-000000000001",
+      "title": "Cenizas del Ayer",
+      "subtitle": "Novela adulto contemporánea",
+      "description": "Una reflexión sobre pérdida, memoria y segundas oportunidades.",
+      "category": "narrativa",
+      "age_group": "adulto",
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "views": 0,
+      "favorite_count": 0,
+      "author_id": "11111111-1111-1111-1111-111111111111",
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "updated_at": "2026-06-08T17:44:05.520Z",
+      "cover_url": null,
+      "original_file": null,
+      "original_public": false
+    },
+    {
+      "id": "aaaaaaaa-0003-0000-0000-000000000002",
+      "title": "El Último Vagón",
+      "subtitle": "Relato adulto contemporáneo",
+      "description": "Dos desconocidos conversan en un tren y cambian sus vidas.",
+      "category": "narrativa",
+      "age_group": "adulto",
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "views": 0,
+      "favorite_count": 0,
+      "author_id": "11111111-1111-1111-1111-111111111111",
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "updated_at": "2026-06-08T17:44:05.520Z",
+      "cover_url": null,
+      "original_file": null,
+      "original_public": false
+    },
+    {
+      "id": "9f2be17b-7007-44d0-9927-e51435c5ddd1",
+      "title": "No sé",
+      "subtitle": "",
+      "description": "Libro de prueba con 5 páginas.",
+      "category": "narrativa",
+      "age_group": "adulto",
+      "status": "published",
+      "is_free": true,
+      "price_cents": 0,
+      "views": 6,
+      "favorite_count": 0,
+      "author_id": "33333333-3333-3333-3333-333333333333",
+      "cover_url": null,
+      "original_file": null,
+      "original_public": false,
+      "created_at": "2026-05-30T05:20:26.592Z",
+      "updated_at": "2026-05-30T05:21:08.171Z"
+    },
+    {
+      "title": "titulo",
+      "description": "texto",
+      "category": "fantasía",
+      "age_group": "adolescente",
+      "author_id": "33333333-3333-3333-3333-333333333333",
+      "status": "draft",
+      "id": "6bd6b4fd-f379-42e5-9a67-35476e451b00",
+      "favorite_count": 0,
+      "views": 1,
+      "is_free": true,
+      "price_cents": 0,
+      "original_file": null,
+      "original_public": false,
+      "cover_url": null,
+      "created_at": "2026-06-06T03:32:07.210Z",
+      "updated_at": "2026-06-06T05:29:42.184Z",
+      "subtitle": "sub"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "6c0f6134-7c94-45c4-8662-f86871489231",
+      "order": 2,
+      "is_early_access": false,
+      "created_at": "2026-05-26T19:22:53.315Z",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "title": "Largo",
+      "content": "\nAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAA\nAAAAAAAA\n\n@img:zorreso\n\nAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAA\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAA\n\n\n\n<!-- page -->\n\n\n\nAAAAAAAAAAAAAAAA\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\n\n\nXXXXXXXXXXXXX\n\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\nXXXXXXXXX\nxxx\ni\nXXXXXXXXXsxzcuzxcm\n\nXXXXXXXXXasdcdsf\nXXXXXXXXXsdscsdNYA\nXXXXXXXXXx\n\n![imagen](/storage/1780718025738-kcwbjx.jpeg)\n\n"
+    },
+    {
+      "id": "cb741dc3-b1c8-4e97-bb9f-90b0de853a7f",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-05-26T19:22:54.611Z",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "title": "otomano",
+      "content": "sinverguenza"
+    },
+    {
+      "id": "4c601816-c5c4-480b-b760-daa5aef05f67",
+      "order": 3,
+      "is_early_access": false,
+      "created_at": "2026-05-26T20:03:35.526Z",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "title": "saludos",
+      "content": "censurado"
+    },
+    {
+      "id": "d76a973b-8614-4705-b9fc-20a5feb5aa7a",
+      "book_id": "9f2be17b-7007-44d0-9927-e51435c5ddd1",
+      "title": "Página 1",
+      "content": "Esta es la primera página del libro. Aquí comienza la historia de prueba.",
+      "order": 1,
+      "created_at": "2026-05-30T05:20:26.592Z"
+    },
+    {
+      "id": "20f4eda0-b42b-4099-8256-746f22d01d55",
+      "book_id": "9f2be17b-7007-44d0-9927-e51435c5ddd1",
+      "title": "Página 2",
+      "content": "Segunda página. El protagonista camina por un sendero desconocido.",
+      "order": 2,
+      "created_at": "2026-05-30T05:20:26.592Z"
+    },
+    {
+      "id": "fbd8b5a3-61a8-46a1-9d9c-f1615a44f667",
+      "book_id": "9f2be17b-7007-44d0-9927-e51435c5ddd1",
+      "title": "Página 3",
+      "content": "Tercera página. Aparece un personaje misterioso que lo observa.",
+      "order": 3,
+      "created_at": "2026-05-30T05:20:26.592Z"
+    },
+    {
+      "id": "46f65e01-c43f-41fa-b804-db4531e617d2",
+      "book_id": "9f2be17b-7007-44d0-9927-e51435c5ddd1",
+      "title": "Página 4",
+      "content": "Cuarta página. El protagonista decide seguir la dirección indicada.",
+      "order": 4,
+      "created_at": "2026-05-30T05:20:26.592Z"
+    },
+    {
+      "id": "836dd9aa-0e71-47e3-a088-d36544d258b6",
+      "book_id": "9f2be17b-7007-44d0-9927-e51435c5ddd1",
+      "title": "Página 5",
+      "content": "Quinta página. Al final encuentra un espejo que refleja sus pensamientos.",
+      "order": 5,
+      "created_at": "2026-05-30T05:20:26.592Z"
+    },
+    {
+      "id": "bbbbbbbb-0001-0000-0000-000000000001",
+      "book_id": "aaaaaaaa-0001-0000-0000-000000000001",
+      "title": "Capítulo 1 — La hoja despierta",
+      "content": "Era una mañana tibia cuando las letras del bosque empezaron a moverse...\n\nLa pequeña Luna escuchó un susurro entre las hojas. Las palabras brillaban con luz propia y danzaban alrededor de los árboles.\n\n—Ven —dijo una letra dorada—, te llevaré al corazón del bosque.\n\nY así comenzó la aventura más maravillosa que Luna jamás había imaginado.",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-06-08T17:44:05.520Z"
+    },
+    {
+      "id": "bbbbbbbb-0001-0000-0000-000000000002",
+      "book_id": "aaaaaaaa-0001-0000-0000-000000000002",
+      "title": "Capítulo 1 — Cuenta conmigo",
+      "content": "La maestra Lupa enseñaba que cada número tenía un secreto. El 1 era el inicio de todo, el 2 la compañía, el 3 la magia.\n\n—Hoy descubriremos por qué el 7 es el número más curioso —dijo Lupa, ajustando sus gafas redondas.\n\nLos niños se sentaron en círculo, listos para aprender jugando.",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-06-08T17:44:05.520Z"
+    },
+    {
+      "id": "bbbbbbbb-0002-0000-0000-000000000001",
+      "book_id": "aaaaaaaa-0002-0000-0000-000000000001",
+      "title": "Capítulo 1 — El norte perdido",
+      "content": "Cuando Camila abrió la mochila, su brújula ya no señalaba ningún lado. La aguja giraba sin rumbo, como si hubiera olvidado su propósito.\n\n—Esto no me gusta —murmuró.\n\nA su alrededor, el bosque se extendía denso y desconocido.\n\n—Tranquila —dijo una voz detrás de ella—. Tal vez la brújula no esté rota. Tal vez el norte se haya movido.",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-06-08T17:44:05.520Z"
+    },
+    {
+      "id": "bbbbbbbb-0002-0000-0000-000000000002",
+      "book_id": "aaaaaaaa-0002-0000-0000-000000000002",
+      "title": "Poemas del Recreo",
+      "content": "A veces el recreo / es la única estrofa / donde caben todos.\n\nEl timbre suena / y estallan las risas / como versos libres.\n\nEn la cancha / las voces se mezclan / formando un coro / que nadie dirige.\n\nEl cielo azul / es el techo / de esta clase sin paredes.\n\nY cuando vuelve el silencio / cada quien guarda / un poema en el bolsillo.",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-06-08T17:44:05.520Z"
+    },
+    {
+      "id": "bbbbbbbb-0003-0000-0000-000000000001",
+      "book_id": "aaaaaaaa-0003-0000-0000-000000000001",
+      "title": "Capítulo 1 — El eco del ayer",
+      "content": "Las cenizas aún flotaban en el aire cuando Elena comprendió que no habría vuelta atrás. La casa de su abuela ya no existía, pero los recuerdos seguían ahí, incólumes.\n\nRecogió una fotografía carbonizada en una esquina.\n\n—Tenía razón —susurró.\n\nY entre los escombros, empezó a reconstruir lo que el tiempo había desgastado.",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-06-08T17:44:05.520Z"
+    },
+    {
+      "id": "bbbbbbbb-0003-0000-0000-000000000002",
+      "book_id": "aaaaaaaa-0003-0000-0000-000000000002",
+      "title": "Capítulo 1 — El encuentro",
+      "content": "El vagón estaba prácticamente vacío. Solo un hombre de mirada cansada ocupaba el asiento del fondo, junto a la ventana. Carla dudó un segundo antes de sentarse frente a él.\n\n—Buenas noches —dijo ella, rompiendo el silencio.\n\nEl hombre levantó la vista. Tenía los ojos color miel y una sonrisa que parecía guardar más preguntas que respuestas.\n\n—¿Cree en las segundas oportunidades? —preguntó él, sin preámbulos.\n\nCarla no supo qué responder. Pero intuyó que esa conversación cambiaría algo en ella.",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-06-08T17:44:05.520Z"
+    },
+    {
+      "id": "534f7937-4907-494c-a8f8-24176655ba39",
+      "order": 1,
+      "is_early_access": false,
+      "created_at": "2026-06-06T03:32:38.662Z",
+      "book_id": "6bd6b4fd-f379-42e5-9a67-35476e451b00",
+      "title": "asd",
+      "content": "asd"
+    },
+    {
+      "id": "20b83f51-672e-40af-860e-4ec55355c142",
+      "order": 2,
+      "is_early_access": false,
+      "created_at": "2026-06-06T03:32:38.672Z",
+      "book_id": "6bd6b4fd-f379-42e5-9a67-35476e451b00",
+      "title": "123",
+      "content": "123"
+    },
+    {
+      "id": "39f7273e-1613-4048-80f0-c57ca7220f4a",
+      "order": 3,
+      "is_early_access": false,
+      "created_at": "2026-06-06T03:32:38.681Z",
+      "book_id": "6bd6b4fd-f379-42e5-9a67-35476e451b00",
+      "title": "Nuevo capítulo",
+      "content": ""
+    }
+  ],
+  "images": [],
+  "favorites": [
+    {
+      "id": "431b97b3-c22d-436c-8661-53da07c84599",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "aaaaaaaa-0001-0000-0000-000000000002",
+      "created_at": "2026-06-14T22:23:54.666Z"
+    }
+  ],
+  "ratings": [
+    {
+      "id": "e51ad073-226e-462b-9735-172fce0e2631",
+      "user_id": "28ec8dd8-4322-48bc-a7bb-9ffc69abc564",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "rating": 4,
+      "created_at": "2026-06-02T02:40:56.359Z"
+    }
+  ],
+  "comments": [
+    {
+      "id": "57efce1f-14e8-406a-baea-f6c4e0ac6759",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "aaaaaaaa-0001-0000-0000-000000000002",
+      "chapter_id": null,
+      "parent_comment_id": null,
+      "content": "Monda",
+      "created_at": "2026-06-02T18:38:45.923Z"
+    },
+    {
+      "id": "50fe5c64-6bb2-428f-be16-4c7d65a15c24",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": null,
+      "parent_comment_id": null,
+      "content": "oal",
+      "created_at": "2026-06-02T20:04:13.752Z"
+    },
+    {
+      "id": "fbc00977-5d16-4389-8058-2ba1a986ee33",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": null,
+      "parent_comment_id": "50fe5c64-6bb2-428f-be16-4c7d65a15c24",
+      "content": "ola papu",
+      "created_at": "2026-06-02T20:04:19.516Z"
+    },
+    {
+      "id": "ef6eb0b3-3c14-405a-93b9-c7272be3f5eb",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": null,
+      "parent_comment_id": "50fe5c64-6bb2-428f-be16-4c7d65a15c24",
+      "content": "dime bro",
+      "created_at": "2026-06-02T20:19:28.623Z"
+    },
+    {
+      "id": "d74f2627-8679-4901-b4c6-b58ce54fce1a",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": null,
+      "parent_comment_id": null,
+      "content": "ay no",
+      "created_at": "2026-06-02T20:19:38.286Z"
+    },
+    {
+      "id": "2c0f6802-f896-4797-9e52-faac3e56e4e9",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": null,
+      "parent_comment_id": "d74f2627-8679-4901-b4c6-b58ce54fce1a",
+      "content": ":>",
+      "created_at": "2026-06-02T20:19:42.964Z"
+    },
+    {
+      "id": "518b488e-571a-49fb-be86-b9dcdd79f80c",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": null,
+      "parent_comment_id": "50fe5c64-6bb2-428f-be16-4c7d65a15c24",
+      "content": ":3",
+      "created_at": "2026-06-02T20:19:49.090Z"
+    },
+    {
+      "id": "a3a1d767-0c85-4d1e-b842-b28f9e7811a0",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": null,
+      "parent_comment_id": "50fe5c64-6bb2-428f-be16-4c7d65a15c24",
+      "content": "suika",
+      "created_at": "2026-06-02T20:19:54.568Z"
+    }
+  ],
+  "collections": [],
+  "collection_books": [],
+  "notifications": [],
+  "announcements": [
+    {
+      "id": "cccccccc-0000-0000-0000-000000000001",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "Bienvenido a BookShelf",
+      "content": "Plataforma de lectura digital abierta y justa. Comienza explorando libros gratuitos.",
+      "image_path": null,
+      "visible": false,
+      "created_at": "2026-06-08T17:44:05.520Z",
+      "featured": false
+    },
+    {
+      "id": "a2211761-9df9-4fc2-9ccf-36a38b9052ce",
+      "admin_id": null,
+      "title": "prueba",
+      "content": "este es un nuevo anuncio por el admin fox",
+      "image_path": null,
+      "visible": false,
+      "created_at": "2026-05-21T18:45:08.165Z",
+      "featured": false
+    },
+    {
+      "id": "42ffc447-8c1c-4839-b8ae-289684f888f4",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "Hola a todos y bienvenidos una bez mas a radio libre",
+      "content": "Este mensaje se supone que sería hecho por Slayer pero ese man no sabe ni de que trata el proyecto",
+      "image_path": null,
+      "visible": false,
+      "created_at": "2026-05-26T21:22:16.678Z",
+      "featured": false
+    },
+    {
+      "id": "e2681423-3ced-4056-ad95-b3092ee42950",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "Zorrito zorresno",
+      "content": "Este es un anuncio por su admin favorito, Fox! probando la nueva función para subir imágenes.",
+      "image_path": null,
+      "visible": false,
+      "created_at": "2026-05-26T21:29:03.188Z",
+      "featured": false
+    },
+    {
+      "id": "08bbcfbc-48ea-43fd-a35d-d7039b1fe534",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "jeje",
+      "content": "cebolla",
+      "image_path": null,
+      "visible": false,
+      "created_at": "2026-05-26T21:32:03.828Z",
+      "featured": false
+    },
+    {
+      "id": "646ec25b-db6f-485e-b4d6-76f5dc449033",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "El rumbo de BookShelfâ„¢",
+      "content": "BookShelf es una plataforma colombiana de autopublicación digital. No somos una biblioteca ni una editorial cerrada: escritores pueden crear, publicar y â€”si lo deseanâ€” vender sus libros directamente a los lectores, sin intermediarios. Lectores descubren contenido gratuito o de pago, leen online y apoyan a sus autores favoritos.\n\nQueremos que sea un espacio justo, abierto y vivo donde las palabras tengan valor, tanto artístico como económico. Esto recién empieza.",
+      "image_path": null,
+      "visible": false,
+      "created_at": "2026-05-26T21:52:49.526Z",
+      "featured": false,
+      "published_by": "Fox"
+    },
+    {
+      "id": "28604753-dc60-4007-a092-8818364ace94",
+      "admin_id": null,
+      "title": "Zorrito",
+      "content": "Este es un anuncio\nde vuestro admin favorito\nERROR_FOX!",
+      "image_path": null,
+      "visible": false,
+      "created_at": "2026-05-26T21:58:40.558Z",
+      "featured": false
+    },
+    {
+      "id": "f1b6d83e-8f3d-43c4-82ea-0179334edab8",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "Anuncio de prueba moderador",
+      "content": "Contenido de prueba",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-05-28T21:02:12.070Z"
+    },
+    {
+      "id": "76936edc-c3d5-4a31-bf46-757b5cb4aed7",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "Aviso importante",
+      "content": "Nuevas reglas de publicacion",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-05-28T21:04:02.684Z"
+    },
+    {
+      "id": "53d3b49c-9f50-4212-a292-85766703c3ca",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "hola, soy mod!",
+      "content": "me dieron comida y luego me dijeron que me desencadenarían si me portaba bien :D",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-05-28T21:06:00.602Z"
+    },
+    {
+      "id": "b51d4a5d-5d60-40ac-90cb-8a013c7c42c8",
+      "admin_id": null,
+      "title": "Pronto habrá comida para moderadores!",
+      "content": "Bookshelf depende de su comunidad!\nRecuerda que puedes postularte en el siguiente formulario\n*link estrambótico*\nSi nos ayudas, te alimentaremos bien!",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Admin Fox",
+      "created_by_role": "admin",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-05-28T21:08:20.941Z"
+    },
+    {
+      "id": "2a1240d3-1428-4b3a-bb62-061133beca96",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "Test admin",
+      "content": "Test content",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Administrador",
+      "created_by_role": "admin",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-05-28T21:08:56.798Z"
+    },
+    {
+      "id": "6c32ee42-887a-4d51-83be-4d3ecd260164",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "BookShelf esta en linea",
+      "content": "Bienvenidos a la plataforma",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Administrador",
+      "created_by_role": "admin",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-05-28T21:10:32.359Z"
+    },
+    {
+      "id": "a36c7816-2401-4158-82bb-77c28ff64346",
+      "admin_id": null,
+      "title": ":D",
+      "content": "admiiin",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Admin Fox",
+      "created_by_role": "admin",
+      "published_by": "yo",
+      "featured": false,
+      "created_at": "2026-05-28T21:11:54.555Z"
+    },
+    {
+      "id": "d7a072a3-6787-40dd-a86e-af579e75d92b",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "Zorro",
+      "content": "Nya asas as asa \ns\ns\ns\ns\ns\ns\ns\nsasdfsd\nada\ndfa\nsdsd\nvfdfs\ndffas",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Administrador",
+      "created_by_role": "admin",
+      "published_by": "Chichon",
+      "featured": false,
+      "created_at": "2026-06-02T18:44:24.665Z"
+    },
+    {
+      "id": "9db4569f-90a4-49b3-9cc3-c85d86a82c68",
+      "admin_id": "33333333-3333-3333-3333-333333333333",
+      "title": "ðŸ“š ¡Bienvenido a BookShelf!",
+      "content": "BookShelf es un espacio digital donde la lectura se encuentra con la comunidad. Nuestro propósito es simple: que encuentres tu próxima historia favorita y puedas compartirla con otros lectores como vos.\n\n¿Para qué sirve? Para leer, descubrir y conectar. Acá podés:\n\nExplorar libros de todo tipo, organizados por categoría y edad\nSeguir a tus autores favoritos y enterarte de sus nuevas publicaciones\nDejar reseñas, calificar, y guardar tus libros preferidos en tu lista personal\nPublicar tus propias historias si te animás a escribir\nYa sea que estés buscando algo nuevo para leer, quieras compartir tu opinión, o tengas una historia esperando salir al mundo â€” BookShelf es tu lugar.\n\nEntrá, mirá, leé. No hace falta registrarse para explorar. Y si querés sumarte, crear una cuenta es gratis.\n\nðŸ“– BookShelf â€” Leer es compartir.",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Admin Fox",
+      "created_by_role": "admin",
+      "published_by": "Bookshelf Oficial!",
+      "featured": false,
+      "created_at": "2026-06-04T21:13:55.553Z"
+    },
+    {
+      "id": "417ae6b7-ab94-492a-8a06-1fc6c6470487",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "Soy modo",
+      "content": "y puedo publicar asi que sapeo las 2 imagenes de fondo",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T02:28:00.316Z"
+    },
+    {
+      "id": "f090277d-fe2b-4e1a-ae2f-03f02f030a57",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "ðŸ“š ¡Bienvenido a BookShelf!",
+      "content": "BookShelf es un espacio digital donde la lectura se encuentra con la comunidad. Nuestro propósito es simple: que encuentres tu próxima historia favorita y puedas compartirla con otros lectores como vos.\n\n¿Para qué sirve? Para leer, descubrir y conectar. Acá podés:\n\nExplorar libros de todo tipo, organizados por categoría y edad\nSeguir a tus autores favoritos y enterarte de sus nuevas publicaciones\nDejar reseñas, calificar, y guardar tus libros preferidos en tu lista personal\nPublicar tus propias historias si te animás a escribir\nYa sea que estés buscando algo nuevo para leer, quieras compartir tu opinión, o tengas una historia esperando salir al mundo â€” BookShelf es tu lugar.\n\nEntrá, mirá, leé. No hace falta registrarse para explorar. Y si querés sumarte, crear una cuenta es gratis.\n\nðŸ“– BookShelf â€” Leer es compartir.",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Administrador",
+      "created_by_role": "admin",
+      "published_by": "BookShelf Oficial!",
+      "featured": false,
+      "created_at": "2026-06-06T02:46:27.739Z"
+    },
+    {
+      "id": "c58bcd81-d150-40e9-9853-669ed8419efd",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "Soy mod",
+      "content": "veré que puedo hacer ahora",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T02:56:55.538Z"
+    },
+    {
+      "id": "b12630d1-3efc-42cc-8471-8bfb695b2101",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "otr",
+      "content": "o",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T03:02:52.498Z"
+    },
+    {
+      "id": "8294d67a-6fb3-427f-9ea6-bb03d648b58c",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "Soy",
+      "content": "otro mod",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T03:03:09.492Z"
+    },
+    {
+      "id": "bc03e0d9-e83a-49a4-9967-caad867eb527",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "oh",
+      "content": "uno nuevo",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T03:03:14.354Z"
+    },
+    {
+      "id": "fca3f719-5ba9-4067-aecf-0c78621dd4f5",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "aiam",
+      "content": "admin",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Administrador",
+      "created_by_role": "admin",
+      "published_by": "fox",
+      "featured": false,
+      "created_at": "2026-06-06T03:25:01.482Z"
+    },
+    {
+      "id": "3aec29e9-fc2b-4705-b77c-480f24dea585",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "a",
+      "content": "asd",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "Administrador",
+      "created_by_role": "admin",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T03:30:54.513Z"
+    },
+    {
+      "id": "c0306d74-2fbf-4c37-a347-f42f4db4f375",
+      "admin_id": "22222222-2222-2222-2222-222222222222",
+      "title": "¡Bienvenido a BookShelf!",
+      "content": "BookShelf es un espacio digital donde la lectura se encuentra con la comunidad. Nuestro propósito es simple: que encuentres tu próxima historia favorita y puedas compartirla con otros lectores como vos.\n\n¿Para qué sirve? Para leer, descubrir y conectar. Aquí puedes:\n\nExplorar libros de todo tipo, organizados por categoría y edad\nSeguir a tus autores favoritos y enterarte de sus nuevas publicaciones\nDejar reseñas, calificar, y guardar tus libros preferidos en tu lista personal\nPublicar tus propias historias si te animas a escribir\nYa sea que estés buscando algo nuevo para leer, quieras compartir tu opinión, o tengas una historia esperando salir al mundo â€” BookShelf es tu lugar.\n\nEntra, mira, lee. No hace falta registrarse para explorar. Y si quieres sumarte, crear una cuenta es gratis.\n\nBookShelf - Leer es compartir.",
+      "image_path": "/storage/1780754582162-9i22in.png",
+      "visible": true,
+      "created_by_name": "Administrador",
+      "created_by_role": "admin",
+      "published_by": "ERROR_FOX",
+      "featured": true,
+      "created_at": "2026-06-06T14:03:02.177Z"
+    },
+    {
+      "id": "c64aab38-c6f2-419d-bcd1-8b20b6df0f1f",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "Soy un moderador!",
+      "content": "Hola! soy el primer mod de la plataforma, aunque en realidad soy el dueño de la cuenta adminfox",
+      "image_path": null,
+      "visible": false,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T14:04:23.312Z"
+    },
+    {
+      "id": "a861d9e8-cf40-4ceb-b28a-bd291f4d92b6",
+      "admin_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "title": "Alguien publicaría un libro aquí? te voy a querer mucho si lo haces :3",
+      "content": "Entrá, mirá, leé. No hace falta registrarse para explorar. Y si querés sumarte, crear una cuenta es gratis.\n\nSí, este texto fue copiado del anuncio del admin",
+      "image_path": null,
+      "visible": true,
+      "created_by_name": "usuario nuevo :D",
+      "created_by_role": "moderator",
+      "published_by": null,
+      "featured": false,
+      "created_at": "2026-06-06T14:05:32.199Z"
+    }
+  ],
+  "metrics": [],
+  "banned_users": [
+    {
+      "id": "9cebda7b-42bd-48d5-a7da-3dfc39cb4851",
+      "email": "juan.isazam@colsantander.edu.co",
+      "reason": "me cais mal",
+      "appeal": null,
+      "appeal_submitted": false,
+      "banned_at": "2026-06-06T03:39:04.474Z",
+      "unbanned_at": null
+    }
+  ],
+  "token_blacklist": [
+    {
+      "id": "736c0612-ef0d-4e78-a6b6-ac48e677905e",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA4OTMwNTIsImV4cCI6MTc4MTQ5Nzg1Mn0.nbBk3nTDKo7x4c6bzeFM-M0-PN8Q68JPqWppL2kS0MQ",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-08T23:58:08.336Z"
+    },
+    {
+      "id": "ee756874-6a24-40a3-853b-0bbf2a58f528",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4NmI0MmViMy05NDU5LTQzOGQtYWE4ZS1kZjMyZTU3MjdiNzUiLCJlbWFpbCI6ImxvcGV6c2FudHkyMDA4QGdtYWlsLmNvbSIsInJvbGUiOiJtb2RlcmF0b3IiLCJpYXQiOjE3ODA5NjMxMDAsImV4cCI6MTc4MTU2NzkwMH0.F5aeUaqbyLulcZ9zL1kbkwAnXnstIqPdpYbGjsWrXbs",
+      "user_email": "lopezsanty2008@gmail.com",
+      "blacklisted_at": "2026-06-08T23:58:30.204Z"
+    },
+    {
+      "id": "d50af8ce-0363-4134-a2a6-f294bfeebfbf",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NjMxMjEsImV4cCI6MTc4MTU2NzkyMX0.2w-jj9QXGfEdMTjzF-5xWivJDhwijqs1yVGLrMqRW08",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T00:23:02.365Z"
+    },
+    {
+      "id": "e43a5b1b-39ff-4001-9ff4-d8a70b6f5d04",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4NmI0MmViMy05NDU5LTQzOGQtYWE4ZS1kZjMyZTU3MjdiNzUiLCJlbWFpbCI6ImxvcGV6c2FudHkyMDA4QGdtYWlsLmNvbSIsInJvbGUiOiJtb2RlcmF0b3IiLCJpYXQiOjE3ODA5NjQ1OTEsImV4cCI6MTc4MTU2OTM5MX0.BIyLEN6vHnC9RxLbVdu_rJ0sqf6RNzdJgU-mnx5tQgc",
+      "user_email": "lopezsanty2008@gmail.com",
+      "blacklisted_at": "2026-06-09T00:38:50.889Z"
+    },
+    {
+      "id": "13dbea8e-6a7c-45bf-ba03-5f84e2273db7",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyN2RkMjk5YS0yZTdjLTQ4ZGMtYTRmMC01YzE5OGM3NmU5YjMiLCJlbWFpbCI6Im1vZGVyYWRvckBib29rc2hlbGYuYXBwIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3ODA5NjU1NjEsImV4cCI6MTc4MTU3MDM2MX0.lljWyEN1-3NiUcgYt_z43uLJqOwMVv7_zFnBwznQ1Wk",
+      "user_email": "moderador@bookshelf.app",
+      "blacklisted_at": "2026-06-09T00:39:26.081Z"
+    },
+    {
+      "id": "6b570b27-f7c3-48b8-92de-bca335a88914",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NjU1NzksImV4cCI6MTc4MTU3MDM3OX0.10epc-Oc-bhabMNfdnTf8PdbJziXovSrZDGSFxqNMhY",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T00:41:40.191Z"
+    },
+    {
+      "id": "253e7831-edb4-422d-a095-181f1137b1cb",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyN2RkMjk5YS0yZTdjLTQ4ZGMtYTRmMC01YzE5OGM3NmU5YjMiLCJlbWFpbCI6Im1vZGVyYWRvckBib29rc2hlbGYuYXBwIiwicm9sZSI6Im1vZGVyYXRvciIsImlhdCI6MTc4MDk2NTcwNSwiZXhwIjoxNzgxNTcwNTA1fQ.PoQecvXaEU-LAyvof-2ZHAq6bMw8KEN7ohYaMH3Fe5w",
+      "user_email": "moderador@bookshelf.app",
+      "blacklisted_at": "2026-06-09T00:45:25.265Z"
+    },
+    {
+      "id": "a3272397-5eb2-4977-b84c-54048ea3c9f2",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMjIyMjIyMi0yMjIyLTIyMjItMjIyMi0yMjIyMjIyMjIyMjIiLCJlbWFpbCI6ImFkbWluQGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NjU5MzIsImV4cCI6MTc4MTU3MDczMn0.nnpXi6Rjbpztbha7sHDoh8fj-GNTzWNIN1FXbfR0n_A",
+      "user_email": "admin@bookshelf.app",
+      "blacklisted_at": "2026-06-09T00:48:47.780Z"
+    },
+    {
+      "id": "9f2ca565-16b2-4977-8e0d-6041147b90fe",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyN2RkMjk5YS0yZTdjLTQ4ZGMtYTRmMC01YzE5OGM3NmU5YjMiLCJlbWFpbCI6Im1vZGVyYWRvckBib29rc2hlbGYuYXBwIiwicm9sZSI6Im1vZGVyYXRvciIsImlhdCI6MTc4MDk2NjEzNCwiZXhwIjoxNzgxNTcwOTM0fQ.8SMM8hjj9jTj6Vx6CCvHfXidiRFt9SkBRMWaLfFrNxM",
+      "user_email": "moderador@bookshelf.app",
+      "blacklisted_at": "2026-06-09T00:49:06.321Z"
+    },
+    {
+      "id": "d5a38b8a-83da-45d3-b3ef-0c4750ccb5df",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NjYxNTEsImV4cCI6MTc4MTU3MDk1MX0.KQ6ojUZ8ACamXwWwTPwrILxW9Z_9qAV8zfqKV0aevfI",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T01:02:07.019Z"
+    },
+    {
+      "id": "a46ff195-b613-422c-88f1-c07402db60a6",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMjIyMjIyMi0yMjIyLTIyMjItMjIyMi0yMjIyMjIyMjIyMjIiLCJlbWFpbCI6ImFkbWluQGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NjY5MzMsImV4cCI6MTc4MTU3MTczM30.IZK-BE_zvAvfhYDdQJr9rw-5z95GpK04GXEJQ2HlFX0",
+      "user_email": "admin@bookshelf.app",
+      "blacklisted_at": "2026-06-09T01:51:24.994Z"
+    },
+    {
+      "id": "a4829f5b-c3d7-4e83-83a8-a79e3f180325",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyN2RkMjk5YS0yZTdjLTQ4ZGMtYTRmMC01YzE5OGM3NmU5YjMiLCJlbWFpbCI6Im1vZGVyYWRvckBib29rc2hlbGYuYXBwIiwicm9sZSI6Im1vZGVyYXRvciIsImlhdCI6MTc4MDk2OTkwMCwiZXhwIjoxNzgxNTc0NzAwfQ.BQ3T9Ay6QIMqecRsROSVC24fvvptPirTjvJOtqhR04w",
+      "user_email": "moderador@bookshelf.app",
+      "blacklisted_at": "2026-06-09T01:51:57.441Z"
+    },
+    {
+      "id": "871de111-9f45-40ee-988c-d5861179892a",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5Njk5MjQsImV4cCI6MTc4MTU3NDcyNH0.kgAgb4W44qqKRzs8yfX1NRXPuks4uLKp2W7LDDG4uyk",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T02:43:36.495Z"
+    },
+    {
+      "id": "07921658-bfde-45be-8057-7f5b1478bcf2",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1MjkyYWM4MS03NjQwLTRhMTgtOGRmNi1mYWU4MTllYWI1M2EiLCJlbWFpbCI6ImJhbnRlc3RAYm9va3NoZWxmLmFwcCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzgwOTczMDU4LCJleHAiOjE3ODE1Nzc4NTh9.u7OwPgcwE4hMz2nhbEEXVn1sY-ulqfwLU9_8oB5Ymzs",
+      "user_email": "bantest@bookshelf.app",
+      "blacklisted_at": "2026-06-09T02:44:23.875Z"
+    },
+    {
+      "id": "0fe3793d-d131-40f6-95a0-57eece13b5a9",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NzMwNjksImV4cCI6MTc4MTU3Nzg2OX0.S884l5deFdqKxU57b15j1hkeW7UyQdOPW6QGdbGadsw",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T02:54:52.172Z"
+    },
+    {
+      "id": "d5ed98ef-212e-4e5a-9092-c54f0cc2fb1c",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4NmI0MmViMy05NDU5LTQzOGQtYWE4ZS1kZjMyZTU3MjdiNzUiLCJlbWFpbCI6ImxvcGV6c2FudHkyMDA4QGdtYWlsLmNvbSIsInJvbGUiOiJtb2RlcmF0b3IiLCJpYXQiOjE3ODA5NzM3MDYsImV4cCI6MTc4MTU3ODUwNn0.-7p7BjWMlnWS_MAQy2glwjnP_-ZqyV1ltPyAmzWK-ms",
+      "user_email": "lopezsanty2008@gmail.com",
+      "blacklisted_at": "2026-06-09T03:06:00.282Z"
+    },
+    {
+      "id": "1a1ef9f1-04a4-46dc-b27e-d96f0324e641",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NzQzNzUsImV4cCI6MTc4MTU3OTE3NX0._yJ67bhgZnS10KLxx0Ajik9MAu7F-9cewYAHjbD63G0",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T03:25:42.451Z"
+    },
+    {
+      "id": "fff59260-82f2-4fff-af20-359983867479",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjdjOGFmZC05MDYyLTQwMjctYTZjNi05ZDY0ZGQ2MDA1ZjYiLCJlbWFpbCI6InVzdWFyaW9jb211bkBib29rc2hlbGYuYXBwIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3ODA5NzU3NzMsImV4cCI6MTc4MTU4MDU3M30.8HfHXhCtI9tFbjogBJilU8pbKVOgKp43mOdNLsCAl1U",
+      "user_email": "usuariocomun@bookshelf.app",
+      "blacklisted_at": "2026-06-09T03:29:38.338Z"
+    },
+    {
+      "id": "02086c1b-68c0-40c2-8ecc-8fb186199f1b",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NzU3ODYsImV4cCI6MTc4MTU4MDU4Nn0.NaY5BjcGbFc8g1CtMdgnngsTtNZageoqPPamPA9LrZY",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T03:30:34.718Z"
+    },
+    {
+      "id": "eec751d3-9ccc-4474-aa3a-255206ea2d41",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODA5NzYwMjYsImV4cCI6MTc4MTU4MDgyNn0.X2zdsA_N84MpAJCcHoaBqcp-JcjG2ad7LnYf5WXbX1I",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T18:44:28.914Z"
+    },
+    {
+      "id": "feb888e2-6ca6-4961-808d-7c41ded8ed3a",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODEwMzA3NzksImV4cCI6MTc4MTYzNTU3OX0.gDibRyT0MKJT7Z4L_Kgg9f93nPNw0ih_n1B8HF4wj60",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T19:31:58.237Z"
+    },
+    {
+      "id": "e53ba761-b428-497d-bb39-f06e167d74ff",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODEwMzM3MDIsImV4cCI6MTc4MTYzODUwMn0.sQbJthICL8-pvoDR-MiHQhOyAQke4nnMH2-h4OCA-J0",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-09T20:04:36.285Z"
+    },
+    {
+      "id": "bb214c6b-0c0f-4b2b-83a7-2d13a0175214",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODEwMzU3OTEsImV4cCI6MTc4MTY0MDU5MX0.1HEQJhcyeq3uxE-j0v-CM02CUcvnzwzjfDySCW2gh3Q",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-14T23:35:26.090Z"
+    },
+    {
+      "id": "294404ce-229a-479d-b531-8451f4e65eaf",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODE0ODEzMTYsImV4cCI6MTc4MjA4NjExNn0.KcFkHRD5zefJOzbD-sX3E4e_Vs3LHeUy81bPzpP0EHg",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-15T00:44:55.369Z"
+    },
+    {
+      "id": "a372c4c0-429d-4411-92a9-7b6ff8f6a025",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODE0ODUyNzcsImV4cCI6MTc4MjA5MDA3N30.pULH5dAAoi2GWeszSrboy297Or3eDBO6r4SzTYzO6GE",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-15T01:08:17.952Z"
+    },
+    {
+      "id": "96420ea4-c26b-413b-8c1a-45183f7a8eb5",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMzMzMzMzMy0zMzMzLTMzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJlbWFpbCI6ImFkbWluRm94QGJvb2tzaGVsZi5hcHAiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3ODE0OTI3NjIsImV4cCI6MTc4MjA5NzU2Mn0.b7OdsfiozkWXVaqmgFlvQ-KF7xrcVOeUhQjfZkd3loA",
+      "user_email": "adminFox@bookshelf.app",
+      "blacklisted_at": "2026-06-15T03:59:57.885Z"
+    }
+  ],
+  "moderation_logs": [
+    {
+      "id": "9266abb2-69bc-498e-8145-51e911b0d5db",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T20:05:03.271Z"
+    },
+    {
+      "id": "95a6f821-9bd8-4ea3-80e5-e1f2d7f51200",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T20:05:52.711Z"
+    },
+    {
+      "id": "1205f7c8-2d52-4294-a4ec-c7bcc678ab1b",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T20:07:46.845Z"
+    },
+    {
+      "id": "f9030684-9738-4c98-9cba-fea26ef535be",
+      "actor_email": "admin@bookshelf.app",
+      "action": "set-moderator",
+      "target": "lopezsanty2008@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T20:46:27.044Z"
+    },
+    {
+      "id": "a2f73729-7182-446b-a099-d8660c9b5c0a",
+      "actor_email": "admin@bookshelf.app",
+      "action": "ban",
+      "target": "lopezsanty2008@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T21:20:08.390Z"
+    },
+    {
+      "id": "d3123ef0-5d97-4363-b618-b9b62ebd4a90",
+      "actor_email": "admin@bookshelf.app",
+      "action": "unban",
+      "target": "lopezsanty2008@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T21:20:14.898Z"
+    },
+    {
+      "id": "a0c8438d-1c7c-480c-bcbd-55c93f31f2c4",
+      "actor_email": "admin@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "lopezsanty2008@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T21:20:16.621Z"
+    },
+    {
+      "id": "2b21d699-738e-40cf-99b2-1173b79a2e37",
+      "actor_email": "admin@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T21:20:33.730Z"
+    },
+    {
+      "id": "5c635409-f694-46a2-81a5-b0c2f6f0d672",
+      "actor_email": "admin@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T21:20:41.568Z"
+    },
+    {
+      "id": "89f86ebb-0fd9-4202-b3a8-9f7dd4487973",
+      "actor_email": "admin@bookshelf.app",
+      "action": "set-moderator",
+      "target": "lopezsanty2008@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T21:20:56.044Z"
+    },
+    {
+      "id": "b22fee1a-78a7-485a-bb0e-8a5574f3e661",
+      "actor_email": "admin@bookshelf.app",
+      "action": "set-moderator",
+      "target": "usuarioTest@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-26T22:08:11.350Z"
+    },
+    {
+      "id": "b9ebc159-9d0d-4660-8404-24e94063889e",
+      "actor_email": "admin@bookshelf.app",
+      "action": "ban",
+      "target": "test@test.com",
+      "ip": "::1",
+      "created_at": "2026-05-30T01:23:28.713Z"
+    },
+    {
+      "id": "ac44f97b-7e70-463a-a9eb-08e0402e383f",
+      "actor_email": "admin@bookshelf.app",
+      "action": "unban",
+      "target": "test@test.com",
+      "ip": "::1",
+      "created_at": "2026-05-30T01:23:41.197Z"
+    },
+    {
+      "id": "b5b8cc95-7875-4552-85c9-568175576a77",
+      "actor_email": "admin@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "test@test.com",
+      "ip": "::1",
+      "created_at": "2026-05-30T01:23:47.789Z"
+    },
+    {
+      "id": "6e2249c0-f9f0-4e0a-9a06-fdccf1017a2b",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "mividajous@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T01:25:35.482Z"
+    },
+    {
+      "id": "604b738c-91b5-4eec-8516-37a46959f957",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "ohno@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:25:00.626Z"
+    },
+    {
+      "id": "ef6e62fa-1ef9-41f0-87d6-b2740d0c3dd6",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "unban",
+      "target": "mividajous@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:25:55.513Z"
+    },
+    {
+      "id": "2fb5359e-78b9-4253-951b-af8b922bd5ae",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "mividajous@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:25:59.483Z"
+    },
+    {
+      "id": "fd8a7e1e-51b8-48cb-b8e7-dfaefb3ffa46",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "unban",
+      "target": "ohno@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:26:45.257Z"
+    },
+    {
+      "id": "4f78aad3-5344-400e-8d97-26f602a7a75e",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "ohno@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:27:58.425Z"
+    },
+    {
+      "id": "f0dc3eac-6b25-4af4-b597-882b9b4777b2",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "deletetest2@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:31:20.185Z"
+    },
+    {
+      "id": "b0e3af16-3f7d-405c-94c5-c18e20217b84",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "ohno@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:34:19.947Z"
+    },
+    {
+      "id": "433f1d90-ee38-4eb7-b302-0d942676b6fd",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "ohno@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:34:33.753Z"
+    },
+    {
+      "id": "66a920c8-3f57-4284-a88d-3e9ce5e2cbf1",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:35:26.347Z"
+    },
+    {
+      "id": "102d47d0-2f9f-44fe-873c-ea31b17a5b16",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "bantest@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:39:46.271Z"
+    },
+    {
+      "id": "4852d3f2-c378-4be4-9054-01879ab1f192",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "unban",
+      "target": "bantest@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:39:46.292Z"
+    },
+    {
+      "id": "f82dfbc1-4a70-40d1-b324-686e48b1d643",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "bantest@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-05-30T05:39:46.299Z"
+    },
+    {
+      "id": "943aa5a9-574a-4cba-9d4a-e3aa521422cf",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "eidan.op.14@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:43:52.082Z"
+    },
+    {
+      "id": "3afe869f-cf80-4ae0-8d33-5351b8c8db69",
+      "actor_email": "lopezsanty2008@gmail.com",
+      "action": "unban",
+      "target": "eidan.op.14@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:44:58.389Z"
+    },
+    {
+      "id": "3ff7e989-a8bd-46ca-924a-78a4b30ace4b",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "eidan.op.14@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:45:23.233Z"
+    },
+    {
+      "id": "dd637a76-e49b-4349-8924-162945a63ca1",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "ban",
+      "target": "eidan.op.14@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:45:53.069Z"
+    },
+    {
+      "id": "ce36ab41-80a9-4005-8d9e-134b17bcd4d1",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "unban",
+      "target": "eidan.op.14@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:46:21.299Z"
+    },
+    {
+      "id": "04cfe5bd-228f-4f2c-9085-3d67280634a2",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "eidan.op.14@gmail.com",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:46:26.633Z"
+    },
+    {
+      "id": "d9405d03-b9ff-4f50-a2d9-ff5bf98474d5",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "unban",
+      "target": "bantest@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:46:36.908Z"
+    },
+    {
+      "id": "2bd0dac7-e9ac-4827-9b34-296be14e6687",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "bantest@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T02:46:37.602Z"
+    },
+    {
+      "id": "7bc6c54c-73f2-45e7-b3f5-fb899f2cf538",
+      "actor_email": "admin@bookshelf.app",
+      "action": "ban",
+      "target": "juan.isazam@colsantander.edu.co",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-02T18:50:50.462Z"
+    },
+    {
+      "id": "a133d670-0fe6-40a1-ac90-395bc3254f29",
+      "actor_email": "lopezsanty2008@gmail.com",
+      "action": "ban",
+      "target": "juan.isazam@colsantander.edu.co",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-06T02:47:11.959Z"
+    },
+    {
+      "id": "a029c2e2-bff7-425a-8242-416c9ac65e6f",
+      "actor_email": "admin@bookshelf.app",
+      "action": "unban",
+      "target": "juan.isazam@colsantander.edu.co",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-06T03:38:26.588Z"
+    },
+    {
+      "id": "28599286-243f-445c-8095-c5926dffa103",
+      "actor_email": "admin@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "juan.isazam@colsantander.edu.co",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-06T03:38:59.414Z"
+    },
+    {
+      "id": "eda7871e-1b60-46d5-b5a2-e32197664aa6",
+      "actor_email": "admin@bookshelf.app",
+      "action": "ban",
+      "target": "juan.isazam@colsantander.edu.co",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-06T03:39:04.477Z"
+    },
+    {
+      "id": "c6631791-6668-4e6f-8784-945fac66f498",
+      "actor_email": "admin@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-06T03:39:21.333Z"
+    },
+    {
+      "id": "f75f28ab-01fb-4dfd-a2ca-7b29ff28177f",
+      "actor_email": "admin@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "::ffff:127.0.0.1",
+      "created_at": "2026-06-06T03:48:12.819Z"
+    },
+    {
+      "id": "99d2f1c1-435c-4042-9639-8cb014b6e3c8",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "edit-contact-info",
+      "target": "admin@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:18:34.221Z"
+    },
+    {
+      "id": "088fc43a-0839-4779-b6c4-585fdd6aa00c",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "userTest@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:58:00.323Z"
+    },
+    {
+      "id": "4828354a-758b-4a66-8337-7a2c0a7b7366",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "newtest@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:58:04.735Z"
+    },
+    {
+      "id": "ddc804ae-d8fa-48fd-bf5a-6faed9971e17",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "author@test.com",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:58:51.790Z"
+    },
+    {
+      "id": "6eafe0f1-b098-4e6f-bbf7-62bae5d721f3",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "bantest@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:58:58.103Z"
+    },
+    {
+      "id": "80c92007-49bd-42a6-aee4-d192b4b23fe1",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "userTest@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:59:20.237Z"
+    },
+    {
+      "id": "814ecdf0-7bb2-4dc1-a062-49d6d8789e44",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "newtest@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:59:22.317Z"
+    },
+    {
+      "id": "c487776c-0b4a-45ed-bf85-73fcfe121fb3",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "remove-moderator",
+      "target": "lopezsanty2008@gmail.com",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:59:25.975Z"
+    },
+    {
+      "id": "4c4c8d62-a546-45d6-b055-d6d6b62ad290",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "set-moderator",
+      "target": "lopezsanty2008@gmail.com",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:59:35.679Z"
+    },
+    {
+      "id": "849722ad-65da-415e-8015-d0388e2c49e6",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "author@test.com",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:59:40.561Z"
+    },
+    {
+      "id": "d97590be-d229-49a4-b459-6be10cc7db70",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "bantest@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-08T23:59:42.790Z"
+    },
+    {
+      "id": "7b0bd2ba-5a82-4dc1-8cce-bb609ace2201",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "set-moderator",
+      "target": "moderador@bookshelf.app",
+      "ip": "127.0.0.1",
+      "created_at": "2026-06-09T00:41:08.151Z"
+    },
+    {
+      "id": "7e1de37b-a06a-486c-b219-3701edcef6e3",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "author@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T02:51:49.708Z"
+    },
+    {
+      "id": "6b356c53-8a8c-4844-b6a2-dbe4d6665696",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "newtest@bookshelf.app",
+      "ip": "::1",
+      "created_at": "2026-06-09T02:51:51.492Z"
+    },
+    {
+      "id": "da650e9c-448a-4dcf-a8c2-5b5d54e77030",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "bantest@bookshelf.app",
+      "ip": "::1",
+      "created_at": "2026-06-09T02:54:36.724Z"
+    },
+    {
+      "id": "4d01beb7-d1b4-45df-a20b-d98cfd5f3b07",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "userTest@bookshelf.app",
+      "ip": "::1",
+      "created_at": "2026-06-09T02:54:38.580Z"
+    },
+    {
+      "id": "cd231642-b801-4e4b-a77c-742e10fb774c",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "remove-moderator",
+      "target": "moderador@bookshelf.app",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:06:23.299Z"
+    },
+    {
+      "id": "8421dd3e-b0e5-4438-80e8-41b6bf6755d3",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "set-moderator",
+      "target": "moderador@bookshelf.app",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:06:43.946Z"
+    },
+    {
+      "id": "b47db18a-da1f-4268-864e-937a33bfc9b2",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "test_fox2@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:29:55.349Z"
+    },
+    {
+      "id": "83779911-5bd2-42ad-ba23-a5f52c461247",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "test_fox@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:29:57.988Z"
+    },
+    {
+      "id": "c6d759e7-e73c-42d1-9c31-635700bccac9",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "test_fox2@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:30:07.254Z"
+    },
+    {
+      "id": "032ee041-f0ed-42e6-baa1-82833e755f4c",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "test_fox@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:30:09.246Z"
+    },
+    {
+      "id": "4afbb224-3f39-415b-ad57-d209a781c5a2",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "test_fox@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:30:22.540Z"
+    },
+    {
+      "id": "343a57a6-f9dc-4340-a227-34af453fbf8c",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "test_fox2@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:30:26.366Z"
+    },
+    {
+      "id": "30bba352-f13a-40ce-85ce-0c260de5084f",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "usuariocomun@bookshelf.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:33:53.132Z"
+    },
+    {
+      "id": "cace8b75-c2ff-4761-8e92-c106bb49b26c",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "usuariocomun@bookshelf.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:33:56.557Z"
+    },
+    {
+      "id": "5fadb871-54cc-4c2d-86a9-85387af52026",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "usuariocomun@bookshelf.com",
+      "ip": "::1",
+      "created_at": "2026-06-09T03:34:04.335Z"
+    },
+    {
+      "id": "8d910c7f-208c-453c-b167-c067cd984e34",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-user",
+      "target": "test-egg2@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-14T23:55:31.217Z"
+    },
+    {
+      "id": "bde07e1d-35a4-4c59-a307-14634ea537da",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "permanent-delete-user",
+      "target": "test-egg2@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-14T23:56:05.947Z"
+    },
+    {
+      "id": "2c5a3170-2566-4b15-856c-6a9c1830437d",
+      "actor_email": "adminFox@bookshelf.app",
+      "action": "delete-ban-record",
+      "target": "test-egg2@test.com",
+      "ip": "::1",
+      "created_at": "2026-06-15T01:01:36.236Z"
+    }
+  ],
+  "book_views": [
+    {
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "book_id": "aaaaaaaa-0001-0000-0000-000000000002",
+      "created_at": "2026-06-02T18:38:46.400Z"
+    },
+    {
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "book_id": "aaaaaaaa-0002-0000-0000-000000000002",
+      "created_at": "2026-06-02T18:43:32.415Z"
+    },
+    {
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "aaaaaaaa-0003-0000-0000-000000000001",
+      "created_at": "2026-06-04T19:52:02.182Z"
+    },
+    {
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "book_id": "6bd6b4fd-f379-42e5-9a67-35476e451b00",
+      "created_at": "2026-06-06T03:33:19.597Z"
+    },
+    {
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "book_id": "aaaaaaaa-0002-0000-0000-000000000001",
+      "created_at": "2026-06-08T19:47:46.589Z"
+    },
+    {
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "created_at": "2026-06-09T19:27:06.715Z"
+    },
+    {
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "aaaaaaaa-0002-0000-0000-000000000002",
+      "created_at": "2026-06-09T19:27:45.595Z"
+    }
+  ],
+  "categories": [
+    "educativa",
+    "poesía",
+    "fantasía",
+    "narrativa"
+  ],
+  "refresh_tokens": [
+    {
+      "id": "00e1410a-0797-4975-b485-8fb57132a6c5",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "6cfea428-03cb-48a2-985f-a34351747c0a",
+      "expires_at": "2026-07-06T05:29:28.738Z",
+      "created_at": "2026-06-06T05:29:28.738Z",
+      "used_at": "2026-06-06T13:14:00.471Z"
+    },
+    {
+      "id": "6a576de0-dcd2-478b-a26d-af85238d24cf",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "9108f750-7f2b-4763-8d93-529463b218c7",
+      "expires_at": "2026-07-06T13:14:00.476Z",
+      "created_at": "2026-06-06T13:14:00.476Z",
+      "used_at": "2026-06-06T14:03:26.480Z"
+    },
+    {
+      "id": "06bedd30-d558-4610-afb6-574ecb69807f",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "token": "16f34dd9-674a-40c4-aa71-bc0f7762378a",
+      "expires_at": "2026-07-06T14:03:45.118Z",
+      "created_at": "2026-06-06T14:03:45.118Z",
+      "used_at": "2026-06-06T14:05:37.581Z"
+    },
+    {
+      "id": "ca968b73-2a26-4cf9-82ec-62f61cb58df8",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "e5d3f8f6-bf1e-4dc0-8f82-4aa7c4edc52f",
+      "expires_at": "2026-07-06T14:05:49.489Z",
+      "created_at": "2026-06-06T14:05:49.489Z",
+      "used_at": "2026-06-08T23:58:08.334Z"
+    },
+    {
+      "id": "44f6cf9a-013e-4158-8aa1-030230412e89",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "e2b25a1d-2006-4fea-ba71-b7e297d4694c",
+      "expires_at": "2026-07-07T01:25:51.894Z",
+      "created_at": "2026-06-07T01:25:51.895Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "7a6ecfe4-c827-4ca1-90f4-33334e5c10d7",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "6100d80f-1f43-4343-80f4-ac60ebd3499c",
+      "expires_at": "2026-07-08T17:27:45.911Z",
+      "created_at": "2026-06-08T17:27:45.912Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "72ce57d2-a9dc-4900-9528-6838ad42ef28",
+      "user_id": "28ec8dd8-4322-48bc-a7bb-9ffc69abc564",
+      "token": "ddd0b3f9-6429-4bfb-87f5-3c4bf0976608",
+      "expires_at": "2026-07-08T17:27:49.894Z",
+      "created_at": "2026-06-08T17:27:49.894Z",
+      "used_at": null
+    },
+    {
+      "id": "242c05bf-9da8-4aed-9633-875eeb417a75",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "16a1fe66-9cf4-4daa-929a-dac21aa96a64",
+      "expires_at": "2026-07-08T17:27:50.746Z",
+      "created_at": "2026-06-08T17:27:50.746Z",
+      "used_at": "2026-06-08T23:58:08.334Z"
+    },
+    {
+      "id": "65e5ec13-c2c8-4a8b-ba16-1c4bd8a68b68",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "token": "136ca6c9-daac-47e7-b310-3d8ea36b60d2",
+      "expires_at": "2026-07-08T17:28:12.735Z",
+      "created_at": "2026-06-08T17:28:12.735Z",
+      "used_at": "2026-06-08T23:58:30.202Z"
+    },
+    {
+      "id": "7255d61a-7662-4a4a-9e8e-26d6f30e682a",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "62c64926-fba8-4e9b-a849-0203423d948c",
+      "expires_at": "2026-07-08T17:35:48.840Z",
+      "created_at": "2026-06-08T17:35:48.841Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "1e2fbaf1-726a-4ef1-aef0-61e0c008b013",
+      "user_id": "11111111-1111-1111-1111-111111111111",
+      "token": "cb724a1c-6cab-41f8-8128-2c3671f6226c",
+      "expires_at": "2026-07-08T17:35:48.980Z",
+      "created_at": "2026-06-08T17:35:48.980Z",
+      "used_at": null
+    },
+    {
+      "id": "0515d63c-aedb-49df-87fd-3e47f51e3c8d",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "token": "c37c3baa-5e11-41ba-bf64-37c6ee68b392",
+      "expires_at": "2026-07-08T17:35:49.172Z",
+      "created_at": "2026-06-08T17:35:49.172Z",
+      "used_at": "2026-06-08T23:58:30.202Z"
+    },
+    {
+      "id": "cdd6e9f4-95eb-4527-bc96-95441c4fe6c5",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "7bc854ea-9657-4827-9ff0-701859f9fc1b",
+      "expires_at": "2026-07-08T17:35:49.273Z",
+      "created_at": "2026-06-08T17:35:49.273Z",
+      "used_at": "2026-06-08T23:58:08.334Z"
+    },
+    {
+      "id": "c4246376-fdc5-4fa8-a18b-24c1465283a5",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "37a6a5cd-e6a0-4c72-bc8f-ebc5bebea66b",
+      "expires_at": "2026-07-08T18:10:31.576Z",
+      "created_at": "2026-06-08T18:10:31.576Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "a05ab6c3-bca6-47b1-a039-7eb8776b7caf",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "119160d7-82c7-44ec-9171-c4d921df90bc",
+      "expires_at": "2026-07-08T19:48:26.307Z",
+      "created_at": "2026-06-08T19:48:26.307Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "65312504-3e93-421a-96f6-bb0fac710c15",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "90f8f230-196a-4721-b1cb-ffeab9567827",
+      "expires_at": "2026-07-08T19:48:37.329Z",
+      "created_at": "2026-06-08T19:48:37.329Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "db369dd8-f5bc-47a4-9578-629bf7318fe1",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "token": "a1d2b49c-8077-4e7c-b82a-f807b3ea0636",
+      "expires_at": "2026-07-08T23:58:20.022Z",
+      "created_at": "2026-06-08T23:58:20.022Z",
+      "used_at": "2026-06-08T23:58:30.202Z"
+    },
+    {
+      "id": "f5d31d39-d214-43c3-96c9-d336975e4e2e",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "c3b24f68-d675-42ce-a7dd-2ca9fc881255",
+      "expires_at": "2026-07-08T23:58:41.198Z",
+      "created_at": "2026-06-08T23:58:41.198Z",
+      "used_at": "2026-06-09T00:23:02.362Z"
+    },
+    {
+      "id": "702c2d31-2da9-4e26-8590-e9e54aff3aee",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "token": "d4850338-8620-4698-a415-535ca5b0624c",
+      "expires_at": "2026-07-09T00:23:11.722Z",
+      "created_at": "2026-06-09T00:23:11.722Z",
+      "used_at": "2026-06-09T00:38:50.887Z"
+    },
+    {
+      "id": "47a2433e-a34c-4e2d-beab-29eb0c3aa6ff",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "9283c9cc-a26a-4676-875c-510eeb695b3e",
+      "expires_at": "2026-07-09T00:39:18.030Z",
+      "created_at": "2026-06-09T00:39:18.030Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "cb5fa50e-6b48-4804-a869-61dfcc8bd485",
+      "user_id": "27dd299a-2e7c-48dc-a4f0-5c198c76e9b3",
+      "token": "d54ce982-247a-4549-9279-42fa42df232f",
+      "expires_at": "2026-07-09T00:39:21.749Z",
+      "created_at": "2026-06-09T00:39:21.749Z",
+      "used_at": "2026-06-09T00:39:26.079Z"
+    },
+    {
+      "id": "d7ea3f94-5203-4dea-acc2-cf4c000a5002",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "74da53fb-7174-4ccf-80a4-41567cb34ad6",
+      "expires_at": "2026-07-09T00:39:39.488Z",
+      "created_at": "2026-06-09T00:39:39.488Z",
+      "used_at": "2026-06-09T00:41:40.189Z"
+    },
+    {
+      "id": "06a6db17-cd62-4266-b93b-52e73368e235",
+      "user_id": "27dd299a-2e7c-48dc-a4f0-5c198c76e9b3",
+      "token": "eb333268-4daf-4b86-92f5-7a83f1ae6213",
+      "expires_at": "2026-07-09T00:41:45.181Z",
+      "created_at": "2026-06-09T00:41:45.181Z",
+      "used_at": "2026-06-09T00:45:25.263Z"
+    },
+    {
+      "id": "73a4f70f-1d77-4ce4-b06b-8805a1adebd7",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "00911c1c-a013-49a1-9a03-18eb714afc88",
+      "expires_at": "2026-07-09T00:42:00.104Z",
+      "created_at": "2026-06-09T00:42:00.104Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "a2bb8835-a27c-42bc-8dbe-52256b5343b6",
+      "user_id": "27dd299a-2e7c-48dc-a4f0-5c198c76e9b3",
+      "token": "446ecb4b-00d7-49f8-bea8-604bf4bedbc9",
+      "expires_at": "2026-07-09T00:42:06.728Z",
+      "created_at": "2026-06-09T00:42:06.728Z",
+      "used_at": "2026-06-09T00:45:25.263Z"
+    },
+    {
+      "id": "36fb9f1a-b5ec-4a76-893a-d925da2bd83f",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "78697f63-2587-4633-8195-f7a13b02d751",
+      "expires_at": "2026-07-09T00:45:32.458Z",
+      "created_at": "2026-06-09T00:45:32.458Z",
+      "used_at": "2026-06-09T00:48:47.778Z"
+    },
+    {
+      "id": "b05bfd85-7b92-4f9a-9374-1ac039972dd0",
+      "user_id": "27dd299a-2e7c-48dc-a4f0-5c198c76e9b3",
+      "token": "32f81dd5-9a4f-471d-abb3-3957048a51b8",
+      "expires_at": "2026-07-09T00:48:54.239Z",
+      "created_at": "2026-06-09T00:48:54.239Z",
+      "used_at": "2026-06-09T00:49:06.319Z"
+    },
+    {
+      "id": "6dc7465c-f560-46ca-a22e-213ab22ec787",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "a5dbc77a-fae1-48da-8305-ac374961059d",
+      "expires_at": "2026-07-09T00:49:11.699Z",
+      "created_at": "2026-06-09T00:49:11.699Z",
+      "used_at": "2026-06-09T01:02:07.016Z"
+    },
+    {
+      "id": "c5b77fd8-187a-43c4-a83c-73e091c33658",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "839f5760-7bef-4efb-83a0-02429dfc4749",
+      "expires_at": "2026-07-09T01:02:13.544Z",
+      "created_at": "2026-06-09T01:02:13.544Z",
+      "used_at": "2026-06-09T01:51:24.990Z"
+    },
+    {
+      "id": "3dec0946-f1ed-43c2-b663-ea5459672bb0",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "41361432-6df1-400e-80b5-8015faa8b836",
+      "expires_at": "2026-07-09T01:17:25.564Z",
+      "created_at": "2026-06-09T01:17:25.564Z",
+      "used_at": "2026-06-09T01:51:24.990Z"
+    },
+    {
+      "id": "8396e367-2c88-44a3-91ed-05d0e569874b",
+      "user_id": "27dd299a-2e7c-48dc-a4f0-5c198c76e9b3",
+      "token": "f15d740a-54b1-4307-b0be-c6ace843c38e",
+      "expires_at": "2026-07-09T01:51:40.552Z",
+      "created_at": "2026-06-09T01:51:40.552Z",
+      "used_at": "2026-06-09T01:51:57.439Z"
+    },
+    {
+      "id": "a402f054-f1bc-4449-9ae3-81413c9fcc20",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "8ef30185-0892-4e38-8585-4c583b968a5f",
+      "expires_at": "2026-07-09T01:52:04.588Z",
+      "created_at": "2026-06-09T01:52:04.588Z",
+      "used_at": "2026-06-09T02:43:36.491Z"
+    },
+    {
+      "id": "d0514f50-97f3-4712-bdc0-a5f59ef6de69",
+      "user_id": "5292ac81-7640-4a18-8df6-fae819eab53a",
+      "token": "b5562bc7-1b66-4126-8c25-6c043312faec",
+      "expires_at": "2026-07-09T02:44:18.150Z",
+      "created_at": "2026-06-09T02:44:18.150Z",
+      "used_at": "2026-06-09T02:44:23.873Z"
+    },
+    {
+      "id": "602c9cd0-79ae-4ea3-ad38-4c8ab99dc996",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "0d9ffeb5-b994-401e-bd79-e0d7576ee0ec",
+      "expires_at": "2026-07-09T02:44:29.184Z",
+      "created_at": "2026-06-09T02:44:29.184Z",
+      "used_at": "2026-06-09T02:54:52.170Z"
+    },
+    {
+      "id": "450f65fb-b723-4308-ae10-de0a8bff5bc8",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "token": "c29e216d-927f-465a-9962-2714ada1988e",
+      "expires_at": "2026-07-09T02:55:06.376Z",
+      "created_at": "2026-06-09T02:55:06.376Z",
+      "used_at": "2026-06-09T03:06:00.279Z"
+    },
+    {
+      "id": "3bf89421-9432-4163-96cd-56ad4025f4f9",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "87cb1b19-c16c-4e9f-b6a7-c9adb87d0e21",
+      "expires_at": "2026-07-09T03:06:15.432Z",
+      "created_at": "2026-06-09T03:06:15.432Z",
+      "used_at": "2026-06-09T03:25:42.447Z"
+    },
+    {
+      "id": "f8bab814-36bc-4d2c-99cd-faf481ce35c6",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "f344f402-936c-4113-9b6f-61e31a87ff38",
+      "expires_at": "2026-07-09T03:17:39.198Z",
+      "created_at": "2026-06-09T03:17:39.198Z",
+      "used_at": null
+    },
+    {
+      "id": "425ed5a7-489d-426f-8a27-a37d4d1ae4f8",
+      "user_id": "327c8afd-9062-4027-a6c6-9d64dd6005f6",
+      "token": "8623a4f5-69c0-472c-b87c-0dd2701e4c33",
+      "expires_at": "2026-07-09T03:29:33.604Z",
+      "created_at": "2026-06-09T03:29:33.604Z",
+      "used_at": "2026-06-09T03:29:38.334Z"
+    },
+    {
+      "id": "863fc6ae-aa28-4550-a6bd-7b8f8590d1ff",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "a28063d9-8376-4271-8d9c-2604d29dd6d4",
+      "expires_at": "2026-07-09T03:29:46.657Z",
+      "created_at": "2026-06-09T03:29:46.657Z",
+      "used_at": "2026-06-09T03:30:34.715Z"
+    },
+    {
+      "id": "e2908ca3-e314-4ac9-bc49-c61b052faa16",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "546f2d1e-9aa7-4826-a51e-1d7029738002",
+      "expires_at": "2026-07-09T03:33:46.812Z",
+      "created_at": "2026-06-09T03:33:46.812Z",
+      "used_at": "2026-06-09T18:44:28.911Z"
+    },
+    {
+      "id": "cc25d4a8-4414-44c1-9f5c-4a246c78d627",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "5c9cfe1c-f4d1-4de3-970f-d2238d369e4a",
+      "expires_at": "2026-07-09T18:46:19.680Z",
+      "created_at": "2026-06-09T18:46:19.680Z",
+      "used_at": "2026-06-09T19:31:58.235Z"
+    },
+    {
+      "id": "f23af25f-b116-4511-be4e-5db07ff2bf1d",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "b083a931-b30b-4178-901e-9f472f163c27",
+      "expires_at": "2026-07-09T19:35:02.106Z",
+      "created_at": "2026-06-09T19:35:02.106Z",
+      "used_at": "2026-06-09T20:04:36.282Z"
+    },
+    {
+      "id": "cc22ebc9-1b55-4311-9407-92c5ae5dc523",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "62a6fcaa-7496-438f-9227-38be59290512",
+      "expires_at": "2026-07-09T20:09:51.723Z",
+      "created_at": "2026-06-09T20:09:51.723Z",
+      "used_at": "2026-06-14T23:35:26.087Z"
+    },
+    {
+      "id": "616b6ce7-32f7-4d50-a70f-c1ac0cf43cd5",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "c3df723b-b9d5-4fc6-94c3-b987af0c902c",
+      "expires_at": "2026-07-14T21:24:32.962Z",
+      "created_at": "2026-06-14T21:24:32.962Z",
+      "used_at": null
+    },
+    {
+      "id": "8619d88d-361a-4b7e-9189-7b55bd718310",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "d031dc1b-443e-491c-8baf-208a515200fe",
+      "expires_at": "2026-07-14T21:25:01.606Z",
+      "created_at": "2026-06-14T21:25:01.606Z",
+      "used_at": null
+    },
+    {
+      "id": "ac20aef3-da46-40a8-9b8d-57c0cd50e649",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "121672cf-e826-4dca-a8c7-f3ab7a88fa7f",
+      "expires_at": "2026-07-14T21:29:42.866Z",
+      "created_at": "2026-06-14T21:29:42.866Z",
+      "used_at": null
+    },
+    {
+      "id": "17493460-3618-4454-b532-72ffc251693e",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "cb02245e-9579-40e8-b72c-90e7f32a5af1",
+      "expires_at": "2026-07-14T21:31:07.081Z",
+      "created_at": "2026-06-14T21:31:07.081Z",
+      "used_at": null
+    },
+    {
+      "id": "018c0873-351b-477f-ad15-fcffb9d286ba",
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "token": "9d65eb4c-40c5-48b7-ac40-949d70cb2785",
+      "expires_at": "2026-07-14T21:31:27.211Z",
+      "created_at": "2026-06-14T21:31:27.211Z",
+      "used_at": null
+    },
+    {
+      "id": "4ef54b43-5108-4371-81f2-c632643d4fad",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "c5225710-fbdb-47f7-b484-2f4982cb8c68",
+      "expires_at": "2026-07-14T23:55:16.142Z",
+      "created_at": "2026-06-14T23:55:16.142Z",
+      "used_at": "2026-06-15T00:44:55.366Z"
+    },
+    {
+      "id": "7c79c2eb-16da-4455-b611-f6475f833759",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "8cdf196f-86be-4fb3-a86f-2fff6e0f59c3",
+      "expires_at": "2026-07-15T01:01:17.448Z",
+      "created_at": "2026-06-15T01:01:17.448Z",
+      "used_at": "2026-06-15T01:08:17.950Z"
+    },
+    {
+      "id": "018be5d0-a545-491c-9261-195a70fa1a33",
+      "user_id": "9b32b99b-483c-40c4-a1b8-7d2a6ad7b87a",
+      "token": "f0e5cd67-93c3-4b7e-af41-f3afc3b9e129",
+      "expires_at": "2026-07-15T03:01:54.793Z",
+      "created_at": "2026-06-15T03:01:54.793Z",
+      "used_at": null
+    },
+    {
+      "id": "043e23f7-61d4-4766-b3a2-c30e3cb5afdc",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "8bd6da51-6165-4723-a5b7-71d81714c6d1",
+      "expires_at": "2026-07-15T03:02:00.272Z",
+      "created_at": "2026-06-15T03:02:00.272Z",
+      "used_at": "2026-06-15T03:59:57.881Z"
+    },
+    {
+      "id": "02d96bb2-839f-44db-b140-62b95101baaa",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "token": "2f5e7c01-8fba-4259-8ef2-594197ac9fb4",
+      "expires_at": "2026-07-15T03:06:02.856Z",
+      "created_at": "2026-06-15T03:06:02.856Z",
+      "used_at": "2026-06-15T03:59:57.881Z"
+    }
+  ],
+  "bookmarks": [
+    {
+      "id": "01030baa-eacf-4894-874e-3ff202f447cb",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": "4c601816-c5c4-480b-b760-daa5aef05f67",
+      "chapter_index": 2,
+      "scroll_position": 0,
+      "finished": false,
+      "created_at": "2026-06-02T18:33:53.387Z",
+      "updated_at": "2026-06-08T19:49:46.092Z"
+    },
+    {
+      "id": "9c9f7dbd-e566-469d-981b-529ae1a218ce",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "aaaaaaaa-0001-0000-0000-000000000002",
+      "chapter_id": "bbbbbbbb-0001-0000-0000-000000000002",
+      "chapter_index": 0,
+      "scroll_position": 0,
+      "finished": false,
+      "created_at": "2026-06-02T18:56:52.503Z",
+      "updated_at": "2026-06-02T18:59:55.357Z"
+    },
+    {
+      "id": "0e773cf5-8675-4563-9b2c-76839d9290d5",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "6bd6b4fd-f379-42e5-9a67-35476e451b00",
+      "chapter_id": "534f7937-4907-494c-a8f8-24176655ba39",
+      "chapter_index": 0,
+      "scroll_position": 0,
+      "finished": false,
+      "created_at": "2026-06-06T03:33:11.853Z",
+      "updated_at": "2026-06-06T03:33:52.019Z"
+    },
+    {
+      "id": "8b27cf6e-31a0-464b-97e7-cf00e69d3448",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "aaaaaaaa-0002-0000-0000-000000000001",
+      "chapter_id": "bbbbbbbb-0002-0000-0000-000000000001",
+      "chapter_index": 0,
+      "scroll_position": 0,
+      "finished": false,
+      "created_at": "2026-06-06T03:49:40.896Z",
+      "updated_at": "2026-06-08T19:48:05.364Z"
+    },
+    {
+      "id": "b8abcfde-6cb9-4160-b041-3d91b66a3478",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": "6c0f6134-7c94-45c4-8662-f86871489231",
+      "chapter_index": 1,
+      "scroll_position": 0,
+      "finished": false,
+      "created_at": "2026-06-06T03:54:04.936Z",
+      "updated_at": "2026-06-06T04:06:42.156Z"
+    },
+    {
+      "id": "32713084-05eb-4ea8-8fec-516c66e0dd19",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "7858be12-2120-41ce-8990-998c8ae91fd3",
+      "chapter_id": "4c601816-c5c4-480b-b760-daa5aef05f67",
+      "chapter_index": 2,
+      "scroll_position": 0,
+      "finished": false,
+      "created_at": "2026-06-06T04:32:21.913Z",
+      "updated_at": "2026-06-08T23:22:06.084Z"
+    },
+    {
+      "id": "c154e4e4-bbca-4e69-a857-1bd509e0caea",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "book_id": "aaaaaaaa-0002-0000-0000-000000000002",
+      "chapter_id": "bbbbbbbb-0002-0000-0000-000000000002",
+      "chapter_index": 0,
+      "scroll_position": 0,
+      "finished": false,
+      "created_at": "2026-06-09T19:27:47.111Z",
+      "updated_at": "2026-06-09T19:27:54.314Z"
+    }
+  ],
+  "user_images": [
+    {
+      "id": "36b2c2da-fdaf-4a8a-91c6-e605047dc74c",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "storage_path": "D:\\ProyectoBookShelf\\BookShelf\\backend\\storage\\1780719935597-h85rra.jpeg",
+      "custom_name": "fondo-oscuro",
+      "sort_order": -1,
+      "created_at": "2026-06-06T04:25:35.601Z"
+    },
+    {
+      "id": "d50b6344-fcf9-4cf5-a75a-1eb1636dcc43",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "storage_path": "D:\\ProyectoBookShelf\\BookShelf\\backend\\storage\\1780720098994-tmxtmy.png",
+      "custom_name": "zorro",
+      "sort_order": 1,
+      "created_at": "2026-06-06T04:28:18.998Z"
+    },
+    {
+      "id": "925257dd-5dda-461b-96cf-cb09ab2c3367",
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "storage_path": "D:\\ProyectoBookShelf\\BookShelf\\backend\\storage\\1780720137904-vnhx3d.jpeg",
+      "custom_name": "fondo-claro",
+      "sort_order": -2,
+      "created_at": "2026-06-06T04:28:57.906Z"
+    },
+    {
+      "id": "a2f0ded1-514a-4e6f-aad4-031ae3ad1da0",
+      "user_id": "86b42eb3-9459-438d-aa8e-df32e5727b75",
+      "storage_path": "D:\\ProyectoBookShelf\\BookShelf\\backend\\storage\\1780723663115-6f61el.png",
+      "custom_name": "zorreso",
+      "sort_order": 1,
+      "created_at": "2026-06-06T05:27:43.121Z"
+    }
+  ],
+  "trash": [],
+  "changelogs": [],
+  "easter_eggs": [
+    {
+      "id": "register_username",
+      "message": "Nu uh, eso es mío! usa otro.",
+      "description": "Intenta registrarte con este nombre en la página de registro."
+    }
+  ],
+  "changelog_config": {
+    "link_text": "Ver historial de versiones",
+    "current_version": "Desarrollo - 11"
+  },
+  "team_profiles": [
+    {
+      "id": "jeison-sossa",
+      "name": "Jeison Sossa Sierra",
+      "age": "18",
+      "contact": "jeison.sossas@colsantander.edu.co",
+      "info": "Texto de ejemplo para el perfil.",
+      "photo_url": "/storage/team/Slayer.jpeg",
+      "role": "Líder de equipo",
+      "admin_email": "adminSlayer@bookshelf.app"
+    },
+    {
+      "id": "santiago-lopez",
+      "name": "Santiago López Quintana",
+      "age": "17",
+      "contact": "santiago.lopezq@colsantander.edu.co",
+      "info": "Texto de ejemplo para el perfil.",
+      "photo_url": "/storage/team/ERROR_FOX.jpeg",
+      "role": "Líder de proyecto - Principal backend",
+      "admin_email": "adminFox@bookshelf.app"
+    },
+    {
+      "id": "leyder-montoya",
+      "name": "Leyder Montoya Gonzales",
+      "age": "17",
+      "contact": "leyder.montoyag@colsantander.edu.co",
+      "info": "Texto de ejemplo para el perfil.",
+      "photo_url": "/storage/team/Leyder.jpeg",
+      "role": "Principal frontend",
+      "admin_email": "adminLMG@bookshelf.app"
+    }
+  ],
+  "team_title": "Equipo BookShelf - Administradores",
+  "current_version": "Desarrollo/Parche 11.A"
+}

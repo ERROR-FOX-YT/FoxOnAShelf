@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Booked™ - Ejemplo de exportación CSV de baneados.
+# BookShelf™ - Ejemplo de exportación CSV de baneados.
 #
 # Requiere:
 #   * backend corriendo en http://localhost:4000
-#   * Credenciales de admin@booked.com (admin123)
+#   * Credenciales de admin@bookshelf.app (admin123)
 #
 # Uso:
 #   ./scripts/export_banned_example.sh
@@ -11,7 +11,7 @@
 set -e
 
 API="${API:-http://localhost:4000}"
-EMAIL="${EMAIL:-admin@booked.com}"
+EMAIL="${EMAIL:-admin@bookshelf.app}"
 PASS="${PASS:-admin123}"
 
 echo "Login como $EMAIL..."

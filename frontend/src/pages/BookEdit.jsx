@@ -6,7 +6,7 @@ import Editor from '../components/Editor.jsx';
 
 export default function BookEdit() {
   const { bookId } = useParams();
-  const { user, isCreator } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [chapters, setCh] = useState([]);
@@ -17,19 +17,23 @@ export default function BookEdit() {
   }
   useEffect(() => { load(); }, [bookId]);
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-  if (book && book.author_id !== user.sub && user.role !== 'admin' && user.role !== 'moderator') {
+  useEffect(() => {
+    if (!user) navigate('/login');
+  }, [user, navigate]);
+
+  if (!user) return null;
+  if (book && book.author_id !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
     return <div className="max-w-6xl mx-auto p-6">No tienes permiso para editar este libro.</div>;
+  }
+  if (book && book.author_id !== user.id && user.role === 'moderator' && !book.is_free) {
+    return <div className="max-w-6xl mx-auto p-6">Los moderadores solo pueden editar libros gratuitos.</div>;
   }
   if (!book) return <div className="max-w-6xl mx-auto p-6 opacity-70">Cargando...</div>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       <h1 className="font-serif text-2xl font-bold mb-4">Editar libro</h1>
-      <Editor book={book} chapters={chapters} onSaved={load} />
+      <Editor book={book} chapters={chapters} onSaved={load} user={user} />
     </div>
   );
 }

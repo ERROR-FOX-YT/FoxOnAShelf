@@ -1,5 +1,5 @@
 /**
- * Booked™ - Conversión de archivos a estructura de libro.
+ * BookShelf™ - Conversión de archivos a estructura de libro.
  *
  * - .md / .txt: parseo nativo. Capítulos detectados por:
  *               líneas que empiezan con "# " (markdown header)
@@ -21,13 +21,21 @@ async function convertFileToChapters(filePath) {
       const r = await mammoth.extractRawText({ path: filePath });
       raw = r.value || '';
     } catch (e) {
-      throw new Error('Error convirtiendo .docx: ' + e.message);
+      throw new Error('Error convirtiendo archivo .docx. Verifica que sea un documento válido.');
     }
   } else if (ext === '.rtf') {
-    const src = fs.readFileSync(filePath, 'utf8');
-    raw = src.replace(/\\par[d]?/g, '\n').replace(/\\[a-z]+-?\d* ?/gi, '').replace(/[{}]/g, '');
+    try {
+      const src = fs.readFileSync(filePath, 'utf8');
+      raw = src.replace(/\\pard?/g, '\n').replace(/\\[a-z]+-?\d* ?/gi, '').replace(/[{}]/g, '');
+    } catch (e) {
+      throw new Error('Error leyendo archivo RTF. Verifica que sea un documento válido.');
+    }
   } else {
-    raw = fs.readFileSync(filePath, 'utf8');
+    try {
+      raw = fs.readFileSync(filePath, 'utf8');
+    } catch (e) {
+      throw new Error('Error leyendo archivo. Verifica que exista y sea accesible.');
+    }
   }
 
   return splitIntoChapters(raw, ext);

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Booked™ - healthcheck.js
+ * BookShelf™ - healthcheck.js
  * Verifica /api/health, /api/books y /api/auth/login (con admin de prueba).
  * Salida: exit 0 si todo OK, exit 1 si algo falla.
  *
@@ -43,9 +43,9 @@ function request(method, path, body) {
     await request('GET', '/api/health')]);
   checks.push(['books listing',
     await request('GET', '/api/books')]);
-  checks.push(['login admin@booked.com',
+  checks.push(['login admin@bookshelf.app',
     await request('POST', '/api/auth/login',
-      { email: 'admin@booked.com', password: 'admin123' })]);
+      { email: 'admin@bookshelf.app', password: 'admin123' })]);
 
   let ok = true;
   for (const [name, r] of checks) {

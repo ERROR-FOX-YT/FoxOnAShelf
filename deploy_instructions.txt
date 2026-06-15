@@ -1,9 +1,9 @@
 ==============================================================
-Booked™ — Instrucciones rápidas de inicialización LOCAL
+BookShelf™ — Instrucciones rápidas de inicialización LOCAL
 © 2026 Jeison Sossa, Santiago López, Leyder Montoya — MIT
 ==============================================================
 
-Booked es una página web. Estas instrucciones explican cómo ejecutarla
+BookShelf es una página web. Estas instrucciones explican cómo ejecutarla
 localmente. NO se usan plataformas de despliegue externas.
 
 ------------------------------------------------------------------
@@ -17,7 +17,7 @@ REQUISITOS
 ------------------------------------------------------------------
 PASO 1. Copiar .env
 ------------------------------------------------------------------
-Desde la raíz del proyecto (carpeta Booked/):
+Desde la raíz del proyecto (carpeta BookShelf/):
 
   Linux / macOS:    cp .env.example .env
   Windows (PS):     Copy-Item .env.example .env
@@ -28,7 +28,7 @@ Abre .env y revisa:
   - DATABASE_URL=...      (sólo si DB_MODE=postgres)
   - JWT_SECRET=...        (cambia el valor por una cadena propia)
   - PORT=4000             (backend)
-  - FRONTEND_URL=http://localhost:3000
+  - FRONTEND_URL=http://localhost:3100
 
 Generar JWT_SECRET aleatorio (cualquiera de estas):
   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
@@ -51,16 +51,16 @@ En OTRA terminal:
 
   cd frontend
   npm install
-  npm run dev         # http://localhost:3000
+  npm run dev         # http://localhost:3100
 
 ------------------------------------------------------------------
 PASO 4. Probar
 ------------------------------------------------------------------
-- Abre http://localhost:3000
+- Abre http://localhost:3100
 - Ingresa con cualquiera de las 3 cuentas de prueba:
-    usuarioTest@booked.com  /  admin123   (autor de los libros, NO mod)
-    admin@booked.com        /  admin123   (admin + moderator)
-    adminFox@booked.com     /  admin123   (admin + moderator, adminFox)
+    usuarioTest@bookshelf.app  /  admin123   (autor de los libros, NO mod)
+    admin@bookshelf.app        /  admin123   (admin + moderator)
+    adminFox@bookshelf.app     /  admin123   (admin + moderator, adminFox)
 - Para ver el panel exclusivo: /admin/moderation
 - Health check del backend:
     node scripts/healthcheck.js
@@ -69,9 +69,9 @@ PASO 4. Probar
 ------------------------------------------------------------------
 PASO 5. Postgres real (opcional)
 ------------------------------------------------------------------
-  CREATE DATABASE booked_db;
+  CREATE DATABASE bookshelf_db;
 Pon en .env:
-  DATABASE_URL=postgres://usuario:password@localhost:5432/booked_db
+  DATABASE_URL=postgres://usuario:password@localhost:5432/bookshelf_db
   DB_MODE=postgres
 Luego:
   cd backend && npm run seed && npm start

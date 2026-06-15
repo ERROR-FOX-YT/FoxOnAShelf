@@ -9,11 +9,14 @@ import BookEdit from './pages/BookEdit.jsx';
 import Author from './pages/Author.jsx';
 import Collection from './pages/Collection.jsx';
 import Announcements from './pages/Announcements.jsx';
+import Changelog from './pages/Changelog.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
+import MediaLibrary from './pages/MediaLibrary.jsx';
 import Admin from './pages/Admin.jsx';
 import AdminModeration from './pages/AdminModeration.jsx';
+import Team from './pages/Team.jsx';
 import { Error400, Error404, Error500 } from './pages/ErrorPages.jsx';
 
 export default function App() {
@@ -32,8 +35,11 @@ export default function App() {
           <Route path="/login"             element={<Login />} />
           <Route path="/register"          element={<Register />} />
           <Route path="/profile"           element={<Profile />} />
+          <Route path="/library"           element={<MediaLibrary />} />
           <Route path="/admin"             element={<Admin />} />
           <Route path="/admin/moderation"  element={<AdminModeration />} />
+          <Route path="/changelog"         element={<Changelog />} />
+          <Route path="/team"              element={<Team />} />
           <Route path="/error/400"         element={<Error400 />} />
           <Route path="/error/404"         element={<Error404 />} />
           <Route path="/error/500"         element={<Error500 />} />

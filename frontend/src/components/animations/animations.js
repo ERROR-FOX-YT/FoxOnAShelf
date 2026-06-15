@@ -1,5 +1,5 @@
 /**
- * Booked™ - Animaciones con anime.js (https://animejs.com).
+ * BookShelf™ - Animaciones con anime.js (https://animejs.com).
  *
  * Funciones reutilizables. Cada componente puede llamarlas con la ref
  * apropiada — anime.js está en dependencies en frontend/package.json.
@@ -37,24 +37,16 @@ export function buttonPulse(target) {
   });
 }
 
-export function loadingDots(target) {
+export function bookEntrance(targets, delay = 0) {
   return anime({
-    targets: target,
-    translateY: [0, -6, 0],
-    delay:    anime.stagger(120),
-    duration: 700,
-    loop:     true,
-    easing:   'easeInOutSine'
-  });
-}
-
-export function announcementShimmer(target) {
-  return anime({
-    targets: target,
-    backgroundPosition: ['0% 0%', '200% 0%'],
-    duration: 2200,
-    loop: true,
-    easing: 'linear'
+    targets,
+    opacity: [0, 1],
+    rotateY: [8, 0],
+    translateZ: [-20, 0],
+    scale: [0.96, 1],
+    duration: 600,
+    delay: anime.stagger(80, { start: delay }),
+    easing: 'easeOutQuart'
   });
 }
 

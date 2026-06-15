@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -8,6 +8,7 @@ export default function FavoritesButton({ bookId, initial = false }) {
   const { user } = useAuth();
   const toast = useToast();
   const [fav, setFav] = useState(initial);
+  useEffect(() => { setFav(initial); }, [initial]);
 
   async function toggle(e) {
     buttonPulse(e.currentTarget);
@@ -16,7 +17,7 @@ export default function FavoritesButton({ bookId, initial = false }) {
     if (r && !r.__error) setFav(r.favorited);
   }
   return (
-    <button className={'btn-ghost ' + (fav ? 'text-bookedBrown font-semibold' : '')} onClick={toggle}>
+    <button className={'btn-ghost ' + (fav ? 'text-accent-secondary font-semibold' : '')} onClick={toggle}>
       {fav ? '★ Favorito' : '☆ Favorito'}
     </button>
   );

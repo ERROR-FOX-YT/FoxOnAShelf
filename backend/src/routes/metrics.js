@@ -9,7 +9,7 @@ router.get('/', async (req, res, next) => {
 
 router.get('/featured', async (req, res, next) => {
   try {
-    const books = await db.listBooks({ status: 'published', limit: 8 });
+    const books = await db.listBooks({ status: 'published', limit: 6 });
     // Destacados por VIEWS (no por likes) — la lista ya viene ordenada por views DESC.
     res.json({ featured: books });
   } catch (e) { next(e); }
