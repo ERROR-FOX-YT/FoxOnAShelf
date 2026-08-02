@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { apiBase } from '../api/client.js';
 import './DevAccountSwitcher.css';
 
 const ACCOUNTS = [
@@ -27,7 +28,7 @@ export default function DevAccountSwitcher() {
     if (busy) return;
     setBusy(true);
     try {
-      const res = await fetch('/api/auth/iniciar-sesion', {
+      const res = await fetch((apiBase() || '') + '/api/auth/iniciar-sesion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: acc.email, password: acc.password }),

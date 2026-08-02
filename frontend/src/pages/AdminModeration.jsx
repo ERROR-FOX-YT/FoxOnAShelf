@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { api } from '../api/client.js';
+import { api, apiBase } from '../api/client.js';
 
 const ROLE_TABS = [
   { key: '', label: 'Todos' },
@@ -107,7 +107,7 @@ export default function AdminModeration() {
     const token = localStorage.getItem('bookshelf.token');
     let res;
     try {
-      res = await fetch('/api/moderacion/exportar-baneados', {
+      res = await fetch((apiBase() || '') + '/api/moderacion/exportar-baneados', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + token }
       });

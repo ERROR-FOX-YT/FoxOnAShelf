@@ -23,7 +23,8 @@ function clearTokens() {
 async function tryRefresh() {
   const rt = refreshTokenOf();
   if (!rt) return false;
-  const res = await fetch('/api/auth/refrescar', {
+  const base = apiBase();
+  const res = await fetch((base || '') + '/api/auth/refrescar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken: rt })

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, bindRuntime, criticalPost } from '../api/client.js';
+import { api, bindRuntime, criticalPost, apiBase } from '../api/client.js';
 import { useToast } from './ToastContext.jsx';
 
 const AuthCtx = createContext(null);
@@ -77,7 +77,7 @@ export function AuthProvider({ children }) {
   function logout() {
     const token = localStorage.getItem('bookshelf.token');
     if (token) {
-      fetch('/api/auth/salir', {
+      fetch((apiBase() || '') + '/api/auth/salir', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
       }).catch(() => {});

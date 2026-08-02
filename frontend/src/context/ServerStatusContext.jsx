@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { setServerDown } from '../api/client.js';
+import { setServerDown, apiBase } from '../api/client.js';
 
 const ServerStatusCtx = createContext(null);
 
@@ -11,7 +11,8 @@ export function ServerStatusProvider({ children }) {
 
   const check = useCallback(async () => {
     try {
-      const res = await fetch('/api/salud', { headers: { 'abypass-tunnel-reminder': 'true' } });
+      const base = apiBase();
+      const res = await fetch((base || '') + '/api/salud', { headers: { 'abypass-tunnel-reminder': 'true' } });
       const json = await res.json().catch(() => ({}));
       const down = !json.ok || json.db === 'down';
       setDbDown(down);
