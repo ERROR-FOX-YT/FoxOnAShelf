@@ -16,7 +16,6 @@ import Equipo from './pages/Equipo.jsx';
 import Foros from './pages/Foros.jsx';
 import ForoCategoria from './pages/ForoCategoria.jsx';
 import { Error400, Error404, Error500 } from './pages/ErrorPages.jsx';
-import ChatWidget from './_chat_test/ChatWidget.jsx';
 import DevAccountSwitcher from './components/DevAccountSwitcher.jsx';
 import ServerBanner from './components/ServerBanner.jsx';
 
@@ -68,7 +67,6 @@ export default function App() {
         </Suspense>
       </main>
       <Footer />
-      <ChatWidget />
       <DevAccountSwitcher />
     </div>
   );
