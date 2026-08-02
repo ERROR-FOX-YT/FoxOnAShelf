@@ -73,4 +73,6 @@ process.on('unhandledRejection', (reason) => {
 app.listen(cfg.PORT, () => {
   console.log(`FoxOnAShelf backend listo en http://localhost:${cfg.PORT} (DB_MODE=${cfg.DB_MODE})`);
   console.log(`Frontend esperado en ${cfg.FRONTEND_URL}`);
+  const db = require('./db');
+  setInterval(() => { db.limpiarListaNegra().catch(e => console.warn('[blacklist-cleanup]', e.message)); }, 24 * 60 * 60 * 1000);
 });

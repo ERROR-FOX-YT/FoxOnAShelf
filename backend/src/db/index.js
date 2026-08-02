@@ -1220,6 +1220,16 @@ const api = {
       return db.lista_negra_tokens.some(t => t.token === token);
     });
   },
+  async limpiarListaNegra() {
+    if (isPg) {
+      await pgQuery(`DELETE FROM lista_negra_tokens WHERE blacklisted_at < NOW() - INTERVAL '14 days'`);
+      return;
+    }
+    await withDb(db => {
+      const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+      db.lista_negra_tokens = db.lista_negra_tokens.filter(t => !t.blacklisted_at || new Date(t.blacklisted_at).getTime() > cutoff);
+    });
+  },
   async agregarTokensUsuarioAListaNegra(email) {
     // En la práctica: marcamos un email como "todos los tokens emitidos antes de
     // este instante son inválidos". Se persiste como entrada especial en blacklist.

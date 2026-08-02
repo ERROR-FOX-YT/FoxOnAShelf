@@ -1,7 +1,7 @@
 const { param, validationResult } = require('express-validator');
 const express = require('express');
 const path    = require('path');
-const { auth } = require('../middlewares/auth');
+const { auth, requireAdmin, requireModerator } = require('../middlewares/auth');
 const { upload } = require('../middlewares/upload');
 const storageSvc = require('../services/storage');
 
@@ -24,7 +24,7 @@ router.post('/', auth, upload.single('file'), async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.delete('/:nombreArchivo', auth,
+router.delete('/:nombreArchivo', auth, requireModerator,
   param('nombreArchivo').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);

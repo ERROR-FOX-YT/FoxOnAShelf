@@ -103,14 +103,14 @@ router.post('/apelar',
     } catch (e) { next(e); }
   });
 
-router.post('/salir', (req, res, next) => {
+router.post('/salir', async (req, res, next) => {
   const hdr = req.headers.authorization || '';
   const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
   if (!token) return res.json({ ok: true });
   try {
     const payload = jwt.verify(token, cfg.JWT_SECRET);
-    db.revocarTokensRefrescoUsuario(payload.sub).catch(e => console.warn('logout: revocarTokensRefrescoUsuario error', e.message));
-    db.agregarTokenListaNegra(token, payload.email).catch(e => console.warn('logout: agregarTokenListaNegra error', e.message));
+    await db.revocarTokensRefrescoUsuario(payload.sub).catch(e => console.warn('logout: revocarTokensRefrescoUsuario error', e.message));
+    await db.agregarTokenListaNegra(token, payload.email).catch(e => console.warn('logout: agregarTokenListaNegra error', e.message));
   } catch {}
   res.json({ ok: true });
 });

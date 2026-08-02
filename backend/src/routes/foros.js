@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { body, param, query, validationResult } = require('express-validator');
 const { v4: uuidv4 } = require('uuid');
-const { auth, requireAdmin } = require('../middlewares/auth');
+const { auth, requireAdmin, requireModerator } = require('../middlewares/auth');
 const db = require('../db');
 const { pgQuery, isPg } = require('../db');
 
@@ -195,7 +195,7 @@ router.put('/:hiloId',
       if (isPg) {
         const rows = await pgQuery('SELECT * FROM foro_hilos WHERE id=$1', [hiloId]);
         if (!rows.length) return res.status(404).json({ error: 'Hilo no encontrado', code: 404 });
-        if (rows[0].autor_id !== req.user.sub) return res.status(403).json({ error: 'No tienes permisos', code: 403 });
+        if (rows[0].autor_id !== req.user.sub && req.user.role !== 'admin' && req.user.role !== 'moderator') return res.status(403).json({ error: 'No tienes permisos', code: 403 });
 
         const updates = [];
         const params = [];
@@ -245,7 +245,7 @@ router.delete('/:hiloId',
 
 router.put('/:hiloId/fijar',
   auth,
-  requireAdmin,
+  requireModerator,
   param('hiloId').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
@@ -264,7 +264,7 @@ router.put('/:hiloId/fijar',
 
 router.put('/:hiloId/cerrar',
   auth,
-  requireAdmin,
+  requireModerator,
   param('hiloId').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);

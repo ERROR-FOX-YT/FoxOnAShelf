@@ -168,8 +168,12 @@ router.post('/:id/favorito', auth,
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
-    try { const r = await db.alternarFavorito(req.user.sub, req.params.id); res.json(r); }
-  catch (e) { next(e); }
+    try {
+      const libro = await db.obtenerLibro(req.params.id);
+      if (!libro) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
+      if (libro.autor_id === req.user.sub) return res.status(403).json({ error: 'No puedes marcar tu propio libro como favorito', code: 403 });
+      const r = await db.alternarFavorito(req.user.sub, req.params.id); res.json(r);
+    } catch (e) { next(e); }
 });
 
 router.post('/:id/calificar', auth,
@@ -178,8 +182,12 @@ router.post('/:id/calificar', auth,
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
-    try { await db.calificarLibro(req.user.sub, req.params.id, +req.body.puntuacion); res.json({ ok: true }); }
-    catch (e) { next(e); }
+    try {
+      const libro = await db.obtenerLibro(req.params.id);
+      if (!libro) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
+      if (libro.autor_id === req.user.sub) return res.status(403).json({ error: 'No puedes calificar tu propio libro', code: 403 });
+      await db.calificarLibro(req.user.sub, req.params.id, +req.body.puntuacion); res.json({ ok: true });
+    } catch (e) { next(e); }
   });
 
 router.post('/:id/comentario', auth,
