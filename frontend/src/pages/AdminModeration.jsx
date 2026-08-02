@@ -63,7 +63,7 @@ export default function AdminModeration() {
       api.get('/api/moderacion/moderadores'),
       api.get('/api/moderacion/cuentas-eliminadas'),
     ]);
-    if (!a.__error) setAllUsers(a.usuarios || []);
+    if (!a.__error) setAllUsers(a.users || []);
     if (!b.__error) setBannedList(b.baneados || []);
     if (!c.__error) setMods(c.moderadores || []);
     if (!d.__error) setDeletedAccounts(d.eliminados || []);
