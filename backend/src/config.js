@@ -14,9 +14,5 @@ module.exports = {
   STORAGE_PATH:     process.env.STORAGE_PATH || require('path').resolve(__dirname, '..', 'storage'),
   MAX_UPLOAD_SIZE_BYTES: parseInt(process.env.MAX_UPLOAD_SIZE_BYTES || '5242880', 10),
   SUPABASE_URL:     process.env.SUPABASE_URL || '',
-  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY || '',
-  IPS_VERIFICADAS: (process.env.IPS_VERIFICADAS || '')
-    .split(',')
-    .map(s => s.trim().toLowerCase())
-    .filter(Boolean)
+  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY || ''
 };

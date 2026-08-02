@@ -4,7 +4,7 @@ const bcrypt  = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const cfg     = require('../config');
 const db      = require('../db');
-const { signToken, esCuentaFox, obtenerIpCliente, ipVerificada } = require('../middlewares/auth');
+const { signToken, esCuentaFox, obtenerIpCliente } = require('../middlewares/auth');
 const { rateLimit } = require('../middlewares/rate-limit');
 
 const router = express.Router();
@@ -82,9 +82,7 @@ router.post('/iniciar-sesion',
       if (!user) return res.status(401).json({ error: 'Credenciales inválidas', code: 401 });
       const ok = await bcrypt.compare(password, user.hash_contrasena || '');
       if (!ok) return res.status(401).json({ error: 'Credenciales inválidas', code: 401 });
-      if (esCuentaFox(email) && !ipVerificada(ip))
-        return res.status(403).json({ error: 'Acceso restringido: esta cuenta solo funciona desde IPs verificadas', code: 403 });
-      const token = signToken(user, esCuentaFox(email) ? { ip } : {});
+      const token = signToken(user);
       const refreshToken = await db.crearTokenRefresco(user.id);
       res.json({ token, refreshToken, user: publicUser(user) });
     } catch (e) { next(e); }
@@ -129,11 +127,8 @@ router.post('/refrescar',
       if (!user) return res.status(401).json({ error: 'Usuario no encontrado', code: 401 });
       if (await db.emailEstaBaneado(user.email))
         return res.status(403).json({ error: 'Usuario baneado', code: 403 });
-      const ip = obtenerIpCliente(req);
-      if (esCuentaFox(user.email) && !ipVerificada(ip))
-        return res.status(403).json({ error: 'Acceso restringido: esta cuenta solo funciona desde IPs verificadas', code: 403 });
       await db.revocarTokenRefresco(req.body.refreshToken);
-      const token = signToken(user, esCuentaFox(user.email) ? { ip } : {});
+      const token = signToken(user);
       const refreshToken = await db.crearTokenRefresco(user.id);
       res.json({ token, refreshToken, user: publicUser(user) });
     } catch (e) { next(e); }

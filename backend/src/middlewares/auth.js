@@ -39,18 +39,9 @@ function obtenerIpCliente(req) {
   return norm[norm.length - 1];
 }
 
-function ipVerificada(ip) {
-  const n = normalizarIp(ip);
-  if (!n) return false;
-  if (n === '::1' || n.startsWith('127.')) return true;
-  return cfg.IPS_VERIFICADAS.includes(n);
-}
-
-function signToken(user, extra = {}) {
-  const payload = { sub: user.id, email: user.email, role: user.role };
-  if (extra.ip) payload.ip = extra.ip;
+function signToken(user) {
   return jwt.sign(
-    payload,
+    { sub: user.id, email: user.email, role: user.role },
     cfg.JWT_SECRET,
     { expiresIn: cfg.JWT_EXPIRES_IN }
   );
@@ -72,18 +63,6 @@ async function auth(req, res, next) {
     if (await db.emailEstaBaneado(payload.email)) {
       return res.status(403).json({ error: 'Usuario baneado', code: 403 });
     }
-    if (esCuentaFox(payload.email)) {
-      const ipActual = obtenerIpCliente(req);
-      if (!ipVerificada(ipActual)) {
-        return res.status(403).json({ error: 'Acceso restringido: esta cuenta solo funciona desde IPs verificadas', code: 403 });
-      }
-      if (!payload.ip) {
-        return res.status(401).json({ error: 'Sesión no vinculada a una IP. Vuelve a iniciar sesión', code: 401 });
-      }
-      if (payload.ip !== ipActual) {
-        return res.status(401).json({ error: 'Sesión vinculada a otra IP. Vuelve a iniciar sesión', code: 401 });
-      }
-    }
     req.user = payload;
     next();
   } catch (e) {
@@ -103,11 +82,6 @@ async function optionalAuth(req, res, next) {
     const cutoff = await db.tokensUsuarioInvalidadosDespuesDe(payload.email);
     if (cutoff && (payload.iat * 1000) < cutoff) return next();
     if (await db.emailEstaBaneado(payload.email)) return next();
-    if (esCuentaFox(payload.email)) {
-      const ipActual = obtenerIpCliente(req);
-      if (!ipVerificada(ipActual)) return next();
-      if (!payload.ip || payload.ip !== ipActual) return next();
-    }
     const user = await db.obtenerUsuarioPorId(payload.sub);
     if (!user) return next();
     req.user = payload;
@@ -160,4 +134,4 @@ async function isOwnerOrAdmin(req, res, next) {
 
 module.exports = { signToken, auth, optionalAuth, requireAdmin, requireModerator,
                    isAuthorOrModerator, isOwnerOrAdmin,
-                   esCuentaFox, obtenerIpCliente, ipVerificada };
+                   esCuentaFox, obtenerIpCliente };
