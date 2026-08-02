@@ -1,5 +1,5 @@
 -- =====================================================================
--- BookShelf™ - Migración 005: tabla de papelera (trash)
+-- FoxOnAShelf™ - Migración 005: tabla de papelera (trash)
 -- Almacena snapshots de usuarios eliminados para posible recuperación
 -- dentro de la ventana de 30 días.
 -- =====================================================================

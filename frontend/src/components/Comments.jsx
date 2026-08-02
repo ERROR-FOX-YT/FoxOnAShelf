@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -33,17 +33,17 @@ function CommentItem({ c, bookId, onDelete, onReply, replyOpen, setReplyOpen }) 
   const [sending, setSending] = useState(false);
   const [replyText, setReplyText] = useState('');
 
-  const isOwner = user && user.id === c.user_id;
+  const isOwner = user && user.id === c.usuario_id;
   const isMod = user && (user.role === 'moderator' || user.role === 'admin');
   const canDel = user && (isOwner || isMod);
-  const canReply = user && !c.parent_comment_id;
+  const canReply = user && !c.comentario_padre_id;
 
   async function handleReply(e) {
     e.preventDefault();
     if (!replyText.trim()) { toast.error('Escribe algo antes de responder'); return; }
     setSending(true);
-    const r = await api.post('/api/books/' + bookId + '/comment', {
-      content: replyText, parent_comment_id: c.id
+    const r = await api.post('/api/libros/' + bookId + '/comentario', {
+      contenido: replyText, comentario_padre_id: c.id
     });
     setSending(false);
     if (!r.__error) {
@@ -57,21 +57,21 @@ function CommentItem({ c, bookId, onDelete, onReply, replyOpen, setReplyOpen }) 
   return (
     <div>
       <div className="flex gap-2">
-        <Avatar name={c.author_name} url={c.author_avatar} />
+        <Avatar name={c.nombre_autor} url={c.avatar_autor} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-accent-secondary">
-              {c.author_name || 'Anónimo'}
+              {c.nombre_autor || 'Anónimo'}
             </span>
             <span className="text-xs opacity-50">{timeAgo(c.created_at)}</span>
             {canDel && (
               <button className="ml-auto text-xs font-semibold text-red-500 hover:text-red-700 dark:hover:text-red-400"
-                      onClick={() => { if (window.confirm('Eliminar este comentario?')) { onDelete(c.id); } }}>
+                      onClick={() => { if (window.confirm('¿Eliminar este comentario?')) { onDelete(c.id); } }}>
                 Eliminar
               </button>
             )}
           </div>
-          <div className="text-sm whitespace-pre-wrap break-words">{c.content}</div>
+          <div className="text-sm whitespace-pre-wrap break-words">{c.contenido}</div>
           {canReply && (
             <button className="text-xs font-semibold opacity-60 hover:opacity-100 mt-0.5"
                     onClick={() => setReplyOpen(replyOpen === c.id ? null : c.id)}>
@@ -102,29 +102,29 @@ export default function Comments({ bookId }) {
   const [expanded, setExpanded] = useState({});
 
   async function load() {
-    const r = await api.get('/api/books/' + bookId + '/comments');
-    if (!r.__error) setItems(r.comments || []);
+    const r = await api.get('/api/libros/' + bookId + '/comentarios');
+    if (!r.__error) setItems(r.comentarios || []);
   }
   useEffect(() => { load(); }, [bookId]);
 
   async function send(e) {
     e.preventDefault();
     if (!text.trim()) { toast.error('Escribe algo antes de comentar'); return; }
-    const r = await api.post('/api/books/' + bookId + '/comment', { content: text });
+    const r = await api.post('/api/libros/' + bookId + '/comentario', { contenido: text });
     if (!r.__error) { setText(''); load(); toast.ok('Comentario publicado'); }
   }
 
   async function remove(commentId) {
-    const r = await api.del('/api/books/' + bookId + '/comments/' + commentId);
+    const r = await api.del('/api/libros/' + bookId + '/comentarios/' + commentId);
     if (!r.__error) { load(); toast.ok('Comentario eliminado'); }
   }
 
-  const topLevel = items.filter(c => !c.parent_comment_id);
+  const topLevel = items.filter(c => !c.comentario_padre_id);
   const repliesByParent = {};
   for (const c of items) {
-    if (c.parent_comment_id) {
-      if (!repliesByParent[c.parent_comment_id]) repliesByParent[c.parent_comment_id] = [];
-      repliesByParent[c.parent_comment_id].push(c);
+    if (c.comentario_padre_id) {
+      if (!repliesByParent[c.comentario_padre_id]) repliesByParent[c.comentario_padre_id] = [];
+      repliesByParent[c.comentario_padre_id].push(c);
     }
   }
   for (const key of Object.keys(repliesByParent)) {
@@ -141,7 +141,7 @@ export default function Comments({ bookId }) {
 
       {user && (
         <form onSubmit={send} className="flex gap-2 mb-4">
-          <Avatar name={user.display_name} url={user.avatar_url} />
+          <Avatar name={user.nombre_mostrado} url={user.url_avatar} />
           <input className="input flex-1" placeholder="Añade un comentario..."
                  value={text} onChange={e => setText(e.target.value)} />
           <button className="btn-primary">Comentar</button>
@@ -160,7 +160,7 @@ export default function Comments({ bookId }) {
           const hidden = replies.length - 3;
 
           return (
-            <div key={c.id} className="border border-bookshelfBrown/15 rounded p-3">
+            <div key={c.id} className="border border-foxBrown/15 rounded p-3">
               <CommentItem c={c} bookId={bookId} onDelete={remove} onReply={load}
                            replyOpen={replyOpen} setReplyOpen={setReplyOpen} />
 

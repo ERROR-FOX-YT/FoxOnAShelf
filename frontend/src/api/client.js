@@ -2,7 +2,10 @@ let toastImpl = null;
 let navImpl = null;
 let refreshing = null;
 let tokenTimeout, serverErrorTimeout;
+let serverDown = false;
 export function bindRuntime({ toast, navigate }) { toastImpl = toast; navImpl = navigate; }
+export function setServerDown(down) { serverDown = down; }
+export function isServerDown() { return serverDown; }
 
 function tokenOf() { return localStorage.getItem('bookshelf.token') || ''; }
 function refreshTokenOf() { return localStorage.getItem('bookshelf.refreshToken') || ''; }
@@ -20,7 +23,7 @@ function clearTokens() {
 async function tryRefresh() {
   const rt = refreshTokenOf();
   if (!rt) return false;
-  const res = await fetch('/api/auth/refresh', {
+  const res = await fetch('/api/auth/refrescar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken: rt })
@@ -32,12 +35,26 @@ async function tryRefresh() {
   return true;
 }
 
+export function apiBase() {
+  return (localStorage.getItem('bookshelf.apiBase') || import.meta.env.VITE_API_BASE_URL || '').trim();
+}
+
+export function setApiBase(url) {
+  if (url) localStorage.setItem('bookshelf.apiBase', url);
+  else localStorage.removeItem('bookshelf.apiBase');
+}
+
+function notifyServerError() {
+  if (serverDown) return;
+  if (toastImpl) toastImpl.error('Sin conexión con el servidor');
+}
+
 async function request(method, url, body, isForm=false) {
-  const headers = {};
+  const headers = { 'abypass-tunnel-reminder': 'true' };
   const token = tokenOf();
   if (token) headers.Authorization = 'Bearer ' + token;
   if (!isForm) headers['Content-Type'] = 'application/json';
-  const base = import.meta.env.VITE_API_BASE_URL || '';
+  const base = apiBase();
   if (base && url.startsWith('/')) url = base + url;
 
   let res;
@@ -46,7 +63,7 @@ async function request(method, url, body, isForm=false) {
       body: body ? (isForm ? body : JSON.stringify(body)) : undefined
     });
   } catch {
-    if (toastImpl) toastImpl.error('Sin conexión con el servidor');
+    notifyServerError();
     return { __error: true, code: 0, error: 'Sin conexión' };
   }
 
@@ -60,7 +77,7 @@ async function request(method, url, body, isForm=false) {
           body: body ? (isForm ? body : JSON.stringify(body)) : undefined
         });
       } catch {
-        if (toastImpl) toastImpl.error('Sin conexión con el servidor');
+        notifyServerError();
         return { __error: true, code: 0, error: 'Sin conexión' };
       }
       if (res.ok) {
@@ -78,7 +95,7 @@ async function request(method, url, body, isForm=false) {
   const json = await res.json().catch(() => ({}));
   if (res.status === 401) return { __error: true, ...json, code: 401 };
   if (res.status >= 500) {
-    if (toastImpl) toastImpl.error('Error del servidor');
+    notifyServerError();
     return { __error: true, ...json, code: 500 };
   }
   if (res.status === 400) {

@@ -1,5 +1,5 @@
 -- =====================================================================
--- BookShelf™ - Migración 003: tabla de marcadores (bookmarks)
+-- FoxOnAShelf™ - Migración 003: tabla de marcadores (bookmarks)
 -- Almacena la posición de lectura de cada usuario por libro.
 -- =====================================================================
 

@@ -21,6 +21,8 @@ html, body, #root { height: 100%; }
   --accent-glow-strong:  0 6px 20px rgba(0, 138, 127, 0.40);
   --accent-secondary:    #FF6B6B;
   --accent-secondary-rgb: 255, 107, 107;
+  --logo-a:              #1565C0;
+  --logo-b:              #42A5F5;
   --card-shadow:         0 2px 6px rgba(139, 69, 19, 0.08), 0 1px 2px rgba(139, 69, 19, 0.05);
   --card-shadow-hover:   0 6px 16px rgba(0, 138, 127, 0.20), 0 2px 4px rgba(139, 69, 19, 0.10);
 }
@@ -38,6 +40,8 @@ html, body, #root { height: 100%; }
   --accent-glow-strong:  0 6px 20px rgba(0, 208, 192, 0.55);
   --accent-secondary:    #FF7A7A;
   --accent-secondary-rgb: 255, 122, 122;
+  --logo-a:              #64B5F6;
+  --logo-b:              #90CAF9;
   --card-shadow:         0 2px 6px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.20);
   --card-shadow-hover:   0 6px 16px rgba(0, 208, 192, 0.25), 0 2px 4px rgba(0, 0, 0, 0.20);
 }
@@ -56,6 +60,8 @@ html, body, #root { height: 100%; }
     --accent-glow-strong:  0 6px 20px rgba(0, 208, 192, 0.55);
     --accent-secondary:    #FF7A7A;
     --accent-secondary-rgb: 255, 122, 122;
+    --logo-a:              #64B5F6;
+    --logo-b:              #90CAF9;
     --card-shadow:         0 2px 6px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.20);
     --card-shadow-hover:   0 6px 16px rgba(0, 208, 192, 0.25), 0 2px 4px rgba(0, 0, 0, 0.20);
   }
@@ -71,15 +77,19 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* === Override de Tailwind bookshelfBrown → variables del tema === */
-.text-bookshelfBrown         { color: var(--accent-main); }
-.bg-bookshelfBrown           { background-color: var(--accent-main); }
-.border-bookshelfBrown       { border-color: var(--accent-main); }
-.border-bookshelfBrown\/30   { border-color: rgba(var(--accent-main-rgb), 0.30); }
-.border-bookshelfBrown\/40   { border-color: rgba(var(--accent-main-rgb), 0.40); }
-.border-bookshelfBrown\/15   { border-color: rgba(var(--accent-main-rgb), 0.15); }
-.bg-bookshelfBrown\/10       { background-color: rgba(var(--accent-main-rgb), 0.10); }
-.bg-bookshelfBrown\/30       { background-color: rgba(var(--accent-main-rgb), 0.30); }
+/* === Override de Tailwind foxBrown → variables del tema === */
+.text-foxBrown         { color: var(--accent-main); }
+.bg-foxBrown           { background-color: var(--accent-main); }
+.border-foxBrown       { border-color: var(--accent-main); }
+.border-foxBrown\/30   { border-color: rgba(var(--accent-main-rgb), 0.30); }
+.border-foxBrown\/40   { border-color: rgba(var(--accent-main-rgb), 0.40); }
+.border-foxBrown\/15   { border-color: rgba(var(--accent-main-rgb), 0.15); }
+.bg-foxBrown\/10       { background-color: rgba(var(--accent-main-rgb), 0.10); }
+.bg-foxBrown\/30       { background-color: rgba(var(--accent-main-rgb), 0.30); }
+
+/* === Logo: dos tonos de azul que se adaptan al tema === */
+.text-logo-a           { color: var(--logo-a); }
+.text-logo-b           { color: var(--logo-b); }
 
 /* === Utility: acento secundario (coral) para favoritos/estrellas === */
 .text-accent-secondary       { color: var(--accent-secondary); }
@@ -263,7 +273,7 @@ a:hover { color: var(--accent-main); }
   color: var(--text-muted);
 }
 .rm-search:focus {
-  background-color: #FFFFFF;
+  background-color: var(--bg-base);
   border-color: var(--accent-main);
   box-shadow: 0 0 0 3px rgba(var(--accent-main-rgb), 0.20);
 }
@@ -446,22 +456,70 @@ a:hover { color: var(--accent-main); }
 
 /* ============================================================
    FONDO PRINCIPAL — Solo en Home, Explore y Announcements
-   Modo claro: FondoBookShelfClaro.jpeg
-   Modo oscuro: FondoBookShelfOscuro.jpeg
+   Modo claro: FondoFoxOnAShelfClaro.jpeg
+   Modo oscuro: FondoFoxOnAShelfOscuro.jpeg
    Se activa con clase .has-main-bg en <body>
    ============================================================ */
 body.has-main-bg {
   background:
     linear-gradient(rgba(253, 251, 247, 0.70), rgba(253, 251, 247, 0.70)),
-    url('/FondoBookShelfClaro.jpeg') center / cover fixed no-repeat #FDFBF7;
+    url('/FondoFoxOnAShelfClaro.jpeg') center / cover fixed no-repeat #FDFBF7;
 }
 .dark body.has-main-bg {
   background:
     linear-gradient(rgba(17, 24, 39, 0.90), rgba(17, 24, 39, 0.90)),
-    url('/FondoBookShelfOscuro.jpeg') center / cover fixed no-repeat #111827;
+    url('/FondoFoxOnAShelfOscuro.jpeg') center / cover fixed no-repeat #111827;
 }
 
 
+
+/* ============================================================
+   PAGE BACKGROUND TEXTURE — Sutil pergamino / fibras de papel
+   Clase .page-bg en el contenedor principal de cada página
+   ============================================================ */
+.page-bg {
+  position: relative;
+  min-height: 100vh;
+}
+.page-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 35px,
+      rgba(139, 105, 20, 0.015) 35px,
+      rgba(139, 105, 20, 0.015) 36px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 35px,
+      rgba(139, 105, 20, 0.01) 35px,
+      rgba(139, 105, 20, 0.01) 36px
+    );
+}
+.dark .page-bg::before {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 35px,
+      rgba(200, 170, 100, 0.02) 35px,
+      rgba(200, 170, 100, 0.02) 36px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 35px,
+      rgba(200, 170, 100, 0.015) 35px,
+      rgba(200, 170, 100, 0.015) 36px
+    );
+}
 
 /* ============================================================
    BOOK CARD — Skeuomorphic Open-Book Card
@@ -506,10 +564,11 @@ body.has-main-bg {
   display: block;
   background: linear-gradient(165deg, var(--book-bg-start) 0%, var(--book-bg-end) 60%, var(--book-bg-start) 100%);
   border-radius: 3px 14px 14px 3px;
-  padding: 1.25rem 1.25rem 1rem 1.5rem;
+  padding: 1rem 1rem 0.75rem 1.25rem;
   color: var(--book-text);
   text-decoration: none;
   cursor: pointer;
+  align-self: start;
 
   box-shadow:
     -1px 0 0 0 var(--book-spine-mid),
@@ -1162,4 +1221,274 @@ body.has-main-bg {
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 body.egg-locked { pointer-events: none; user-select: none; }
+
+/* ============================================================
+   ANNOUNCEMENT CARDS — Gold styling for admin/featured
+   ============================================================ */
+.ann-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.25rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.3s ease;
+  color: var(--text-main);
+}
+.ann-card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+.ann-card--gold {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.04));
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.dark .ann-card--gold {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.06));
+  border-color: rgba(245, 158, 11, 0.25);
+}
+.ann-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.ann-badge--featured {
+  background-color: rgba(234, 179, 8, 0.2);
+  color: #ca8a04;
+}
+.dark .ann-badge--featured {
+  color: #facc15;
+}
+.ann-badge--admin {
+  background-color: rgba(217, 119, 6, 0.3);
+  color: #92400e;
+}
+.dark .ann-badge--admin {
+  background-color: rgba(217, 119, 6, 0.4);
+  color: #fcd34d;
+}
+.ann-badge--mod {
+  background-color: rgba(30, 58, 138, 0.15);
+  color: #1e40af;
+}
+.dark .ann-badge--mod {
+  background-color: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+/* ============================================================
+   EXPLORE TABS
+   ============================================================ */
+.explore-tab {
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.explore-tab:hover {
+  background: rgba(var(--accent-main-rgb), 0.08);
+  color: var(--accent-main);
+}
+.explore-tab--active {
+  background: var(--accent-main);
+  color: var(--bg-base);
+  font-weight: 600;
+}
 body.egg-locked form.card { filter: saturate(0.3) brightness(0.96); }
+
+/* ============================================================
+   HOME — Featured Books Hero
+   ============================================================ */
+.home-hero {
+  background: linear-gradient(135deg, rgba(var(--accent-main-rgb), 0.06), rgba(var(--accent-main-rgb), 0.02));
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 1rem 1.5rem 0.75rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.dark .home-hero {
+  background: linear-gradient(135deg, rgba(var(--accent-main-rgb), 0.08), rgba(var(--accent-main-rgb), 0.03));
+}
+.home-hero__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.home-hero__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--accent-main);
+  color: var(--bg-base);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 10px;
+  box-shadow: var(--accent-glow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.home-hero__cta:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--accent-glow-strong);
+  color: var(--bg-base);
+}
+
+/* Explorar más button - full width bar */
+.home-explore-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: var(--accent-main);
+  color: var(--bg-base);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  margin-top: 0.75rem;
+  box-shadow: var(--accent-glow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  cursor: pointer;
+}
+.home-explore-bar:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: var(--accent-glow-strong);
+  color: var(--bg-base);
+}
+
+/* Sin acceso al servidor — banner global */
+.server-down-banner {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.14), rgba(255, 107, 107, 0.06));
+  border-bottom: 1px solid rgba(var(--accent-secondary-rgb), 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.server-down-banner__inner {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.server-down-banner__icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.server-down-banner__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.server-down-banner__text strong {
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+.server-down-banner__sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.server-down-banner__pulse {
+  margin-left: auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent-secondary);
+  flex-shrink: 0;
+  animation: serverDownPulse 1.2s ease-in-out infinite;
+}
+@keyframes serverDownPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-secondary-rgb), 0.5); opacity: 1; }
+  50% { box-shadow: 0 0 0 6px rgba(var(--accent-secondary-rgb), 0); opacity: 0.7; }
+}
+
+/* === Mejoras visuales 2026 === */
+
+/* BookCard: mejor espaciado y transiciones */
+.book-card {
+  min-height: 180px;
+}
+.book-card:hover {
+  z-index: 10;
+}
+
+/* Reading progress bar animation */
+@keyframes progressFill {
+  from { width: 0; }
+}
+
+/* Explore tabs: mejor estilo */
+.explore-tab {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.explore-tab:hover {
+  background-color: rgba(var(--accent-main-rgb), 0.08);
+}
+.explore-tab--active {
+  background-color: rgba(var(--accent-main-rgb), 0.12);
+  color: var(--accent-main);
+  border-color: rgba(var(--accent-main-rgb), 0.20);
+  font-weight: 600;
+}
+
+/* Card: mejor hover effect */
+.card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Input: mejor focus ring */
+.input:focus {
+  outline: none;
+}
+
+/* Smooth page transitions */
+main {
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode: mejor contraste para texto muted */
+.dark .text-muted,
+.dark [class*="opacity-60"],
+.dark [class*="opacity-70"] {
+  color: var(--text-muted);
+}
+
+/* Accessibility: focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--accent-main);
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

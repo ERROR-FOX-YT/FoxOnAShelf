@@ -1,5 +1,5 @@
 -- =====================================================================
--- BookShelf™ - Migración 002: refresh_tokens + deleted_at en banned_users
+-- FoxOnAShelf™ - Migración 002: refresh_tokens + deleted_at en banned_users
 -- Ejecutar contra bases existentes (creadas con 001_create_tables.sql
 -- sin refresh_tokens ni columna deleted_at)
 -- =====================================================================

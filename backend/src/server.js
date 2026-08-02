@@ -1,7 +1,7 @@
 /**
- * BookShelf™ - Servidor Express
+ * FoxOnAShelf™ - Servidor Express
  *
- * © 2026 Jeison Sossa, Santiago López, Leyder Montoya - MIT License
+ * © 2026 ERROR_FOX - MIT License
  */
 const express = require('express');
 const path    = require('path');
@@ -27,28 +27,35 @@ if (!cfg.JWT_SECRET || DEMO_SECRETS.includes(cfg.JWT_SECRET) || cfg.JWT_SECRET.l
 }
 
 app.set('trust proxy', true);
-app.use(cors({ origin: cfg.FRONTEND_URL, credentials: true }));
+const allowedOrigins = cfg.FRONTEND_URL.split(',').map(s => s.trim());
+app.use(cors({ origin: (origin, cb) => cb(null, allowedOrigins.some(o => o.toLowerCase() === (origin || '').toLowerCase()) || !origin), credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 
-// Sirve archivos subidos
-app.use('/storage', express.static(cfg.STORAGE_PATH));
+// Sirve archivos subidos (excluye db.json por seguridad)
+app.use('/storage', (req, res, next) => {
+  if (req.path === '/db.json') return res.status(404).end();
+  express.static(cfg.STORAGE_PATH)(req, res, next);
+});
 
 // Rutas API
-app.use('/api/health',        require('./routes/health'));
+app.use('/api/salud',         require('./routes/health'));
 app.use('/api/auth',          require('./routes/auth'));
-app.use('/api/users',         require('./routes/users'));
-app.use('/api/books',         require('./routes/books'));
-app.use('/api/announcements', require('./routes/announcements'));
-app.use('/api/metrics',       require('./routes/metrics'));
-app.use('/api/search',        require('./routes/search'));
-app.use('/api/upload',        require('./routes/upload'));
-app.use('/api/moderation',    require('./routes/moderation'));
-app.use('/api/categories',    require('./routes/categories'));
-app.use('/api/bookmarks',     require('./routes/bookmarks'));
-app.use('/api/user-images',   require('./routes/user-images'));
-app.use('/api/changelogs',    require('./routes/changelogs'));
-app.use('/api/easter-eggs',   require('./routes/easter-eggs'));
-app.use('/api/team',          require('./routes/team'));
+app.use('/api/usuarios',      require('./routes/users'));
+app.use('/api/libros',        require('./routes/books'));
+app.use('/api/anuncios',      require('./routes/anuncios'));
+app.use('/api/metricas',      require('./routes/metrics'));
+app.use('/api/busqueda',      require('./routes/search'));
+app.use('/api/subida',        require('./routes/upload'));
+app.use('/api/moderacion',    require('./routes/moderation'));
+app.use('/api/categorias',    require('./routes/categories'));
+app.use('/api/marcadores',    require('./routes/bookmarks'));
+app.use('/api/imagenes-usuario', require('./routes/user-images'));
+app.use('/api/historiales',   require('./routes/changelogs'));
+app.use('/api/huevos-pascua', require('./routes/easter-eggs'));
+app.use('/api/equipo',        require('./routes/team'));
+app.use('/api/chat',          require('./routes/chat'));
+app.use('/api/foros',         require('./routes/foros'));
+app.use('/api/destacados',    require('./routes/destacados'));
 
 // Producción: servir frontend compilado como estático
 if (process.env.NODE_ENV === 'production') {
@@ -71,6 +78,6 @@ process.on('unhandledRejection', (reason) => {
 });
 
 app.listen(cfg.PORT, () => {
-  console.log(`BookShelf backend listo en http://localhost:${cfg.PORT} (DB_MODE=${cfg.DB_MODE})`);
+  console.log(`FoxOnAShelf backend listo en http://localhost:${cfg.PORT} (DB_MODE=${cfg.DB_MODE})`);
   console.log(`Frontend esperado en ${cfg.FRONTEND_URL}`);
 });

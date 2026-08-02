@@ -12,8 +12,8 @@ export default function BookEdit() {
   const [chapters, setCh] = useState([]);
 
   async function load() {
-    const r = await api.get('/api/books/' + bookId);
-    if (!r.__error) { setBook(r.book); setCh(r.chapters || []); }
+    const r = await api.get('/api/libros/' + bookId);
+    if (!r.__error) { setBook(r.libro); setCh(r.capitulos || []); }
   }
   useEffect(() => { load(); }, [bookId]);
 
@@ -22,11 +22,11 @@ export default function BookEdit() {
   }, [user, navigate]);
 
   if (!user) return null;
-  if (book && book.author_id !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
-    return <div className="max-w-6xl mx-auto p-6">No tienes permiso para editar este libro.</div>;
-  }
-  if (book && book.author_id !== user.id && user.role === 'moderator' && !book.is_free) {
+  if (book && book.autor_id !== user.id && user.role === 'moderator' && !book.es_gratis) {
     return <div className="max-w-6xl mx-auto p-6">Los moderadores solo pueden editar libros gratuitos.</div>;
+  }
+  if (book && book.autor_id !== user.id && user.role !== 'admin' && user.role !== 'moderator') {
+    return <div className="max-w-6xl mx-auto p-6">No tienes permiso para editar este libro.</div>;
   }
   if (!book) return <div className="max-w-6xl mx-auto p-6 opacity-70">Cargando...</div>;
 

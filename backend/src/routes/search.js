@@ -10,21 +10,21 @@ router.get('/',
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
       const q = (req.query.q || '').trim();
-      if (!q) return res.json({ books: [] });
-      const books = await db.listBooks({ q, limit: 30 });
-      res.json({ books });
+      if (!q) return res.json({ libros: [] });
+      const libros = await db.listarLibros({ q, limit: 30 });
+      res.json({ libros });
     } catch (e) { next(e); }
   });
 
-router.get('/authors',
+router.get('/autores',
   query('q').optional().isString().isLength({ max: 200 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
       const q = (req.query.q || '').trim();
-      const authors = await db.searchAuthors(q);
-      res.json({ authors });
+      const autores = await db.buscarAutores(q);
+      res.json({ autores });
     } catch (e) { next(e); }
   });
 

@@ -1,4 +1,4 @@
-# BookShelf™ — Base de datos
+# FoxOnAShelf™ — Base de datos
 
 Base de datos relacional sobre **Postgres 13+** (o **Supabase**, que es Postgres
 gestionado). Para la demo local se incluye además un **modo JSON** (sin instalar
@@ -90,9 +90,9 @@ Los seeds son **idempotentes**: se pueden re-ejecutar sin duplicar registros
 
 | Email                    | Contraseña | Rol                 |
 |--------------------------|------------|---------------------|
-| usuarioTest@bookshelf.app   | admin123   | creator             |
-| admin@bookshelf.app         | admin123   | admin + moderator   |
-| adminFox@bookshelf.app      | admin123   | admin + moderator |
+| usuarioTest@foxonashelf.app   | admin123   | creator             |
+| admin@foxonashelf.app         | admin123   | admin + moderator   |
+| adminFox@foxonashelf.app      | admin123   | admin + moderator |
 
 ## RLS — cómo activar
 

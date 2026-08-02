@@ -2,23 +2,23 @@ const express = require('express');
 const path    = require('path');
 const { body, param, validationResult } = require('express-validator');
 const db    = require('../db');
-const cfg   = require('../config');
 const { auth, optionalAuth, requireAdmin, isAuthorOrModerator, isOwnerOrAdmin } = require('../middlewares/auth');
 const { upload } = require('../middlewares/upload');
 const { convertFileToChapters } = require('../services/conversion');
+const storageSvc = require('../services/storage');
 
 const router = express.Router();
 
 
 router.get('/', async (req, res, next) => {
   try {
-    const { category, age_group, q, author_id, status } = req.query;
+    const { categoria, grupo_edad, q, autor_id, estado } = req.query;
     const rawLimit = Math.min(100, parseInt(req.query.limit) || 50);
     const rawOffset = parseInt(req.query.offset) || 0;
-    const books = await db.listBooks({ category, age_group, q, author_id, status,
-                                       limit: rawLimit,
-                                       offset: rawOffset });
-    res.json({ books });
+    const libros = await db.listarLibros({ categoria, grupo_edad, q, autor_id, estado,
+                                           limit: rawLimit,
+                                           offset: rawOffset });
+    res.json({ libros });
   } catch (e) { next(e); }
 });
 
@@ -28,69 +28,69 @@ router.get('/:id', optionalAuth,
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-    const book = await db.getBook(req.params.id);
-    if (!book) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
+    const libro = await db.obtenerLibro(req.params.id);
+    if (!libro) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
 
     const user_id = req.user ? req.user.sub : null;
 
-    const chapters = await db.listChapters(req.params.id);
+    const capitulos = await db.listarCapitulos(req.params.id);
 
-    let favorited = false, user_rating = 0, bookmark = null;
+    let favorited = false, calificacion_usuario = 0, marcador = null;
     if (user_id) {
-      const fav = await db.getFavorite(user_id, req.params.id);
+      const fav = await db.obtenerFavorito(user_id, req.params.id);
       favorited = fav.favorited;
-      user_rating = await db.getUserRating(user_id, req.params.id);
-      bookmark = await db.getBookmark(user_id, req.params.id);
+      calificacion_usuario = await db.obtenerCalificacionUsuario(user_id, req.params.id);
+      marcador = await db.obtenerMarcador(user_id, req.params.id);
     }
 
-    res.json({ book, chapters, favorited, user_rating, bookmark });
+    res.json({ libro, capitulos, favorited, calificacion_usuario, marcador });
   } catch (e) { next(e); }
 });
 
 router.post('/',
   auth,
-  body('title').isString().isLength({ min: 1 }),
-  body('description').optional().isString(),
-  body('category').optional().isString(),
-  body('age_group').optional().isIn(['infantil','adolescente','adulto']),
+  body('titulo').isString().isLength({ min: 1 }),
+  body('descripcion').optional().isString(),
+  body('categoria').optional().isString(),
+  body('grupo_edad').optional().isIn(['infantil','adolescente','adulto']),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const book = await db.createBook({
-        title: req.body.title,
-        subtitle: req.body.subtitle,
-        description: req.body.description,
-        category: req.body.category,
-        age_group: req.body.age_group,
-        author_id: req.user.sub,
-        status: 'draft'
+      const libro = await db.crearLibro({
+        titulo: req.body.titulo,
+        subtitulo: req.body.subtitulo,
+        descripcion: req.body.descripcion,
+        categoria: req.body.categoria,
+        grupo_edad: req.body.grupo_edad,
+        autor_id: req.user.sub,
+        estado: 'borrador'
       });
-      res.json({ book });
+      res.json({ libro });
     } catch (e) { next(e); }
   });
 
 router.put('/:id', auth, isAuthorOrModerator,
   param('id').isString().isLength({ min: 1 }),
-  body('title').optional().isString(),
-  body('description').optional().isString(),
-  body('category').optional().isString(),
-  body('age_group').optional().isIn(['infantil','adolescente','adulto']),
-  body('is_free').optional().isBoolean({ loose: true }),
-  body('price_cents').optional().isInt({ min: 0 }),
-  body('status').optional().isIn(['draft','published','deleted']),
+  body('titulo').optional().isString(),
+  body('descripcion').optional().isString(),
+  body('categoria').optional().isString(),
+  body('grupo_edad').optional().isIn(['infantil','adolescente','adulto']),
+  body('es_gratis').optional().isBoolean({ loose: true }),
+  body('precio_centavos').optional().isInt({ min: 0 }),
+  body('estado').optional().isIn(['borrador','publicado','eliminado']),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const allowed = ['title','subtitle','description','category','age_group',
-                      'is_free','price_cents','cover_url','original_public','status'];
+      const allowed = ['titulo','subtitulo','descripcion','categoria','grupo_edad',
+                      'es_gratis','precio_centavos','url_portada','original_publico','estado'];
       const patch = {};
       for (const k of allowed) if (req.body[k] !== undefined) patch[k] = req.body[k];
 
-      const book = await db.updateBook(req.params.id, patch);
-      if (!book) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
-      res.json({ book });
+      const libro = await db.actualizarLibro(req.params.id, patch);
+      if (!libro) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
+      res.json({ libro });
     } catch (e) { next(e); }
   });
 
@@ -99,157 +99,157 @@ router.delete('/:id', auth, isOwnerOrAdmin,
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
-    try { await db.deleteBook(req.params.id); res.json({ ok: true }); }
+    try { await db.eliminarLibro(req.params.id); res.json({ ok: true }); }
   catch (e) { next(e); }
 });
 
 // ---------------- CAPÍTULOS ----------------
-router.post('/:id/chapters', auth, isAuthorOrModerator,
+router.post('/:id/capitulos', auth, isAuthorOrModerator,
   param('id').isString().isLength({ min: 1 }),
-  body('title').optional().isString(),
-  body('content').optional().isString(),
-  body('order').optional().isInt({ min: 1 }),
+  body('titulo').optional().isString(),
+  body('contenido').optional().isString(),
+  body('orden').optional().isInt({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const chapter = await db.createChapter({
-        book_id: req.params.id,
-        title: req.body.title || 'Capítulo',
-        content: req.body.content || '',
-        order: req.body.order ?? 1
+      const capitulo = await db.crearCapitulo({
+        libro_id: req.params.id,
+        titulo: req.body.titulo || 'Capítulo',
+        contenido: req.body.contenido || '',
+        orden: req.body.orden ?? 1
       });
-      res.json({ chapter });
+      res.json({ capitulo });
     } catch (e) { next(e); }
   });
 
-router.put('/:id/chapters/:chapterId', auth, isAuthorOrModerator,
+router.put('/:id/capitulos/:capituloId', auth, isAuthorOrModerator,
   param('id').isString().isLength({ min: 1 }),
-  param('chapterId').isString().isLength({ min: 1 }),
-  body('title').optional().isString(),
-  body('content').optional().isString(),
-  body('order').optional().isInt({ min: 1 }),
+  param('capituloId').isString().isLength({ min: 1 }),
+  body('titulo').optional().isString(),
+  body('contenido').optional().isString(),
+  body('orden').optional().isInt({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const chapter = await db.getChapter(req.params.chapterId);
-      if (!chapter || chapter.book_id !== req.params.id) {
+      const capitulo = await db.obtenerCapitulo(req.params.capituloId);
+      if (!capitulo || capitulo.libro_id !== req.params.id) {
         return res.status(404).json({ error: 'Capítulo no encontrado', code: 404 });
       }
       const patch = {};
-      if (req.body.title !== undefined) patch.title = req.body.title;
-      if (req.body.content !== undefined) patch.content = req.body.content;
-      if (req.body.order !== undefined) patch.order = req.body.order;
-      await db.updateChapter(req.params.chapterId, patch);
+      if (req.body.titulo !== undefined) patch.titulo = req.body.titulo;
+      if (req.body.contenido !== undefined) patch.contenido = req.body.contenido;
+      if (req.body.orden !== undefined) patch.orden = req.body.orden;
+      await db.actualizarCapitulo(req.params.capituloId, patch);
       res.json({ ok: true });
     } catch (e) { next(e); }
   });
 
-router.delete('/:id/chapters/:chapterId', auth, isAuthorOrModerator,
+router.delete('/:id/capitulos/:capituloId', auth, isAuthorOrModerator,
   param('id').isString().isLength({ min: 1 }),
-  param('chapterId').isString().isLength({ min: 1 }),
+  param('capituloId').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const chapter = await db.getChapter(req.params.chapterId);
-      if (!chapter || chapter.book_id !== req.params.id) {
+      const capitulo = await db.obtenerCapitulo(req.params.capituloId);
+      if (!capitulo || capitulo.libro_id !== req.params.id) {
         return res.status(404).json({ error: 'Capítulo no encontrado', code: 404 });
       }
-      await db.deleteChapter(req.params.chapterId);
+      await db.eliminarCapitulo(req.params.capituloId);
       res.json({ ok: true });
     } catch (e) { next(e); }
   });
 
-// ---------------- FAVORITES / RATINGS / COMMENTS ----------------
-router.post('/:id/favorite', auth,
+// ---------------- FAVORITOS / CALIFICACIONES / COMENTARIOS ----------------
+router.post('/:id/favorito', auth,
   param('id').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
-    try { const r = await db.toggleFavorite(req.user.sub, req.params.id); res.json(r); }
+    try { const r = await db.alternarFavorito(req.user.sub, req.params.id); res.json(r); }
   catch (e) { next(e); }
 });
 
-router.post('/:id/rate', auth,
+router.post('/:id/calificar', auth,
   param('id').isString().isLength({ min: 1 }),
-  body('rating').isInt({ min: 1, max: 5 }),
+  body('puntuacion').isInt({ min: 1, max: 5 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
-    try { await db.rateBook(req.user.sub, req.params.id, +req.body.rating); res.json({ ok: true }); }
+    try { await db.calificarLibro(req.user.sub, req.params.id, +req.body.puntuacion); res.json({ ok: true }); }
     catch (e) { next(e); }
   });
 
-router.post('/:id/comment', auth,
+router.post('/:id/comentario', auth,
   param('id').isString().isLength({ min: 1 }),
-  body('content').isString().isLength({ min: 1, max: 2000 }),
-  body('chapter_id').optional().isString(),
-  body('parent_comment_id').optional().isString(),
+  body('contenido').isString().isLength({ min: 1, max: 2000 }),
+  body('capitulo_id').optional().isString(),
+  body('comentario_padre_id').optional().isString(),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const c = await db.addComment({ user_id: req.user.sub, book_id: req.params.id,
-                                      chapter_id: req.body.chapter_id,
-                                      parent_comment_id: req.body.parent_comment_id,
-                                      content: req.body.content });
-      res.json({ comment: c });
+      const c = await db.agregarComentario({ usuario_id: req.user.sub, libro_id: req.params.id,
+                                             capitulo_id: req.body.capitulo_id,
+                                             comentario_padre_id: req.body.comentario_padre_id,
+                                             contenido: req.body.contenido });
+      res.json({ comentario: c });
     } catch (e) { next(e); }
   });
 
-router.delete('/:id/comments/:commentId', auth,
+router.delete('/:id/comentarios/:comentarioId', auth,
   param('id').isString().isLength({ min: 1 }),
-  param('commentId').isString().isLength({ min: 1 }),
+  param('comentarioId').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const comment = await db.getComment(req.params.commentId);
-      if (!comment || comment.book_id !== req.params.id)
+      const comentario = await db.obtenerComentario(req.params.comentarioId);
+      if (!comentario || comentario.libro_id !== req.params.id)
         return res.status(404).json({ error: 'Comentario no encontrado', code: 404 });
-      if (comment.user_id !== req.user.sub && req.user.role !== 'moderator' && req.user.role !== 'admin')
+      if (comentario.usuario_id !== req.user.sub && req.user.role !== 'moderator' && req.user.role !== 'admin')
         return res.status(403).json({ error: 'No autorizado', code: 403 });
-      await db.deleteComment(req.params.commentId);
+      await db.eliminarComentario(req.params.comentarioId);
       res.json({ ok: true });
     } catch (e) { next(e); }
   });
 
-router.get('/:id/comments',
+router.get('/:id/comentarios',
   param('id').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
-    try { res.json({ comments: await db.listComments(req.params.id) }); }
+    try { res.json({ comentarios: await db.listarComentarios(req.params.id) }); }
   catch (e) { next(e); }
 });
 
-router.post('/:id/view', optionalAuth,
+router.post('/:id/vista', optionalAuth,
   param('id').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
     const user_id = req.user ? req.user.sub : null;
-    await db.incrementViews(req.params.id, user_id);
+    await db.incrementarVistas(req.params.id, user_id);
     res.json({ ok: true });
   } catch (e) { next(e); }
 });
 
-router.post('/:id/reset-views', auth, requireAdmin,
+router.post('/:id/reiniciar-vistas', auth, requireAdmin,
   param('id').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-    await db.resetBookViews(req.params.id);
+    await db.restablecerVistasLibro(req.params.id);
     res.json({ ok: true });
   } catch (e) { next(e); }
 });
 
 // ---------------- CONVERSIÓN DE ARCHIVO A LIBRO ----------------
-router.post('/:id/import-file',
+router.post('/:id/importar-archivo',
   auth, isAuthorOrModerator,
   upload.single('file'),
   param('id').isString().isLength({ min: 1 }),
@@ -261,56 +261,58 @@ router.post('/:id/import-file',
       if (req.file._kind !== 'text')
         return res.status(400).json({ error: 'Sólo archivos de texto: .txt .md .docx .rtf', code: 400 });
 
-      const chapters = await convertFileToChapters(req.file.path);
-      for (const c of chapters) {
-        await db.createChapter({ book_id: req.params.id,
-                                 title: c.title, content: c.content,
-                                 order: c.order, is_early_access: false });
+      const capitulos = await convertFileToChapters(req.file.buffer, req.file.originalname);
+      for (const c of capitulos) {
+        await db.crearCapitulo({ libro_id: req.params.id,
+                                 titulo: c.titulo, contenido: c.contenido,
+                                 orden: c.orden, es_acceso_anticipado: false });
       }
-      const original = path.relative(cfg.STORAGE_PATH, req.file.path);
-      const book = await db.updateBook(req.params.id, {
-        original_file: original,
-        original_public: req.body.original_public === true || req.body.original_public === 'true'
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const cloudPath = 'imports/' + req.params.id + '/' + Date.now() + ext;
+      const publicUrl = await storageSvc.uploadFile(req.file.buffer, cloudPath, req.file.mimetype);
+      const libro = await db.actualizarLibro(req.params.id, {
+        archivo_original: publicUrl,
+        original_publico: req.body.original_publico === true || req.body.original_publico === 'true'
       });
-      res.json({ ok: true, chapters_created: chapters.length, book });
+      res.json({ ok: true, capitulos_creados: capitulos.length, libro });
     } catch (e) { next(e); }
   });
 
 // ---------------- IMÁGENES DEL LIBRO (para editores externos) ----------------
-router.get('/:id/images', auth, isAuthorOrModerator,
+router.get('/:id/imagenes', auth, isAuthorOrModerator,
   param('id').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const book = req.book;
-      const chapters = await db.listChapters(req.params.id);
+      const libro = req.book;
+      const capitulos = await db.listarCapitulos(req.params.id);
       const seen = new Set();
       const IMG_RE = /@img:([a-zA-Z0-9\-_,\.\?!¿¡<>]+)/g;
-      for (const ch of chapters) {
-        if (!ch.content) continue;
+      for (const ch of capitulos) {
+        if (!ch.contenido) continue;
         let m;
-        while ((m = IMG_RE.exec(ch.content)) !== null) {
+        while ((m = IMG_RE.exec(ch.contenido)) !== null) {
           seen.add(m[1]);
         }
       }
-      const images = [];
-      const author = await db.getUserById(book.author_id);
-      for (const name of seen) {
-        const img = await db.getUserImageByCustomName(book.author_id, name);
+      const imagenes = [];
+      const autor = await db.obtenerUsuarioPorId(libro.autor_id);
+      for (const nombre of seen) {
+        const img = await db.obtenerImagenUsuarioPorNombrePersonalizado(libro.autor_id, nombre);
         if (img) {
-          images.push({
-            custom_name: img.custom_name,
-            url: '/api/user-images/resolve/' + book.author_id + '/' + encodeURIComponent(img.custom_name),
-            owner: {
-              id: author?.id || book.author_id,
-              display_name: author?.display_name || 'Desconocido',
-              email: author?.email || ''
+          imagenes.push({
+            nombre_personalizado: img.nombre_personalizado,
+            url: '/api/imagenes-usuario/resolver/' + libro.autor_id + '/' + encodeURIComponent(img.nombre_personalizado),
+            propietario: {
+              id: autor?.id || libro.autor_id,
+              nombre_mostrado: autor?.nombre_mostrado || 'Desconocido',
+              email: autor?.email || ''
             }
           });
         }
       }
-      res.json({ images, author_id: book.author_id });
+      res.json({ imagenes, autor_id: libro.autor_id });
     } catch (e) { next(e); }
   });
 

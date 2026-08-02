@@ -1,12 +1,12 @@
 /**
- * BookShelf™ - Capa de acceso a datos
+ * FoxOnAShelf™ - Capa de acceso a datos
  *
  * Dos backends intercambiables según DB_MODE:
  *   - 'postgres' (default si hay DATABASE_URL): usa node-postgres.
  *   - 'json':      usa storage/db.json (sin instalar Postgres).
  *
  * Expone una API uniforme con funciones de alto nivel
- * (listBooks, getUserByEmail, banUser, etc.) para que las rutas
+ * (listarLibros, obtenerUsuarioPorEmail, banearUsuario, etc.) para que las rutas
  * sean idénticas independientemente del backend.
  */
 const fs   = require('fs');
@@ -48,22 +48,21 @@ function withDb(fn) {
   return p;
 }
 
-const RECOVERY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const VENTANA_RECUPERACION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 function emptyDb() {
-  return { users:[], books:[], chapters:[], favorites:[], ratings:[],
-           comments:[], collections:[], collection_books:[], notifications:[],
-           announcements:[], metrics:[], banned_users:[], token_blacklist:[],
-           moderation_logs:[], book_views:[], refresh_tokens:[],
-           categories:['fantasía','poesía','narrativa','educativa'],
-           bookmarks:[], user_images:[], trash:[],
-            changelogs:[], changelog_config:{ link_text:'Ver historial de versiones', current_version:'1.0.0' },
-             easter_eggs:[{ id:'register_username', message:'Nu uh, eso es mío!', description:'Intenta registrarte con este nombre en la página de registro.' }],
-             team_profiles:[
-               { id:'jeison-sossa', name:'Jeison Sossa Sierra', age:'', contact:'', info:'Texto de ejemplo para el perfil.', photo_url:'/storage/team/placeholder.png' },
-               { id:'leyder-montoya', name:'Leyder Montoya Gonzales', age:'', contact:'', info:'Texto de ejemplo para el perfil.', photo_url:'/storage/team/placeholder.png' },
-               { id:'santiago-lopez', name:'Santiago López Quintana', age:'', contact:'', info:'Texto de ejemplo para el perfil.', photo_url:'/storage/team/placeholder.png' }
-             ] };
+  return { usuarios:[], libros:[], capitulos:[], favoritos:[], calificaciones:[],
+           comentarios:[], colecciones:[], libros_coleccion:[], notificaciones:[],
+           anuncios:[], metricas:[], usuarios_baneados:[], lista_negra_tokens:[],
+           registros_moderacion:[], vistas_libro:[], tokens_refresco:[], destacados:[],
+           categorias:['fantasía','poesía','narrativa','educativa'],
+           marcadores:[], imagenes_usuario:[], papelera:[],
+             historiales:[], config_historial:{ texto_enlace:'Ver historial de versiones', version_actual:'1.0.0' },
+             huevos_pascua:[{ id:'register_username', mensaje:'Nu uh, eso es mío!', descripcion:'Intenta registrarte con este nombre en la página de registro.', nombres:['ERROR_FOX'], emoji:'🦊' }],
+             perfiles_equipo:[
+                { id:'error-fox', nombre:'ERROR_FOX', edad:'', role:'', contacto:'', informacion:'Texto de ejemplo para el perfil.', urlFoto:'', admin_email:'' }
+             ],
+             titulo_equipo:'Nuestro Equipo' };
 }
 
 // ---------------------------------------------------------------------
@@ -82,7 +81,7 @@ async function pgQuery(text, params = []) {
 
 function parseJsonb(val, fallback) {
   if (val === null || val === undefined) return fallback;
-  if (typeof val === 'string') try { return JSON.parse(val); } catch { return val; }
+  if (typeof val === 'string') try { return JSON.parse(val); } catch { return fallback; }
   return val;
 }
 
@@ -90,1030 +89,1045 @@ function parseJsonb(val, fallback) {
 // API uniforme
 // ---------------------------------------------------------------------
 const api = {
+  // ---- HEALTH ----
+  async ping() {
+    if (isPg) { await pgQuery('SELECT 1'); return true; }
+    loadJson();
+    return true;
+  },
+
   // ---- USERS ----
-  async listUsers({ q, role, page = 1, limit = 50 } = {}) {
+  async listarUsuarios({ q, role, page = 1, limit = 50 } = {}) {
     const offset = (page - 1) * limit;
     if (isPg) {
       const where = []; const params = [];
       if (q) {
         const sq = q.replace(/[%_\\]/g, '\\$&');
         params.push('%' + sq + '%');
-        where.push(`(email ILIKE $${params.length} ESCAPE '\\' OR display_name ILIKE $${params.length} ESCAPE '\\')`);
+        where.push(`(email ILIKE $${params.length} ESCAPE '\\' OR nombre_mostrado ILIKE $${params.length} ESCAPE '\\')`);
       }
       if (role) { params.push(role); where.push(`role=$${params.length}`); }
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
       params.push(limit); params.push(offset);
       const rows = await pgQuery(
-        `SELECT id, email, display_name, role, avatar_url, contact_info, created_at
-           FROM users ${whereClause}
+        `SELECT id, email, nombre_mostrado, role, url_avatar, informacion_contacto, created_at
+           FROM usuarios ${whereClause}
            ORDER BY created_at DESC
            LIMIT $${params.length - 1} OFFSET $${params.length}`, params);
       const countResult = await pgQuery(
-        `SELECT count(*)::int AS total FROM users ${whereClause}`, params.slice(0, -2));
-      return { users: rows, total: countResult[0]?.total || 0 };
+        `SELECT count(*)::int AS total FROM usuarios ${whereClause}`, params.slice(0, -2));
+      return { usuarios: rows, total: countResult[0]?.total || 0 };
     }
     const db = loadJson();
-    let arr = db.users.slice();
+    let arr = db.usuarios.slice();
     if (q) {
       const qq = q.toLowerCase();
       arr = arr.filter(u =>
         u.email.toLowerCase().includes(qq) ||
-        (u.display_name || '').toLowerCase().includes(qq));
+        (u.nombre_mostrado || '').toLowerCase().includes(qq));
     }
     if (role) arr = arr.filter(u => u.role === role);
     const total = arr.length;
     arr = arr.sort((a, b) => b.created_at.localeCompare(a.created_at));
     arr = arr.slice(offset, offset + limit);
-    return { users: arr.map(u => ({ id: u.id, email: u.email, display_name: u.display_name,
-                                     role: u.role, avatar_url: u.avatar_url,
-                                     contact_info: u.contact_info, created_at: u.created_at })),
+    return { usuarios: arr.map(u => ({ id: u.id, email: u.email, nombre_mostrado: u.nombre_mostrado,
+                                     role: u.role, url_avatar: u.url_avatar,
+                                     informacion_contacto: u.informacion_contacto, created_at: u.created_at })),
              total };
   },
-  async getUserByEmail(email) {
-    if (isPg) return (await pgQuery('SELECT * FROM users WHERE email=$1', [email]))[0] || null;
-    return loadJson().users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
+  async obtenerUsuarioPorEmail(email) {
+    if (isPg) return (await pgQuery('SELECT * FROM usuarios WHERE LOWER(email)=LOWER($1)', [email]))[0] || null;
+    return loadJson().usuarios.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
   },
-  async getUserById(id) {
-    if (isPg) return (await pgQuery('SELECT * FROM users WHERE id=$1', [id]))[0] || null;
-    return loadJson().users.find(u => u.id === id) || null;
+  async obtenerUsuarioPorId(id) {
+    if (isPg) return (await pgQuery('SELECT * FROM usuarios WHERE id=$1', [id]))[0] || null;
+    return loadJson().usuarios.find(u => u.id === id) || null;
   },
-  async createUser({ email, password_hash, display_name, role='user' }) {
+  async crearUsuario({ email, hash_contrasena, nombre_mostrado, role='user' }) {
     const id = uuidv4();
-    const user = { id, email, password_hash, display_name, role,
-                   avatar_url:null, contact_info:null,
+    const user = { id, email, hash_contrasena, nombre_mostrado, role,
+                   url_avatar:null, informacion_contacto:null,
                    created_at: new Date().toISOString() };
     if (isPg) {
       await pgQuery(
-        `INSERT INTO users (id,email,password_hash,display_name,role,avatar_url,contact_info,created_at)
+        `INSERT INTO usuarios (id,email,hash_contrasena,nombre_mostrado,role,url_avatar,informacion_contacto,created_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [id, email, password_hash, display_name, role, null, null, user.created_at]);
+        [id, email, hash_contrasena, nombre_mostrado, role, null, null, user.created_at]);
       return user;
     }
     return withDb(db => {
-      db.users.push(user);
+      db.usuarios.push(user);
       return user;
     });
   },
-  async updateUserContactInfo(id, contact_info) {
-    if (isPg) { await pgQuery('UPDATE users SET contact_info=$1 WHERE id=$2', [contact_info, id]); return; }
-    await withDb(db => { const u = db.users.find(x => x.id === id); if (u) u.contact_info = contact_info; });
+  async actualizarInformacionContactoUsuario(id, informacion_contacto) {
+    if (isPg) { await pgQuery('UPDATE usuarios SET informacion_contacto=$1 WHERE id=$2', [informacion_contacto, id]); return; }
+    await withDb(db => { const u = db.usuarios.find(x => x.id === id); if (u) u.informacion_contacto = informacion_contacto; });
   },
-  async updateUserDisplayName(id, display_name) {
-    if (isPg) { await pgQuery('UPDATE users SET display_name=$1 WHERE id=$2', [display_name, id]); return; }
-    await withDb(db => { const u = db.users.find(x => x.id === id); if (u) u.display_name = display_name; });
+  async actualizarNombreMostradoUsuario(id, nombre_mostrado) {
+    if (isPg) { await pgQuery('UPDATE usuarios SET nombre_mostrado=$1 WHERE id=$2', [nombre_mostrado, id]); return; }
+    await withDb(db => { const u = db.usuarios.find(x => x.id === id); if (u) u.nombre_mostrado = nombre_mostrado; });
   },
-  async moveModerator(id, direction) {
-    const all = await this.listModerators();
+  async moverModerador(id, direction) {
+    const all = await this.listarModeradores();
     const idx = all.findIndex(u => u.id === id);
     if (idx === -1) return false;
     if (direction === 'up' && idx === 0) return false;
     if (direction === 'down' && idx === all.length - 1) return false;
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (isPg) {
-      await pgQuery('UPDATE users SET team_sort=$1 WHERE id=$2', [swapIdx, id]);
-      await pgQuery('UPDATE users SET team_sort=$1 WHERE id=$2', [idx, all[swapIdx].id]);
+      await pgQuery('UPDATE usuarios SET orden_equipo=$1 WHERE id=$2', [swapIdx, id]);
+      await pgQuery('UPDATE usuarios SET orden_equipo=$1 WHERE id=$2', [idx, all[swapIdx].id]);
       return true;
     }
     await withDb(db => {
-      const a = db.users.find(u => u.id === id);
-      const b = db.users.find(u => u.id === all[swapIdx].id);
+      const a = db.usuarios.find(u => u.id === id);
+      const b = db.usuarios.find(u => u.id === all[swapIdx].id);
       if (!a || !b) return;
-      if (a.team_sort == null) a.team_sort = idx;
-      if (b.team_sort == null) b.team_sort = swapIdx;
-      const tmp = a.team_sort;
-      a.team_sort = b.team_sort;
-      b.team_sort = tmp;
+      if (a.orden_equipo == null) a.orden_equipo = idx;
+      if (b.orden_equipo == null) b.orden_equipo = swapIdx;
+      const tmp = a.orden_equipo;
+      a.orden_equipo = b.orden_equipo;
+      b.orden_equipo = tmp;
     });
     return true;
   },
-  async listModerators() {
+  async listarModeradores() {
     if (isPg) {
       const rows = await pgQuery(
-        `SELECT id,email,display_name,role,created_at,team_sort
-           FROM users WHERE role IN ('moderator','admin')
-           ORDER BY COALESCE(team_sort, 0), created_at`);
+        `SELECT id,email,nombre_mostrado,role,created_at,orden_equipo
+           FROM usuarios WHERE role IN ('moderator','admin')
+           ORDER BY COALESCE(orden_equipo, 0), created_at`);
       return rows;
     }
-    return loadJson().users.filter(u => ['moderator','admin'].includes(u.role))
-      .map(u => ({ id: u.id, email: u.email, display_name: u.display_name,
-                   role: u.role, created_at: u.created_at, avatar_url: u.avatar_url,
-                   contact_info: u.contact_info,
-                   team_sort: u.team_sort || 0 }))
-      .sort((a, b) => (a.team_sort || 0) - (b.team_sort || 0) || new Date(a.created_at) - new Date(b.created_at));
+    return loadJson().usuarios.filter(u => ['moderator','admin'].includes(u.role))
+      .map(u => ({ id: u.id, email: u.email, nombre_mostrado: u.nombre_mostrado,
+                   role: u.role, created_at: u.created_at, url_avatar: u.url_avatar,
+                   informacion_contacto: u.informacion_contacto,
+                   orden_equipo: u.orden_equipo || 0 }))
+      .sort((a, b) => (a.orden_equipo || 0) - (b.orden_equipo || 0) || new Date(a.created_at) - new Date(b.created_at));
   },
-  async removeModerator(id) {
-    if (isPg) { await pgQuery('UPDATE users SET role=$1 WHERE id=$2 AND role=$3', ['user', id, 'moderator']); return; }
+  async removerModerador(id) {
+    if (isPg) { await pgQuery('UPDATE usuarios SET role=$1 WHERE id=$2 AND role=$3', ['user', id, 'moderator']); return; }
     await withDb(db => {
-      const u = db.users.find(x => x.id === id && x.role === 'moderator');
+      const u = db.usuarios.find(x => x.id === id && x.role === 'moderator');
       if (u) u.role = 'user';
     });
   },
-  async setModerator(id) {
+  async establecerModerador(id) {
     if (isPg) {
-      const max = (await pgQuery('SELECT MAX(team_sort) FROM users WHERE role IN (\'moderator\',\'admin\')'))[0]?.max || 0;
-      await pgQuery('UPDATE users SET role=$1, team_sort=$2 WHERE id=$3 AND role=$4', ['moderator', max + 1, id, 'user']);
+      const max = (await pgQuery('SELECT MAX(orden_equipo) FROM usuarios WHERE role IN (\'moderator\',\'admin\')'))[0]?.max || 0;
+      await pgQuery('UPDATE usuarios SET role=$1, orden_equipo=$2 WHERE id=$3 AND role=$4', ['moderator', max + 1, id, 'user']);
       return;
     }
     await withDb(db => {
-      const u = db.users.find(x => x.id === id && x.role === 'user');
+      const u = db.usuarios.find(x => x.id === id && x.role === 'user');
       if (u) {
         u.role = 'moderator';
-        u.team_sort = db.users.filter(x => ['moderator','admin'].includes(x.role)).length;
+        u.orden_equipo = db.usuarios.filter(x => ['moderator','admin'].includes(x.role)).length;
       }
     });
   },
-  async deleteUser(id, { adminEmail, permanent } = {}) {
+  async eliminarUsuario(id, { adminEmail, permanent } = {}) {
     if (isPg) {
       const client = await pgPool.connect();
       try {
         await client.query('BEGIN');
-        const userRow = (await client.query('SELECT * FROM users WHERE id=$1', [id])).rows[0];
+        const userRow = (await client.query('SELECT * FROM usuarios WHERE id=$1', [id])).rows[0];
         if (!userRow) { await client.query('ROLLBACK'); return null; }
         const email = userRow.email;
 
         // Snapshot para la papelera (si no es eliminación permanente desde papelera)
         if (!permanent) {
           const userBooks = (await client.query(
-            'SELECT id, title FROM books WHERE author_id=$1', [id])).rows;
+            'SELECT id, titulo FROM libros WHERE autor_id=$1', [id])).rows;
           const bookIds = userBooks.map(b => b.id);
 
-          let trashedChapters = [];
-          let trashedBookViews = [];
-          let trashedBookFavs = [];
-          let trashedBookRatings = [];
-          let trashedBookComments = [];
+          let capitulosEnPapelera = [];
+          let vistasDeLibrosEnPapelera = [];
+          let favoritosDeLibrosEnPapelera = [];
+          let calificacionesDeLibrosEnPapelera = [];
+          let comentariosDeLibrosEnPapelera = [];
           for (const bId of bookIds) {
-            trashedChapters = trashedChapters.concat(
-              (await client.query('SELECT * FROM chapters WHERE book_id=$1', [bId])).rows);
-            trashedBookViews = trashedBookViews.concat(
-              (await client.query('SELECT * FROM book_views WHERE book_id=$1', [bId])).rows);
-            trashedBookFavs = trashedBookFavs.concat(
-              (await client.query('SELECT * FROM favorites WHERE book_id=$1', [bId])).rows);
-            trashedBookRatings = trashedBookRatings.concat(
-              (await client.query('SELECT * FROM ratings WHERE book_id=$1', [bId])).rows);
-            trashedBookComments = trashedBookComments.concat(
-              (await client.query('SELECT * FROM comments WHERE book_id=$1', [bId])).rows);
+            capitulosEnPapelera = capitulosEnPapelera.concat(
+              (await client.query('SELECT * FROM capitulos WHERE libro_id=$1', [bId])).rows);
+            vistasDeLibrosEnPapelera = vistasDeLibrosEnPapelera.concat(
+              (await client.query('SELECT * FROM vistas_libro WHERE libro_id=$1', [bId])).rows);
+            favoritosDeLibrosEnPapelera = favoritosDeLibrosEnPapelera.concat(
+              (await client.query('SELECT * FROM favoritos WHERE libro_id=$1', [bId])).rows);
+            calificacionesDeLibrosEnPapelera = calificacionesDeLibrosEnPapelera.concat(
+              (await client.query('SELECT * FROM calificaciones WHERE libro_id=$1', [bId])).rows);
+            comentariosDeLibrosEnPapelera = comentariosDeLibrosEnPapelera.concat(
+              (await client.query('SELECT * FROM comentarios WHERE libro_id=$1', [bId])).rows);
           }
 
-          const trashEntry = {
+          const papeleraEntry = {
             id: uuidv4(),
             user: userRow,
-            user_email: email,
+            email_usuario: email,
             data: {
-              favorites: (await client.query(
-                'SELECT * FROM favorites WHERE user_id=$1', [id])).rows,
-              ratings: (await client.query(
-                'SELECT * FROM ratings WHERE user_id=$1', [id])).rows,
-              comments: (await client.query(
-                'SELECT * FROM comments WHERE user_id=$1', [id])).rows,
-              bookmarks: (await client.query(
-                'SELECT * FROM bookmarks WHERE user_id=$1', [id])).rows,
-              book_views: (await client.query(
-                'SELECT * FROM book_views WHERE user_id=$1', [id])).rows,
-              notifications: (await client.query(
-                'SELECT * FROM notifications WHERE user_id=$1', [id])).rows,
-              user_images: (await client.query(
-                'SELECT * FROM user_images WHERE user_id=$1', [id])).rows,
-              collections: (await client.query(
-                'SELECT * FROM collections WHERE owner_id=$1', [id])).rows,
-              books: userBooks,
-              chapters: trashedChapters,
-              book_views_on_books: trashedBookViews,
-              favorites_on_books: trashedBookFavs,
-              ratings_on_books: trashedBookRatings,
-              comments_on_books: trashedBookComments
+              favoritos: (await client.query(
+                'SELECT * FROM favoritos WHERE usuario_id=$1', [id])).rows,
+              calificaciones: (await client.query(
+                'SELECT * FROM calificaciones WHERE usuario_id=$1', [id])).rows,
+              comentarios: (await client.query(
+                'SELECT * FROM comentarios WHERE usuario_id=$1', [id])).rows,
+              marcadores: (await client.query(
+                'SELECT * FROM marcadores WHERE usuario_id=$1', [id])).rows,
+              vistas_libro: (await client.query(
+                'SELECT * FROM vistas_libro WHERE usuario_id=$1', [id])).rows,
+              notificaciones: (await client.query(
+                'SELECT * FROM notificaciones WHERE usuario_id=$1', [id])).rows,
+              imagenes_usuario: (await client.query(
+                'SELECT * FROM imagenes_usuario WHERE usuario_id=$1', [id])).rows,
+              colecciones: (await client.query(
+                'SELECT * FROM colecciones WHERE propietario_id=$1', [id])).rows,
+              libros: userBooks,
+              capitulos: capitulosEnPapelera,
+              vistas_libro_en_libros: vistasDeLibrosEnPapelera,
+              favoritos_en_libros: favoritosDeLibrosEnPapelera,
+              calificaciones_en_libros: calificacionesDeLibrosEnPapelera,
+              comentarios_en_libros: comentariosDeLibrosEnPapelera
             },
-            trashed_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + RECOVERY_WINDOW_MS).toISOString(),
-            trashed_by: adminEmail || 'unknown'
+            eliminado_en: new Date().toISOString(),
+            expira_en: new Date(Date.now() + VENTANA_RECUPERACION_MS).toISOString(),
+            eliminado_por: adminEmail || 'unknown'
           };
 
           await client.query(
-            `INSERT INTO trash (id, user_email, entry, trashed_at, expires_at, trashed_by)
+            `INSERT INTO papelera (id, email_usuario, entrada, eliminado_en, expira_en, eliminado_por)
              VALUES ($1,$2,$3,$4,$5,$6)`,
-            [trashEntry.id, email, JSON.stringify(trashEntry),
-             trashEntry.trashed_at, trashEntry.expires_at, trashEntry.trashed_by]);
+            [papeleraEntry.id, email, JSON.stringify(papeleraEntry),
+             papeleraEntry.eliminado_en, papeleraEntry.expira_en, papeleraEntry.eliminado_por]);
         }
 
         // Limpieza de datos del usuario en las tablas activas
-        await client.query('DELETE FROM book_views WHERE user_id=$1', [id]);
-        await client.query('DELETE FROM favorites WHERE user_id=$1', [id]);
-        await client.query('DELETE FROM ratings WHERE user_id=$1', [id]);
-        await client.query('DELETE FROM bookmarks WHERE user_id=$1', [id]);
-        await client.query('DELETE FROM comments WHERE user_id=$1', [id]);
-        await client.query('DELETE FROM notifications WHERE user_id=$1', [id]);
-        await client.query('DELETE FROM user_images WHERE user_id=$1', [id]);
+        await client.query('DELETE FROM vistas_libro WHERE usuario_id=$1', [id]);
+        await client.query('DELETE FROM favoritos WHERE usuario_id=$1', [id]);
+        await client.query('DELETE FROM calificaciones WHERE usuario_id=$1', [id]);
+        await client.query('DELETE FROM marcadores WHERE usuario_id=$1', [id]);
+        await client.query('DELETE FROM comentarios WHERE usuario_id=$1', [id]);
+        await client.query('DELETE FROM notificaciones WHERE usuario_id=$1', [id]);
+        await client.query('DELETE FROM imagenes_usuario WHERE usuario_id=$1', [id]);
         const colIds = (await client.query(
-          'SELECT id FROM collections WHERE owner_id=$1', [id])).rows.map(r => r.id);
+          'SELECT id FROM colecciones WHERE propietario_id=$1', [id])).rows.map(r => r.id);
         for (const cId of colIds) {
-          await client.query('DELETE FROM collection_books WHERE collection_id=$1', [cId]);
+          await client.query('DELETE FROM libros_coleccion WHERE coleccion_id=$1', [cId]);
         }
-        await client.query('DELETE FROM collections WHERE owner_id=$1', [id]);
+        await client.query('DELETE FROM colecciones WHERE propietario_id=$1', [id]);
 
-        const books = (await client.query(
-          'SELECT id FROM books WHERE author_id=$1', [id])).rows;
-        for (const b of books) {
-          await client.query('DELETE FROM chapters WHERE book_id=$1', [b.id]);
-          await client.query('DELETE FROM book_views WHERE book_id=$1', [b.id]);
-          await client.query('DELETE FROM favorites WHERE book_id=$1', [b.id]);
-          await client.query('DELETE FROM ratings WHERE book_id=$1', [b.id]);
-          await client.query('DELETE FROM comments WHERE book_id=$1', [b.id]);
+        const libros = (await client.query(
+          'SELECT id FROM libros WHERE autor_id=$1', [id])).rows;
+        for (const b of libros) {
+          await client.query('DELETE FROM capitulos WHERE libro_id=$1', [b.id]);
+          await client.query('DELETE FROM vistas_libro WHERE libro_id=$1', [b.id]);
+          await client.query('DELETE FROM favoritos WHERE libro_id=$1', [b.id]);
+          await client.query('DELETE FROM calificaciones WHERE libro_id=$1', [b.id]);
+          await client.query('DELETE FROM comentarios WHERE libro_id=$1', [b.id]);
         }
-        await client.query('DELETE FROM books WHERE author_id=$1', [id]);
-        await client.query('UPDATE announcements SET admin_id=NULL WHERE admin_id=$1', [id]);
+        await client.query('DELETE FROM libros WHERE autor_id=$1', [id]);
+        await client.query('UPDATE anuncios SET admin_id=NULL WHERE admin_id=$1', [id]);
 
         // Marcar email como eliminado
         await client.query(
-          `INSERT INTO banned_users (email, reason, banned_at, deleted_at, unbanned_at, banned_by, unbanned_by)
-           VALUES ($1, 'Eliminación administrativa', now(), now(), now(), $2, $2)
-           ON CONFLICT (email) DO UPDATE SET deleted_at=now(), unbanned_at=now(), unbanned_by=$2`,
-          [email, adminEmail || null]);
-        await client.query('DELETE FROM token_blacklist WHERE user_email=$1', [email]);
-        await client.query('DELETE FROM refresh_tokens WHERE user_id=$1', [id]);
-        await client.query('DELETE FROM users WHERE id=$1', [id]);
+          `INSERT INTO usuarios_baneados (email, razon, banned_at, deleted_at)
+           VALUES ($1, 'Eliminación administrativa', now(), now())
+           ON CONFLICT (email) DO UPDATE SET deleted_at=now()`,
+          [email]);
+        await client.query('DELETE FROM lista_negra_tokens WHERE email_usuario=$1', [email]);
+        await client.query('DELETE FROM tokens_refresco WHERE usuario_id=$1', [id]);
+        await client.query('DELETE FROM usuarios WHERE id=$1', [id]);
         await client.query('COMMIT');
       } catch (e) { await client.query('ROLLBACK'); throw e; }
       finally { client.release(); }
       return { deleted: true };
     }
     return withDb(db => {
-      const u = db.users.find(x => x.id === id);
+      const u = db.usuarios.find(x => x.id === id);
       if (!u) return null;
       const email = u.email;
       const now = new Date().toISOString();
 
       // Snapshot para papelera (solo si no es permanent delete desde papelera)
       if (!permanent) {
-        const trashBooks = db.books.filter(b => b.author_id === id);
-        const bookIds = trashBooks.map(b => b.id);
-        if (!db.trash) db.trash = [];
-        const trashEntry = {
+        const papeleraBooks = db.libros.filter(b => b.autor_id === id);
+        const bookIds = papeleraBooks.map(b => b.id);
+        if (!db.papelera) db.papelera = [];
+        const papeleraEntry = {
           id: uuidv4(),
           user: { ...u },
-          user_email: email,
+          email_usuario: email,
           data: {
-            favorites: db.favorites.filter(x => x.user_id === id),
-            ratings: db.ratings.filter(x => x.user_id === id),
-            comments: db.comments.filter(x => x.user_id === id),
-            bookmarks: (db.bookmarks || []).filter(x => x.user_id === id),
-            book_views: (db.book_views || []).filter(x => x.user_id === id),
-            notifications: (db.notifications || []).filter(x => x.user_id === id),
-            user_images: (db.user_images || []).filter(x => x.user_id === id),
-            collections: (db.collections || []).filter(x => x.owner_id === id),
-            collection_books: [],
-            books: trashBooks,
-            chapters: db.chapters.filter(c => bookIds.includes(c.book_id)),
-            book_views_on_books: (db.book_views || []).filter(v => bookIds.includes(v.book_id)),
-            favorites_on_books: db.favorites.filter(f => bookIds.includes(f.book_id)),
-            ratings_on_books: db.ratings.filter(r => bookIds.includes(r.book_id)),
-            comments_on_books: db.comments.filter(c => bookIds.includes(c.book_id))
+            favoritos: db.favoritos.filter(x => x.usuario_id === id),
+            calificaciones: db.calificaciones.filter(x => x.usuario_id === id),
+            comentarios: db.comentarios.filter(x => x.usuario_id === id),
+            marcadores: (db.marcadores || []).filter(x => x.usuario_id === id),
+            vistas_libro: (db.vistas_libro || []).filter(x => x.usuario_id === id),
+            notificaciones: (db.notificaciones || []).filter(x => x.usuario_id === id),
+            imagenes_usuario: (db.imagenes_usuario || []).filter(x => x.usuario_id === id),
+            colecciones: (db.colecciones || []).filter(x => x.propietario_id === id),
+            libros_coleccion: [],
+            libros: papeleraBooks,
+            capitulos: db.capitulos.filter(c => bookIds.includes(c.libro_id)),
+            vistas_libro_en_libros: (db.vistas_libro || []).filter(v => bookIds.includes(v.libro_id)),
+            favoritos_en_libros: db.favoritos.filter(f => bookIds.includes(f.libro_id)),
+            calificaciones_en_libros: db.calificaciones.filter(r => bookIds.includes(r.libro_id)),
+            comentarios_en_libros: db.comentarios.filter(c => bookIds.includes(c.libro_id))
           },
-          trashed_at: now,
-          expires_at: new Date(Date.now() + RECOVERY_WINDOW_MS).toISOString(),
-          trashed_by: adminEmail || 'unknown'
+          eliminado_en: now,
+          expira_en: new Date(Date.now() + VENTANA_RECUPERACION_MS).toISOString(),
+          eliminado_por: adminEmail || 'unknown'
         };
-        // Collect collection_books for user's collections
-        const userColIds = trashEntry.data.collections.map(c => c.id);
-        trashEntry.data.collection_books = (db.collection_books || [])
-          .filter(cb => userColIds.includes(cb.collection_id));
+        // Collect libros_coleccion for user's colecciones
+        const userColIds = papeleraEntry.data.colecciones.map(c => c.id);
+        papeleraEntry.data.libros_coleccion = (db.libros_coleccion || [])
+          .filter(cb => userColIds.includes(cb.coleccion_id));
 
-        db.trash.push(trashEntry);
+        db.papelera.push(papeleraEntry);
       }
 
       // Limpiar datos del usuario de colecciones activas
-      db.users = db.users.filter(x => x.id !== id);
-      db.book_views = (db.book_views || []).filter(x => x.user_id !== id);
-      db.favorites = db.favorites.filter(x => x.user_id !== id);
-      db.ratings = db.ratings.filter(x => x.user_id !== id);
-      db.bookmarks = (db.bookmarks || []).filter(x => x.user_id !== id);
-      db.comments = db.comments.filter(x => x.user_id !== id);
-      db.notifications = (db.notifications || []).filter(x => x.user_id !== id);
-      db.user_images = (db.user_images || []).filter(x => x.user_id !== id);
-      const userCols = (db.collections || []).filter(x => x.owner_id === id);
+      db.usuarios = db.usuarios.filter(x => x.id !== id);
+      db.vistas_libro = (db.vistas_libro || []).filter(x => x.usuario_id !== id);
+      db.favoritos = db.favoritos.filter(x => x.usuario_id !== id);
+      db.calificaciones = db.calificaciones.filter(x => x.usuario_id !== id);
+      db.marcadores = (db.marcadores || []).filter(x => x.usuario_id !== id);
+      db.comentarios = db.comentarios.filter(x => x.usuario_id !== id);
+      db.notificaciones = (db.notificaciones || []).filter(x => x.usuario_id !== id);
+      db.imagenes_usuario = (db.imagenes_usuario || []).filter(x => x.usuario_id !== id);
+      const userCols = (db.colecciones || []).filter(x => x.propietario_id === id);
       const userColIds = userCols.map(c => c.id);
-      db.collection_books = (db.collection_books || []).filter(
-        cb => !userColIds.includes(cb.collection_id));
-      db.collections = (db.collections || []).filter(x => x.owner_id !== id);
+      db.libros_coleccion = (db.libros_coleccion || []).filter(
+        cb => !userColIds.includes(cb.coleccion_id));
+      db.colecciones = (db.colecciones || []).filter(x => x.propietario_id !== id);
 
-      const userBooks = db.books.filter(b => b.author_id === id);
+      const userBooks = db.libros.filter(b => b.autor_id === id);
       const bookIds = userBooks.map(b => b.id);
       for (const bId of bookIds) {
-        db.chapters = db.chapters.filter(c => c.book_id !== bId);
-        db.book_views = (db.book_views || []).filter(v => v.book_id !== bId);
-        db.favorites = db.favorites.filter(f => f.book_id !== bId);
-        db.ratings = db.ratings.filter(r => r.book_id !== bId);
-        db.comments = db.comments.filter(c => c.book_id !== bId);
+        db.capitulos = db.capitulos.filter(c => c.libro_id !== bId);
+        db.vistas_libro = (db.vistas_libro || []).filter(v => v.libro_id !== bId);
+        db.favoritos = db.favoritos.filter(f => f.libro_id !== bId);
+        db.calificaciones = db.calificaciones.filter(r => r.libro_id !== bId);
+        db.comentarios = db.comentarios.filter(c => c.libro_id !== bId);
       }
-      db.books = db.books.filter(b => !bookIds.includes(b.id));
-      db.announcements.forEach(a => { if (a.admin_id === id) a.admin_id = null; });
+      db.libros = db.libros.filter(b => !bookIds.includes(b.id));
+      db.anuncios.forEach(a => { if (a.admin_id === id) a.admin_id = null; });
 
-      const existingBan = db.banned_users.find(b => b.email === email && !b.unbanned_at);
+      const existingBan = db.usuarios_baneados.find(b => b.email.toLowerCase() === email.toLowerCase() && !b.unbanned_at);
       if (existingBan) {
         existingBan.deleted_at = now;
         existingBan.unbanned_at = now;
         existingBan.unbanned_by = adminEmail || null;
       } else {
-        db.banned_users.push({
-          id: uuidv4(), email, reason: 'Eliminación administrativa',
+        db.usuarios_baneados.push({
+          id: uuidv4(), email, razon: 'Eliminación administrativa',
           banned_by: adminEmail || null,
           unbanned_by: adminEmail || null,
-          appeal: null, appeal_submitted: false,
+          apelacion: null, apelacion_enviada: false,
           banned_at: now, deleted_at: now, unbanned_at: now
         });
       }
-      db.token_blacklist = db.token_blacklist.filter(t => t.user_email !== email);
-      db.refresh_tokens = (db.refresh_tokens || []).filter(t => t.user_id !== id);
-      return { deleted: true, trashed: !permanent };
+      db.lista_negra_tokens = db.lista_negra_tokens.filter(t => t.email_usuario.toLowerCase() !== email.toLowerCase());
+      db.tokens_refresco = (db.tokens_refresco || []).filter(t => t.usuario_id !== id);
+      return { eliminado: true, enPapelera: !permanent };
     });
   },
 
   // ---- PAPELERA (TRASH) ----
-  async listTrash() {
+  async listarPapelera() {
     if (isPg) {
       const rows = await pgQuery(
-        `SELECT id, user_email, trashed_at, expires_at, trashed_by
-           FROM trash ORDER BY trashed_at DESC`);
+        `SELECT id, email_usuario, eliminado_en, expira_en, eliminado_por
+           FROM papelera ORDER BY eliminado_en DESC`);
       return rows.map(r => ({
         ...r,
-        expired: new Date(r.expires_at) < new Date()
+        expired: new Date(r.expira_en) < new Date()
       }));
     }
     return withDb(db => {
-      if (!db.trash) db.trash = [];
+      if (!db.papelera) db.papelera = [];
       const now = new Date();
       // Auto-purge de entradas expiradas
-      db.trash = db.trash.filter(t => new Date(t.expires_at) > now);
-      return db.trash.map(t => ({
+      db.papelera = db.papelera.filter(t => new Date(t.expira_en) > now);
+      return db.papelera.map(t => ({
         id: t.id,
-        user_email: t.user_email,
-        trashed_at: t.trashed_at,
-        expires_at: t.expires_at,
-        trashed_by: t.trashed_by,
-        user: { id: t.user.id, email: t.user.email, display_name: t.user.display_name, role: t.user.role },
-        has_books: t.data.books.length > 0,
-        book_count: t.data.books.length,
+        email_usuario: t.email_usuario,
+        eliminado_en: t.eliminado_en,
+        expira_en: t.expira_en,
+        eliminado_por: t.eliminado_por,
+        user: { id: t.user.id, email: t.user.email, nombre_mostrado: t.user.nombre_mostrado, role: t.user.role },
+        has_libros: t.data.libros.length > 0,
+        conteo_libros: t.data.libros.length,
         expired: false
       }));
     });
   },
 
-  async getTrashEntry(id) {
+  async obtenerEntradaPapelera(id) {
     if (isPg) {
-      const rows = await pgQuery('SELECT * FROM trash WHERE id=$1', [id]);
+      const rows = await pgQuery('SELECT * FROM papelera WHERE id=$1', [id]);
       if (!rows.length) return null;
       const row = rows[0];
-      return { ...JSON.parse(row.entry), expired: new Date(row.expires_at) < new Date() };
+      return { ...JSON.parse(row.entrada), expired: new Date(row.expira_en) < new Date() };
     }
     return withDb(db => {
-      if (!db.trash) return null;
-      const entry = db.trash.find(t => t.id === id);
-      if (!entry) return null;
-      return { ...entry, expired: new Date(entry.expires_at) < new Date() };
+      if (!db.papelera) return null;
+      const entrada = db.papelera.find(t => t.id === id);
+      if (!entrada) return null;
+      return { ...entrada, expired: new Date(entrada.expira_en) < new Date() };
     });
   },
 
-  async restoreFromTrash(id) {
-    const entry = await api.getTrashEntry(id);
-    if (!entry) return null;
-    if (entry.expired) return { error: 'expired', message: 'El período de recuperación ha expirado' };
+  async restaurarDesdePapelera(id) {
+    const entrada = await api.obtenerEntradaPapelera(id);
+    if (!entrada) return null;
+    if (entrada.expired) return { error: 'expired', message: 'El período de recuperación ha expirado' };
 
     if (isPg) {
       const client = await pgPool.connect();
       try {
         await client.query('BEGIN');
-        const d = entry.data;
+        const d = entrada.data;
 
         // Verificar que el email no esté en uso
-        const existing = await client.query('SELECT id FROM users WHERE email=$1', [entry.user_email]);
+        const existing = await client.query('SELECT id FROM usuarios WHERE email=$1', [entrada.email_usuario]);
         if (existing.rows.length > 0) {
           await client.query('ROLLBACK');
           return { error: 'email_in_use', message: 'El email ya está registrado por otro usuario' };
         }
 
         // Restaurar usuario
-        const user = entry.user;
+        const user = entrada.user;
         await client.query(
-          `INSERT INTO users (id,email,password_hash,display_name,role,avatar_url,contact_info,created_at)
+          `INSERT INTO usuarios (id,email,hash_contrasena,nombre_mostrado,role,url_avatar,informacion_contacto,created_at)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-          [user.id, user.email, user.password_hash, user.display_name, user.role,
-           user.avatar_url, user.contact_info, user.created_at]);
+          [user.id, user.email, user.hash_contrasena, user.nombre_mostrado, user.role,
+           user.url_avatar, user.informacion_contacto, user.created_at]);
 
         // Restaurar datos
-        for (const f of (d.favorites || [])) {
-          await client.query('INSERT INTO favorites (id,user_id,book_id,created_at) VALUES ($1,$2,$3,$4)',
-            [f.id, f.user_id, f.book_id, f.created_at]).catch(e => console.warn('restore:', e.message));
+        for (const f of (d.favoritos || [])) {
+          await client.query('INSERT INTO favoritos (id,usuario_id,libro_id,created_at) VALUES ($1,$2,$3,$4)',
+            [f.id, f.usuario_id, f.libro_id, f.created_at]).catch(e => console.warn('restore:', e.message));
         }
-        for (const r of (d.ratings || [])) {
-          await client.query('INSERT INTO ratings (id,user_id,book_id,rating,created_at) VALUES ($1,$2,$3,$4,$5)',
-            [r.id, r.user_id, r.book_id, r.rating, r.created_at]).catch(e => console.warn("restore:", e.message));
+        for (const r of (d.calificaciones || [])) {
+          await client.query('INSERT INTO calificaciones (id,usuario_id,libro_id,puntuacion,created_at) VALUES ($1,$2,$3,$4,$5)',
+            [r.id, r.usuario_id, r.libro_id, r.puntuacion, r.created_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const c of (d.comments || [])) {
-          await client.query('INSERT INTO comments (id,user_id,book_id,chapter_id,parent_comment_id,content,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-            [c.id, c.user_id, c.book_id, c.chapter_id, c.parent_comment_id, c.content, c.created_at]).catch(e => console.warn("restore:", e.message));
+        for (const c of (d.comentarios || [])) {
+          await client.query('INSERT INTO comentarios (id,usuario_id,libro_id,capitulo_id,comentario_padre_id,contenido,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+            [c.id, c.usuario_id, c.libro_id, c.capitulo_id, c.comentario_padre_id, c.contenido, c.created_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const bk of (d.bookmarks || [])) {
-          await client.query('INSERT INTO bookmarks (id,user_id,book_id,chapter_id,chapter_index,scroll_position,finished,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-            [bk.id, bk.user_id, bk.book_id, bk.chapter_id, bk.chapter_index, bk.scroll_position, bk.finished, bk.created_at, bk.updated_at]).catch(e => console.warn("restore:", e.message));
+        for (const bk of (d.marcadores || [])) {
+          await client.query('INSERT INTO marcadores (id,usuario_id,libro_id,capitulo_id,indice_capitulo,posicion_desplazamiento,terminado,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+            [bk.id, bk.usuario_id, bk.libro_id, bk.capitulo_id, bk.indice_capitulo, bk.posicion_desplazamiento, bk.terminado, bk.created_at, bk.updated_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const bv of (d.book_views || [])) {
-          await client.query('INSERT INTO book_views (user_id,book_id,created_at) VALUES ($1,$2,$3)',
-            [bv.user_id, bv.book_id, bv.created_at]).catch(e => console.warn("restore:", e.message));
+        for (const bv of (d.vistas_libro || [])) {
+          await client.query('INSERT INTO vistas_libro (usuario_id,libro_id,created_at) VALUES ($1,$2,$3)',
+            [bv.usuario_id, bv.libro_id, bv.created_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const n of (d.notifications || [])) {
-          await client.query('INSERT INTO notifications (id,user_id,type,payload,is_read,created_at) VALUES ($1,$2,$3,$4,$5,$6)',
-            [n.id, n.user_id, n.type, n.payload, n.is_read, n.created_at]).catch(e => console.warn("restore:", e.message));
+        for (const n of (d.notificaciones || [])) {
+          await client.query('INSERT INTO notificaciones (id,usuario_id,tipo,contenido,es_leida,created_at) VALUES ($1,$2,$3,$4,$5,$6)',
+            [n.id, n.usuario_id, n.tipo, n.contenido, n.es_leida, n.created_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const ui of (d.user_images || [])) {
-          await client.query('INSERT INTO user_images (id,user_id,storage_path,custom_name,sort_order,created_at) VALUES ($1,$2,$3,$4,$5,$6)',
-            [ui.id, ui.user_id, ui.storage_path, ui.custom_name, ui.sort_order, ui.created_at]).catch(e => console.warn("restore:", e.message));
+        for (const ui of (d.imagenes_usuario || [])) {
+          await client.query('INSERT INTO imagenes_usuario (id,usuario_id,ruta_almacenamiento,nombre_personalizado,orden_ordenamiento,created_at) VALUES ($1,$2,$3,$4,$5,$6)',
+            [ui.id, ui.usuario_id, ui.ruta_almacenamiento, ui.nombre_personalizado, ui.orden_ordenamiento, ui.created_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const col of (d.collections || [])) {
-          await client.query('INSERT INTO collections (id,owner_id,title,description,is_public,created_at) VALUES ($1,$2,$3,$4,$5,$6)',
-            [col.id, col.owner_id, col.title, col.description, col.is_public, col.created_at]).catch(e => console.warn("restore:", e.message));
+        for (const col of (d.colecciones || [])) {
+          await client.query('INSERT INTO colecciones (id,propietario_id,titulo,descripcion,es_publica,created_at) VALUES ($1,$2,$3,$4,$5,$6)',
+            [col.id, col.propietario_id, col.titulo, col.descripcion, col.es_publica, col.created_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const cb of (d.collection_books || [])) {
-          await client.query('INSERT INTO collection_books (collection_id,book_id) VALUES ($1,$2)',
-            [cb.collection_id, cb.book_id]).catch(e => console.warn("restore:", e.message));
+        for (const cb of (d.libros_coleccion || [])) {
+          await client.query('INSERT INTO libros_coleccion (coleccion_id,libro_id) VALUES ($1,$2)',
+            [cb.coleccion_id, cb.libro_id]).catch(e => console.warn("restore:", e.message));
         }
-        for (const book of (d.books || [])) {
+        for (const book of (d.libros || [])) {
           await client.query(
-            `INSERT INTO books (id,title,subtitle,description,author_id,status,is_free,price_cents,
-                                category,age_group,cover_url,original_file,original_public,
-                                favorite_count,views,created_at,updated_at)
+            `INSERT INTO libros (id,titulo,subtitulo,descripcion,autor_id,estado,es_gratis,precio_centavos,
+                                categoria,grupo_edad,url_portada,archivo_original,original_publico,
+                                conteo_favoritos,vistas,created_at,updated_at)
              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
-            [book.id, book.title, book.subtitle, book.description, book.author_id, book.status,
-             book.is_free, book.price_cents, book.category, book.age_group, book.cover_url,
-             book.original_file, book.original_public, book.favorite_count, book.views,
+            [book.id, book.titulo, book.subtitulo, book.descripcion, book.autor_id, book.estado,
+             book.es_gratis, book.precio_centavos, book.categoria, book.grupo_edad, book.url_portada,
+             book.archivo_original, book.original_publico, book.conteo_favoritos, book.vistas,
              book.created_at, book.updated_at]).catch(e => console.warn("restore:", e.message));
         }
-        for (const ch of (d.chapters || [])) {
+        for (const ch of (d.capitulos || [])) {
           await client.query(
-            `INSERT INTO chapters (id,book_id,title,content,"order",is_early_access,created_at)
+            `INSERT INTO capitulos (id,libro_id,titulo,contenido,"orden",es_acceso_anticipado,created_at)
              VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-            [ch.id, ch.book_id, ch.title, ch.content, ch.order, ch.is_early_access, ch.created_at]).catch(e => console.warn("restore:", e.message));
+            [ch.id, ch.libro_id, ch.titulo, ch.contenido, ch.orden, ch.es_acceso_anticipado, ch.created_at]).catch(e => console.warn("restore:", e.message));
         }
 
-        // Quitar de banned_users (ya no está eliminado)
-        await client.query('DELETE FROM banned_users WHERE email=$1', [entry.user_email]);
+        // Quitar de usuarios_baneados (ya no está eliminado)
+        await client.query('DELETE FROM usuarios_baneados WHERE email=$1', [entrada.email_usuario]);
 
-        // Eliminar entrada de trash
-        await client.query('DELETE FROM trash WHERE id=$1', [id]);
+        // Eliminar entrada de papelera
+        await client.query('DELETE FROM papelera WHERE id=$1', [id]);
 
         await client.query('COMMIT');
       } catch (e) { await client.query('ROLLBACK'); throw e; }
       finally { client.release(); }
-      return { restored: true, user_email: entry.user_email };
+      return { restored: true, email_usuario: entrada.email_usuario };
     }
 
     return withDb(db => {
-      const d = entry.data;
+      const d = entrada.data;
 
       // Verificar email no en uso
-      if (db.users.some(u => u.email.toLowerCase() === entry.user_email.toLowerCase())) {
+      if (db.usuarios.some(u => u.email.toLowerCase() === entrada.email_usuario.toLowerCase())) {
         return { error: 'email_in_use', message: 'El email ya está registrado por otro usuario' };
       }
 
       // Restaurar usuario
-      db.users.push(entry.user);
+      db.usuarios.push(entrada.user);
 
       // Restaurar datos
-      for (const item of (d.favorites || [])) {
-        if (!db.favorites.some(x => x.user_id === item.user_id && x.book_id === item.book_id)) {
-          db.favorites.push(item);
+      for (const item of (d.favoritos || [])) {
+        if (!db.favoritos.some(x => x.usuario_id === item.usuario_id && x.libro_id === item.libro_id)) {
+          db.favoritos.push(item);
         }
       }
-      for (const item of (d.ratings || [])) {
-        if (!db.ratings.some(x => x.user_id === item.user_id && x.book_id === item.book_id)) {
-          db.ratings.push(item);
+      for (const item of (d.calificaciones || [])) {
+        if (!db.calificaciones.some(x => x.usuario_id === item.usuario_id && x.libro_id === item.libro_id)) {
+          db.calificaciones.push(item);
         }
       }
-      for (const item of (d.comments || [])) {
-        if (!db.comments.some(x => x.id === item.id)) {
-          db.comments.push(item);
+      for (const item of (d.comentarios || [])) {
+        if (!db.comentarios.some(x => x.id === item.id)) {
+          db.comentarios.push(item);
         }
       }
-      for (const item of (d.bookmarks || [])) {
-        if (!(db.bookmarks || []).some(x => x.id === item.id)) {
-          if (!db.bookmarks) db.bookmarks = [];
-          db.bookmarks.push(item);
+      for (const item of (d.marcadores || [])) {
+        if (!(db.marcadores || []).some(x => x.id === item.id)) {
+          if (!db.marcadores) db.marcadores = [];
+          db.marcadores.push(item);
         }
       }
-      for (const item of (d.book_views || [])) {
-        if (!(db.book_views || []).some(x => x.user_id === item.user_id && x.book_id === item.book_id)) {
-          if (!db.book_views) db.book_views = [];
-          db.book_views.push(item);
+      for (const item of (d.vistas_libro || [])) {
+        if (!(db.vistas_libro || []).some(x => x.usuario_id === item.usuario_id && x.libro_id === item.libro_id)) {
+          if (!db.vistas_libro) db.vistas_libro = [];
+          db.vistas_libro.push(item);
         }
       }
-      for (const item of (d.notifications || [])) {
-        if (!(db.notifications || []).some(x => x.id === item.id)) {
-          if (!db.notifications) db.notifications = [];
-          db.notifications.push(item);
+      for (const item of (d.notificaciones || [])) {
+        if (!(db.notificaciones || []).some(x => x.id === item.id)) {
+          if (!db.notificaciones) db.notificaciones = [];
+          db.notificaciones.push(item);
         }
       }
-      for (const item of (d.user_images || [])) {
-        if (!(db.user_images || []).some(x => x.id === item.id)) {
-          if (!db.user_images) db.user_images = [];
-          db.user_images.push(item);
+      for (const item of (d.imagenes_usuario || [])) {
+        if (!(db.imagenes_usuario || []).some(x => x.id === item.id)) {
+          if (!db.imagenes_usuario) db.imagenes_usuario = [];
+          db.imagenes_usuario.push(item);
         }
       }
-      for (const item of (d.collections || [])) {
-        if (!(db.collections || []).some(x => x.id === item.id)) {
-          if (!db.collections) db.collections = [];
-          db.collections.push(item);
+      for (const item of (d.colecciones || [])) {
+        if (!(db.colecciones || []).some(x => x.id === item.id)) {
+          if (!db.colecciones) db.colecciones = [];
+          db.colecciones.push(item);
         }
       }
-      for (const item of (d.collection_books || [])) {
-        if (!(db.collection_books || []).some(x => x.collection_id === item.collection_id && x.book_id === item.book_id)) {
-          if (!db.collection_books) db.collection_books = [];
-          db.collection_books.push(item);
+      for (const item of (d.libros_coleccion || [])) {
+        if (!(db.libros_coleccion || []).some(x => x.coleccion_id === item.coleccion_id && x.libro_id === item.libro_id)) {
+          if (!db.libros_coleccion) db.libros_coleccion = [];
+          db.libros_coleccion.push(item);
         }
       }
-      for (const item of (d.books || [])) {
-        if (!db.books.some(x => x.id === item.id)) {
-          db.books.push(item);
+      for (const item of (d.libros || [])) {
+        if (!db.libros.some(x => x.id === item.id)) {
+          db.libros.push(item);
         }
       }
-      for (const item of (d.chapters || [])) {
-        if (!db.chapters.some(x => x.id === item.id)) {
-          db.chapters.push(item);
+      for (const item of (d.capitulos || [])) {
+        if (!db.capitulos.some(x => x.id === item.id)) {
+          db.capitulos.push(item);
         }
       }
-      for (const item of (d.favorites_on_books || [])) {
-        if (!db.favorites.some(x => x.user_id === item.user_id && x.book_id === item.book_id)) {
-          db.favorites.push(item);
+      for (const item of (d.favoritos_en_libros || [])) {
+        if (!db.favoritos.some(x => x.usuario_id === item.usuario_id && x.libro_id === item.libro_id)) {
+          db.favoritos.push(item);
         }
       }
-      for (const item of (d.ratings_on_books || [])) {
-        if (!db.ratings.some(x => x.user_id === item.user_id && x.book_id === item.book_id)) {
-          db.ratings.push(item);
+      for (const item of (d.calificaciones_en_libros || [])) {
+        if (!db.calificaciones.some(x => x.usuario_id === item.usuario_id && x.libro_id === item.libro_id)) {
+          db.calificaciones.push(item);
         }
       }
-      for (const item of (d.comments_on_books || [])) {
-        if (!db.comments.some(x => x.id === item.id)) {
-          db.comments.push(item);
+      for (const item of (d.comentarios_en_libros || [])) {
+        if (!db.comentarios.some(x => x.id === item.id)) {
+          db.comentarios.push(item);
         }
       }
-      for (const item of (d.book_views_on_books || [])) {
-        if (!(db.book_views || []).some(x => x.user_id === item.user_id && x.book_id === item.book_id)) {
-          if (!db.book_views) db.book_views = [];
-          db.book_views.push(item);
+      for (const item of (d.vistas_libro_en_libros || [])) {
+        if (!(db.vistas_libro || []).some(x => x.usuario_id === item.usuario_id && x.libro_id === item.libro_id)) {
+          if (!db.vistas_libro) db.vistas_libro = [];
+          db.vistas_libro.push(item);
         }
       }
 
-      // Quitar de banned_users
-      const banIdx = db.banned_users.findIndex(b => b.email.toLowerCase() === entry.user_email.toLowerCase());
-      if (banIdx !== -1) db.banned_users.splice(banIdx, 1);
+      // Quitar de usuarios_baneados
+      const banIdx = db.usuarios_baneados.findIndex(b => b.email.toLowerCase() === entrada.email_usuario.toLowerCase());
+      if (banIdx !== -1) db.usuarios_baneados.splice(banIdx, 1);
 
-      // Eliminar entrada de trash
-      db.trash = (db.trash || []).filter(t => t.id !== id);
+      // Eliminar entrada de papelera
+      db.papelera = (db.papelera || []).filter(t => t.id !== id);
 
-      return { restored: true, user_email: entry.user_email };
+      return { restored: true, email_usuario: entrada.email_usuario };
     });
   },
 
-  async permanentDeleteTrash(id) {
+  async eliminarPermanentePapelera(id) {
     if (isPg) {
-      await pgQuery('DELETE FROM trash WHERE id=$1', [id]);
+      await pgQuery('DELETE FROM papelera WHERE id=$1', [id]);
       return { deleted: true };
     }
     return withDb(db => {
-      const before = (db.trash || []).length;
-      db.trash = (db.trash || []).filter(t => t.id !== id);
-      return { deleted: before !== (db.trash || []).length };
+      const before = (db.papelera || []).length;
+      db.papelera = (db.papelera || []).filter(t => t.id !== id);
+      return { deleted: before !== (db.papelera || []).length };
     });
   },
 
-  async cleanupExpiredTrash() {
-    const cutoff = new Date(Date.now() - RECOVERY_WINDOW_MS).toISOString();
+  async limpiarPapeleraExpirada() {
     if (isPg) {
-      const r = await pgPool.query('DELETE FROM trash WHERE expires_at < now()');
+      const r = await pgPool.query('DELETE FROM papelera WHERE expira_en < now()');
       return { deleted: r.rowCount || 0 };
     }
     return withDb(db => {
-      if (!db.trash) return { deleted: 0 };
-      const before = db.trash.length;
-      db.trash = db.trash.filter(t => new Date(t.expires_at) > new Date());
-      return { deleted: before - db.trash.length };
+      if (!db.papelera) return { deleted: 0 };
+      const before = db.papelera.length;
+      db.papelera = db.papelera.filter(t => new Date(t.expira_en) > new Date());
+      return { deleted: before - db.papelera.length };
     });
   },
 
   // ---- BOOKS ----
-  async listBooks({ category, age_group, q, author_id, status='published', limit=50, offset=0 } = {}) {
+  async listarLibros({ categoria, grupo_edad, q, autor_id, estado='publicado', limit=50, offset=0 } = {}) {
     if (isPg) {
       const where = []; const params=[];
-      if (status && status !== 'all') { params.push(status); where.push(`status=$${params.length}`); }
-      if (category)  { params.push(category);  where.push(`category=$${params.length}`); }
-      if (age_group) { params.push(age_group); where.push(`age_group=$${params.length}`); }
-      if (q) { const sq = q.replace(/[%_\\]/g, '\\$&'); params.push('%'+sq+'%'); where.push(`(title ILIKE $${params.length} ESCAPE '\\' OR description ILIKE $${params.length} ESCAPE '\\')`); }
-      if (author_id) { params.push(author_id); where.push(`author_id=$${params.length}`); }
+      if (estado && estado !== 'all') { params.push(estado); where.push(`estado=$${params.length}`); }
+      if (categoria)  { params.push(categoria);  where.push(`categoria=$${params.length}`); }
+      if (grupo_edad) { params.push(grupo_edad); where.push(`grupo_edad=$${params.length}`); }
+      if (q) { const sq = q.replace(/[%_\\]/g, '\\$&'); params.push('%'+sq+'%'); where.push(`(titulo ILIKE $${params.length} ESCAPE '\\' OR descripcion ILIKE $${params.length} ESCAPE '\\')`); }
+      if (autor_id) { params.push(autor_id); where.push(`autor_id=$${params.length}`); }
       params.push(limit); params.push(offset);
       const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
       return await pgQuery(
-        `SELECT b.*, u.display_name AS author_name FROM books b
-           JOIN users u ON u.id = b.author_id
+        `SELECT b.*, u.nombre_mostrado AS nombre_autor FROM libros b
+           JOIN usuarios u ON u.id = b.autor_id
           ${whereClause}
-          ORDER BY b.views DESC, b.created_at DESC
+          ORDER BY b.vistas DESC, b.created_at DESC
           LIMIT $${params.length-1} OFFSET $${params.length}`, params);
     }
     const db = loadJson();
-    let arr = db.books;
-    if (status && status !== 'all') arr = arr.filter(b => b.status === status);
-    if (category)  arr = arr.filter(b => b.category === category);
-    if (age_group) arr = arr.filter(b => b.age_group === age_group);
-    if (author_id) arr = arr.filter(b => b.author_id === author_id);
+    let arr = db.libros;
+    if (estado && estado !== 'all') arr = arr.filter(b => b.estado === estado);
+    if (categoria)  arr = arr.filter(b => b.categoria === categoria);
+    if (grupo_edad) arr = arr.filter(b => b.grupo_edad === grupo_edad);
+    if (autor_id) arr = arr.filter(b => b.autor_id === autor_id);
     if (q) {
       const qq = q.toLowerCase();
-      arr = arr.filter(b => (b.title||'').toLowerCase().includes(qq) ||
-                            (b.description||'').toLowerCase().includes(qq));
+      arr = arr.filter(b => (b.titulo||'').toLowerCase().includes(qq) ||
+                            (b.descripcion||'').toLowerCase().includes(qq));
     }
-    arr = arr.sort((a,b) => (b.views||0)-(a.views||0)).slice(offset, offset+limit);
+    arr = arr.sort((a,b) => (b.vistas||0)-(a.vistas||0)).slice(offset, offset+limit);
     return arr.map(b => ({
       ...b,
-      author_name: (db.users.find(u => u.id===b.author_id)||{}).display_name
+      nombre_autor: (db.usuarios.find(u => u.id===b.autor_id)||{}).nombre_mostrado
     }));
   },
-  async getBook(id) {
+  async obtenerLibro(id) {
     if (isPg) {
       const rows = await pgQuery(
-        `SELECT b.*, u.display_name AS author_name FROM books b
-         JOIN users u ON u.id=b.author_id WHERE b.id=$1`, [id]);
+        `SELECT b.*, u.nombre_mostrado AS nombre_autor FROM libros b
+         JOIN usuarios u ON u.id=b.autor_id WHERE b.id=$1`, [id]);
       return rows[0] || null;
     }
     const db = loadJson();
-    const b = db.books.find(x => x.id === id);
+    const b = db.libros.find(x => x.id === id);
     if (!b) return null;
-    return { ...b, author_name: (db.users.find(u => u.id===b.author_id)||{}).display_name };
+    return { ...b, nombre_autor: (db.usuarios.find(u => u.id===b.autor_id)||{}).nombre_mostrado };
   },
-  async incrementViews(id, userId) {
+  async incrementarVistas(id, userId) {
     if (isPg) {
       if (userId) {
         const existing = await pgQuery(
-          `SELECT 1 FROM book_views WHERE user_id=$1 AND book_id=$2`, [userId, id]);
+          `SELECT 1 FROM vistas_libro WHERE usuario_id=$1 AND libro_id=$2`, [userId, id]);
         if (existing.length > 0) return;
-        await pgQuery(`INSERT INTO book_views (user_id,book_id) VALUES ($1,$2)`, [userId, id]);
+        await pgQuery(`INSERT INTO vistas_libro (usuario_id,libro_id) VALUES ($1,$2)`, [userId, id]);
       }
-      await pgQuery('UPDATE books SET views=views+1 WHERE id=$1', [id]);
+      await pgQuery('UPDATE libros SET vistas=vistas+1 WHERE id=$1', [id]);
       return;
     }
     await withDb(db => {
       if (userId) {
-        const existing = db.book_views?.find(v => v.user_id === userId && v.book_id === id);
+        const existing = db.vistas_libro?.find(v => v.usuario_id === userId && v.libro_id === id);
         if (existing) return;
-        if (!db.book_views) db.book_views = [];
-        db.book_views.push({ user_id: userId, book_id: id, created_at: new Date().toISOString() });
+        if (!db.vistas_libro) db.vistas_libro = [];
+        db.vistas_libro.push({ usuario_id: userId, libro_id: id, created_at: new Date().toISOString() });
       }
-      const b = db.books.find(x => x.id === id);
-      if (b) b.views = (b.views||0) + 1;
+      const b = db.libros.find(x => x.id === id);
+      if (b) b.vistas = (b.vistas||0) + 1;
     });
   },
-  async resetBookViews(id) {
+  async restablecerVistasLibro(id) {
     if (isPg) {
-      await pgQuery(`DELETE FROM book_views WHERE book_id=$1`, [id]);
-      await pgQuery(`UPDATE books SET views=0 WHERE id=$1`, [id]);
+      await pgQuery(`DELETE FROM vistas_libro WHERE libro_id=$1`, [id]);
+      await pgQuery(`UPDATE libros SET vistas=0 WHERE id=$1`, [id]);
       return;
     }
     await withDb(db => {
-      db.book_views = (db.book_views || []).filter(v => v.book_id !== id);
-      const b = db.books.find(x => x.id === id);
-      if (b) b.views = 0;
+      db.vistas_libro = (db.vistas_libro || []).filter(v => v.libro_id !== id);
+      const b = db.libros.find(x => x.id === id);
+      if (b) b.vistas = 0;
     });
   },
-  async createBook(book) {
+  async crearLibro(book) {
     const now = new Date().toISOString();
-    const full = { ...book, id: book.id || uuidv4(), favorite_count:0, views:0,
-                   status:'draft', is_free:true, price_cents:0,
-                   original_file:null, original_public:false, cover_url:null,
+    const full = { ...book, id: book.id || uuidv4(), conteo_favoritos:0, vistas:0,
+                   estado:'borrador', es_gratis:true, precio_centavos:0,
+                   archivo_original:null, original_publico:false, url_portada:null,
                    created_at: now, updated_at: now };
     if (isPg) {
       await pgQuery(
-        `INSERT INTO books (id,title,subtitle,description,author_id,status,is_free,price_cents,
-                            category,age_group,cover_url,original_file,original_public,
-                            favorite_count,views)
+        `INSERT INTO libros (id,titulo,subtitulo,descripcion,autor_id,estado,es_gratis,precio_centavos,
+                            categoria,grupo_edad,url_portada,archivo_original,original_publico,
+                            conteo_favoritos,vistas)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
-        [full.id, full.title, full.subtitle, full.description, full.author_id, full.status,
-         full.is_free, full.price_cents, full.category, full.age_group, full.cover_url,
-         full.original_file, full.original_public, full.favorite_count, full.views]);
+        [full.id, full.titulo, full.subtitulo, full.descripcion, full.autor_id, full.estado,
+         full.es_gratis, full.precio_centavos, full.categoria, full.grupo_edad, full.url_portada,
+         full.archivo_original, full.original_publico, full.conteo_favoritos, full.vistas]);
       return full;
     }
     return withDb(db => {
-      db.books.push(full);
+      db.libros.push(full);
       return full;
     });
   },
-  async updateBook(id, patch) {
+  async actualizarLibro(id, patch) {
     if (isPg) {
-      const keys = Object.keys(patch); if (!keys.length) return await api.getBook(id);
-      if (keys.some(k => !/^[a-z_]+$/.test(k))) throw new Error('Invalid column name');
+      const keys = Object.keys(patch); if (!keys.length) return await api.obtenerLibro(id);
+      if (keys.some(k => !/^[a-z_]+$/.test(k))) throw new Error('Invalid column nombre');
       const sets = keys.map((k,i) => `"${k}"=$${i+1}`).join(',');
       await pgQuery(
-        `UPDATE books SET ${sets}, updated_at=now() WHERE id=$${keys.length+1}`,
+        `UPDATE libros SET ${sets}, updated_at=now() WHERE id=$${keys.length+1}`,
         [...keys.map(k => patch[k]), id]);
-      return await api.getBook(id);
+      return await api.obtenerLibro(id);
     }
     return withDb(db => {
-      const b = db.books.find(x => x.id === id);
+      const b = db.libros.find(x => x.id === id);
       if (!b) return null;
       Object.assign(b, patch); b.updated_at = new Date().toISOString();
       return b;
     });
   },
-  async deleteBook(id) {
-    if (isPg) { await pgQuery(`UPDATE books SET status='deleted' WHERE id=$1`, [id]); return; }
+  async eliminarLibro(id) {
+    if (isPg) { await pgQuery(`UPDATE libros SET estado='eliminado' WHERE id=$1`, [id]); return; }
     await withDb(db => {
-      const b = db.books.find(x => x.id === id);
-      if (b) b.status = 'deleted';
+      const b = db.libros.find(x => x.id === id);
+      if (b) b.estado = 'eliminado';
     });
   },
 
   // ---- CHAPTERS ----
-  async listChapters(book_id) {
+  async listarCapitulos(libro_id) {
     if (isPg) return await pgQuery(
-      `SELECT * FROM chapters WHERE book_id=$1 ORDER BY "order" ASC`, [book_id]);
-    return loadJson().chapters.filter(c => c.book_id === book_id)
-                              .sort((a,b) => (a.order||0)-(b.order||0));
+      `SELECT * FROM capitulos WHERE libro_id=$1 ORDER BY "orden" ASC`, [libro_id]);
+    return loadJson().capitulos.filter(c => c.libro_id === libro_id)
+                              .sort((a,b) => (a.orden||0)-(b.orden||0));
   },
-  async getChapter(id) {
-    if (isPg) { const r = await pgQuery(`SELECT * FROM chapters WHERE id=$1`, [id]); return r[0] || null; }
-    return loadJson().chapters.find(c => c.id === id) || null;
+  async obtenerCapitulo(id) {
+    if (isPg) { const r = await pgQuery(`SELECT * FROM capitulos WHERE id=$1`, [id]); return r[0] || null; }
+    return loadJson().capitulos.find(c => c.id === id) || null;
   },
-  async createChapter(chapter) {
-    const c = { id: chapter.id || uuidv4(), order:1, is_early_access:false,
+  async crearCapitulo(chapter) {
+    const c = { id: chapter.id || uuidv4(), orden:1, es_acceso_anticipado:false,
                 created_at: new Date().toISOString(), ...chapter };
     if (isPg) {
       await pgQuery(
-        `INSERT INTO chapters (id,book_id,title,content,"order",is_early_access)
+        `INSERT INTO capitulos (id,libro_id,titulo,contenido,"orden",es_acceso_anticipado)
          VALUES ($1,$2,$3,$4,$5,$6)`,
-        [c.id, c.book_id, c.title, c.content, c.order, c.is_early_access]);
+        [c.id, c.libro_id, c.titulo, c.contenido, c.orden, c.es_acceso_anticipado]);
       return c;
     }
     return withDb(db => {
-      db.chapters.push(c);
+      db.capitulos.push(c);
       return c;
     });
   },
-  async updateChapter(id, patch) {
+  async actualizarCapitulo(id, patch) {
     if (isPg) {
       const keys = Object.keys(patch); if (!keys.length) return;
-      if (keys.some(k => !/^[a-z_]+$/.test(k))) throw new Error('Invalid column name');
+      if (keys.some(k => !/^[a-z_]+$/.test(k))) throw new Error('Invalid column nombre');
       const sets = keys.map((k,i) => `"${k}"=$${i+1}`).join(',');
       await pgQuery(
-        `UPDATE chapters SET ${sets} WHERE id=$${keys.length+1}`,
+        `UPDATE capitulos SET ${sets} WHERE id=$${keys.length+1}`,
         [...keys.map(k => patch[k]), id]);
       return;
     }
     await withDb(db => {
-      const c = db.chapters.find(x => x.id === id);
+      const c = db.capitulos.find(x => x.id === id);
       if (c) Object.assign(c, patch);
     });
   },
-  async deleteChapter(id) {
-    if (isPg) { await pgQuery(`DELETE FROM chapters WHERE id=$1`, [id]); return; }
+  async eliminarCapitulo(id) {
+    if (isPg) { await pgQuery(`DELETE FROM capitulos WHERE id=$1`, [id]); return; }
     await withDb(db => {
-      db.chapters = db.chapters.filter(c => c.id !== id);
+      db.capitulos = db.capitulos.filter(c => c.id !== id);
     });
   },
 
   // ---- FAVORITES / RATINGS / COMMENTS ----
-  async toggleFavorite(user_id, book_id) {
+  async alternarFavorito(usuario_id, libro_id) {
     if (isPg) {
       const existing = await pgQuery(
-        `SELECT id FROM favorites WHERE user_id=$1 AND book_id=$2`, [user_id, book_id]);
+        `SELECT id FROM favoritos WHERE usuario_id=$1 AND libro_id=$2`, [usuario_id, libro_id]);
       if (existing.length) {
-        await pgQuery(`DELETE FROM favorites WHERE id=$1`, [existing[0].id]);
-        await pgQuery(`UPDATE books SET favorite_count=GREATEST(0,favorite_count-1) WHERE id=$1`, [book_id]);
+        await pgQuery(`DELETE FROM favoritos WHERE id=$1`, [existing[0].id]);
+        await pgQuery(`UPDATE libros SET conteo_favoritos=GREATEST(0,conteo_favoritos-1) WHERE id=$1`, [libro_id]);
         return { favorited: false };
       }
-      await pgQuery(`INSERT INTO favorites (user_id,book_id) VALUES ($1,$2)`, [user_id, book_id]);
-      await pgQuery(`UPDATE books SET favorite_count=favorite_count+1 WHERE id=$1`, [book_id]);
+      await pgQuery(`INSERT INTO favoritos (usuario_id,libro_id) VALUES ($1,$2)`, [usuario_id, libro_id]);
+      await pgQuery(`UPDATE libros SET conteo_favoritos=conteo_favoritos+1 WHERE id=$1`, [libro_id]);
       return { favorited: true };
     }
     return withDb(db => {
-      const idx = db.favorites.findIndex(f => f.user_id===user_id && f.book_id===book_id);
-      const book = db.books.find(b => b.id === book_id);
+      const idx = db.favoritos.findIndex(f => f.usuario_id===usuario_id && f.libro_id===libro_id);
+      const book = db.libros.find(b => b.id === libro_id);
       if (idx >= 0) {
-        db.favorites.splice(idx, 1);
-        if (book) book.favorite_count = Math.max(0, (book.favorite_count||0)-1);
+        db.favoritos.splice(idx, 1);
+        if (book) book.conteo_favoritos = Math.max(0, (book.conteo_favoritos||0)-1);
         return { favorited:false };
       }
-      db.favorites.push({ id: uuidv4(), user_id, book_id, created_at: new Date().toISOString() });
-      if (book) book.favorite_count = (book.favorite_count||0)+1;
+      db.favoritos.push({ id: uuidv4(), usuario_id, libro_id, created_at: new Date().toISOString() });
+      if (book) book.conteo_favoritos = (book.conteo_favoritos||0)+1;
       return { favorited:true };
     });
   },
-  async getFavorite(user_id, book_id) {
+  async obtenerFavorito(usuario_id, libro_id) {
     if (isPg) {
       const rows = await pgQuery(
-        `SELECT id FROM favorites WHERE user_id=$1 AND book_id=$2`, [user_id, book_id]);
+        `SELECT id FROM favoritos WHERE usuario_id=$1 AND libro_id=$2`, [usuario_id, libro_id]);
       return { favorited: rows.length > 0 };
     }
     const db = loadJson();
-    const exists = db.favorites.some(f => f.user_id===user_id && f.book_id===book_id);
+    const exists = db.favoritos.some(f => f.usuario_id===usuario_id && f.libro_id===libro_id);
     return { favorited: exists };
   },
-  async getUserRating(user_id, book_id) {
+  async obtenerCalificacionUsuario(usuario_id, libro_id) {
     if (isPg) {
       const rows = await pgQuery(
-        `SELECT rating FROM ratings WHERE user_id=$1 AND book_id=$2`, [user_id, book_id]);
-      return rows.length ? rows[0].rating : 0;
+        `SELECT puntuacion FROM calificaciones WHERE usuario_id=$1 AND libro_id=$2`, [usuario_id, libro_id]);
+      return rows.length ? rows[0].puntuacion : 0;
     }
     const db = loadJson();
-    const r = db.ratings.find(x => x.user_id===user_id && x.book_id===book_id);
-    return r ? r.rating : 0;
+    const r = db.calificaciones.find(x => x.usuario_id===usuario_id && x.libro_id===libro_id);
+    return r ? r.puntuacion : 0;
   },
-  async rateBook(user_id, book_id, rating) {
+  async calificarLibro(usuario_id, libro_id, puntuacion) {
     if (isPg) {
       await pgQuery(
-        `INSERT INTO ratings (user_id,book_id,rating) VALUES ($1,$2,$3)
-         ON CONFLICT (user_id,book_id) DO UPDATE SET rating=EXCLUDED.rating`,
-        [user_id, book_id, rating]);
+        `INSERT INTO calificaciones (usuario_id,libro_id,puntuacion) VALUES ($1,$2,$3)
+         ON CONFLICT (usuario_id,libro_id) DO UPDATE SET puntuacion=EXCLUDED.puntuacion`,
+        [usuario_id, libro_id, puntuacion]);
       return;
     }
     await withDb(db => {
-      let r = db.ratings.find(x => x.user_id===user_id && x.book_id===book_id);
-      if (r) r.rating = rating;
-      else db.ratings.push({ id: uuidv4(), user_id, book_id, rating,
+      let r = db.calificaciones.find(x => x.usuario_id===usuario_id && x.libro_id===libro_id);
+      if (r) r.puntuacion = puntuacion;
+      else db.calificaciones.push({ id: uuidv4(), usuario_id, libro_id, puntuacion,
                              created_at: new Date().toISOString() });
     });
   },
-  async addComment({ user_id, book_id, chapter_id, parent_comment_id, content }) {
-    const c = { id: uuidv4(), user_id, book_id, chapter_id: chapter_id||null,
-                parent_comment_id: parent_comment_id||null, content,
+  async agregarComentario({ usuario_id, libro_id, capitulo_id, comentario_padre_id, contenido }) {
+    const c = { id: uuidv4(), usuario_id, libro_id, capitulo_id: capitulo_id||null,
+                comentario_padre_id: comentario_padre_id||null, contenido,
                 created_at: new Date().toISOString() };
     if (isPg) {
       await pgQuery(
-        `INSERT INTO comments (id,user_id,book_id,chapter_id,parent_comment_id,content)
+        `INSERT INTO comentarios (id,usuario_id,libro_id,capitulo_id,comentario_padre_id,contenido)
          VALUES ($1,$2,$3,$4,$5,$6)`,
-        [c.id, c.user_id, c.book_id, c.chapter_id, c.parent_comment_id, c.content]);
+        [c.id, c.usuario_id, c.libro_id, c.capitulo_id, c.comentario_padre_id, c.contenido]);
       return c;
     }
     return withDb(db => {
-      db.comments.push(c);
+      db.comentarios.push(c);
       return c;
     });
   },
-  async listComments(book_id) {
+  async listarComentarios(libro_id) {
     if (isPg) return await pgQuery(
-      `SELECT c.*, u.display_name AS author_name, u.avatar_url AS author_avatar
-         FROM comments c
-         JOIN users u ON u.id=c.user_id
-        WHERE c.book_id=$1 ORDER BY c.created_at ASC`, [book_id]);
+      `SELECT c.*, u.nombre_mostrado AS nombre_autor, u.url_avatar AS avatar_autor
+         FROM comentarios c
+         JOIN usuarios u ON u.id=c.usuario_id
+        WHERE c.libro_id=$1 ORDER BY c.created_at ASC`, [libro_id]);
     const db = loadJson();
-    return db.comments.filter(c => c.book_id === book_id)
+    return db.comentarios.filter(c => c.libro_id === libro_id)
       .map(c => {
-        const u = db.users.find(u => u.id === c.user_id) || {};
-        return { ...c, author_name: u.display_name, author_avatar: u.avatar_url };
+        const u = db.usuarios.find(u => u.id === c.usuario_id) || {};
+        return { ...c, nombre_autor: u.nombre_mostrado, avatar_autor: u.url_avatar };
       });
   },
-  async getComment(comment_id) {
-    if (isPg) return (await pgQuery('SELECT * FROM comments WHERE id=$1', [comment_id]))[0] || null;
+  async obtenerComentario(comment_id) {
+    if (isPg) return (await pgQuery('SELECT * FROM comentarios WHERE id=$1', [comment_id]))[0] || null;
     const db = loadJson();
-    return db.comments.find(c => c.id === comment_id) || null;
+    return db.comentarios.find(c => c.id === comment_id) || null;
   },
-  async deleteComment(comment_id) {
+  async eliminarComentario(comment_id) {
     if (isPg) {
-      await pgQuery('DELETE FROM comments WHERE id=$1 OR parent_comment_id=$1', [comment_id]);
+      await pgQuery('DELETE FROM comentarios WHERE id=$1 OR comentario_padre_id=$1', [comment_id]);
       return;
     }
     await withDb(db => {
       const ids = new Set([comment_id]);
-      for (const c of db.comments) if (c.parent_comment_id === comment_id) ids.add(c.id);
-      db.comments = db.comments.filter(c => !ids.has(c.id));
+      for (const c of db.comentarios) if (c.comentario_padre_id === comment_id) ids.add(c.id);
+      db.comentarios = db.comentarios.filter(c => !ids.has(c.id));
     });
   },
 
-  // ---- ANNOUNCEMENTS ----
-  async listAnnouncements() {
+  // ---- ANUNCIOS ----
+  async listarAnuncios() {
     if (isPg) {
-      const rows = await pgQuery(
-        `SELECT a.*, u.display_name AS created_by_name, u.role AS created_by_role
-           FROM announcements a
-           JOIN users u ON u.id = a.admin_id
+      return await pgQuery(
+        `SELECT a.id, a.admin_id, a.titulo, a.contenido,
+                a.ruta_imagen AS "rutaImagen", a.visible, a.destacado,
+                a.publicado_por AS "publicadoPor", a.created_at,
+                COALESCE(u.nombre_mostrado, a.autor_nombre) AS "autorNombre",
+                COALESCE(u.role, a.autor_rol, 'admin') AS "autorRol"
+           FROM anuncios a
+           LEFT JOIN usuarios u ON u.id = a.admin_id
           WHERE a.visible=true
-          ORDER BY a.featured DESC, a.created_at DESC`);
-      return rows.map(r => ({ ...r, created_by_role: r.created_by_role || 'admin' }));
+          ORDER BY a.destacado DESC, a.created_at DESC`);
     }
     const db = loadJson();
-    let arr = db.announcements.filter(a => a.visible);
-    arr = arr.sort((a,b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
+    let arr = db.anuncios.filter(a => a.visible);
+    arr = arr.sort((a,b) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0)
                   || b.created_at.localeCompare(a.created_at));
     return arr.map(a => ({
       ...a,
-      created_by_name: a.created_by_name || (db.users.find(u => u.id === a.admin_id)||{}).display_name,
-      created_by_role: a.created_by_role || 'admin'
+      autorNombre: a.autorNombre || (db.usuarios.find(u => u.id === a.admin_id)||{}).nombre_mostrado,
+      autorRol: a.autorRol || 'admin'
     }));
   },
-  async createAnnouncement({ admin_id, title, content, image_path, created_by_name, created_by_role }) {
-    const a = { id: uuidv4(), admin_id, title, content,
-                image_path: image_path||null, visible:true,
-                created_by_name: created_by_name||null,
-                created_by_role: created_by_role||'admin',
-                published_by: null, featured: false,
+  async crearAnuncio({ admin_id, titulo, contenido, rutaImagen, autorNombre, autorRol }) {
+    const a = { id: uuidv4(), admin_id, titulo, contenido,
+                rutaImagen: rutaImagen||null, visible:true,
+                autorNombre: autorNombre||null,
+                autorRol: autorRol||'admin',
+                publicadoPor: null, destacado: false,
                 created_at: new Date().toISOString() };
     if (isPg) {
       await pgQuery(
-        `INSERT INTO announcements (id,admin_id,title,content,image_path,visible,
-                                     created_by_name,created_by_role,published_by,featured)
+        `INSERT INTO anuncios (id,admin_id,titulo,contenido,ruta_imagen,visible,
+                                     autor_nombre,autor_rol,publicado_por,destacado)
          VALUES ($1,$2,$3,$4,$5,true,$6,$7,$8,false)`,
-        [a.id, a.admin_id, a.title, a.content, a.image_path,
-         a.created_by_name, a.created_by_role, a.published_by]);
+        [a.id, a.admin_id, a.titulo, a.contenido, a.rutaImagen,
+         a.autorNombre, a.autorRol, a.publicadoPor]);
       return a;
     }
     return withDb(db => {
-      db.announcements.push(a);
+      db.anuncios.push(a);
       return a;
     });
   },
 
-  async getAnnouncement(id) {
-    if (isPg) return (await pgQuery(`SELECT * FROM announcements WHERE id=$1`, [id]))[0] || null;
+  async obtenerAnuncio(id) {
+    if (isPg) {
+      const r = (await pgQuery(
+        `SELECT id, admin_id, titulo, contenido, ruta_imagen AS "rutaImagen",
+                visible, destacado, publicado_por AS "publicadoPor", created_at
+           FROM anuncios WHERE id=$1`, [id]))[0];
+      return r || null;
+    }
     const db = loadJson();
-    return db.announcements.find(x => x.id === id) || null;
+    return db.anuncios.find(x => x.id === id) || null;
   },
 
-  async deleteAnnouncement(id) {
-    if (isPg) { await pgQuery(`UPDATE announcements SET visible=false WHERE id=$1`, [id]); return; }
+  async eliminarAnuncio(id) {
+    if (isPg) { await pgQuery(`UPDATE anuncios SET visible=false WHERE id=$1`, [id]); return; }
     await withDb(db => {
-      const a = db.announcements.find(x => x.id === id);
+      const a = db.anuncios.find(x => x.id === id);
       if (a) a.visible = false;
     });
   },
-  async setFeaturedAnnouncement(id) {
+  async alternarDestacado(id) {
     if (isPg) {
-      const rows = await pgQuery(`SELECT featured FROM announcements WHERE id=$1`, [id]);
+      const rows = await pgQuery(`SELECT destacado FROM anuncios WHERE id=$1`, [id]);
       if (!rows.length) return;
-      const [{ featured }] = rows;
-      if (featured) {
-        await pgQuery(`UPDATE announcements SET featured=false WHERE id=$1`, [id]);
+      const [{ destacado }] = rows;
+      if (destacado) {
+        await pgQuery(`UPDATE anuncios SET destacado=false WHERE id=$1`, [id]);
       } else {
-        await pgQuery(`UPDATE announcements SET featured=false WHERE featured=true`);
-        await pgQuery(`UPDATE announcements SET featured=true WHERE id=$1`, [id]);
+        await pgQuery(`UPDATE anuncios SET destacado=false WHERE destacado=true`);
+        await pgQuery(`UPDATE anuncios SET destacado=true WHERE id=$1`, [id]);
       }
       return;
     }
     await withDb(db => {
-      const currentlyFeatured = db.announcements.find(a => a.featured);
-      if (currentlyFeatured && currentlyFeatured.id === id) {
-        for (const a of db.announcements) a.featured = false;
+      const actualDestacado = db.anuncios.find(a => a.destacado);
+      if (actualDestacado && actualDestacado.id === id) {
+        for (const a of db.anuncios) a.destacado = false;
       } else {
-        for (const a of db.announcements) a.featured = a.id === id;
+        for (const a of db.anuncios) a.destacado = a.id === id;
       }
     });
   },
-  async updateAnnouncement(id, { title, content, image_path }) {
+  async actualizarAnuncio(id, { titulo, contenido, rutaImagen }) {
     if (isPg) {
-      await pgQuery(`UPDATE announcements SET title=$1, content=$2, image_path=$3 WHERE id=$4`, [title, content, image_path, id]);
+      await pgQuery(`UPDATE anuncios SET titulo=$1, contenido=$2, ruta_imagen=$3 WHERE id=$4`, [titulo, contenido, rutaImagen, id]);
       return;
     }
     await withDb(db => {
-      const a = db.announcements.find(x => x.id === id);
-      if (a) { a.title = title; a.content = content; a.image_path = image_path; }
+      const a = db.anuncios.find(x => x.id === id);
+      if (a) { a.titulo = titulo; a.contenido = contenido; a.rutaImagen = rutaImagen; }
     });
   },
-  async updatePublishedBy(id, text) {
-    if (isPg) { await pgQuery(`UPDATE announcements SET published_by=$1 WHERE id=$2`, [text, id]); return; }
+  async definirPublicadoPor(id, texto) {
+    if (isPg) { await pgQuery(`UPDATE anuncios SET publicado_por=$1 WHERE id=$2`, [texto, id]); return; }
     await withDb(db => {
-      const a = db.announcements.find(x => x.id === id);
-      if (a) a.published_by = text;
+      const a = db.anuncios.find(x => x.id === id);
+      if (a) a.publicadoPor = texto;
     });
   },
 
   // ---- METRICS (honestas: derivadas en vivo) ----
-  async getMetrics() {
+  async obtenerMetricas() {
     if (isPg) {
       const [{ count: authors }] = await pgQuery(
-        `SELECT count(DISTINCT author_id)::int AS count FROM books WHERE status='published'`);
-      const [{ count: books }] = await pgQuery(
-        `SELECT count(*)::int AS count FROM books WHERE status='published'`);
-      const [{ sum: views }] = await pgQuery(
-        `SELECT COALESCE(sum(views),0)::int AS sum FROM books WHERE status='published'`);
-      return { authors_total: authors, books_total: books, views_total: views };
+        `SELECT count(DISTINCT autor_id)::int AS count FROM libros WHERE estado='publicado'`);
+      const [{ count: libros }] = await pgQuery(
+        `SELECT count(*)::int AS count FROM libros WHERE estado='publicado'`);
+      const [{ sum: vistas }] = await pgQuery(
+        `SELECT COALESCE(sum(vistas),0)::int AS sum FROM libros WHERE estado='publicado'`);
+      return { autores_total: authors, libros_total: libros, vistas_total: vistas };
     }
     const db = loadJson();
-    const published = db.books.filter(b => b.status === 'published');
-    const authors   = new Set(published.map(b => b.author_id)).size;
-    const books     = published.length;
-    const views     = published.reduce((s,b) => s + (b.views||0), 0);
-    return { authors_total: authors, books_total: books, views_total: views };
+    const published = db.libros.filter(b => b.estado === 'publicado');
+    const authors   = new Set(published.map(b => b.autor_id)).size;
+    const libros     = published.length;
+    const vistas     = published.reduce((s,b) => s + (b.vistas||0), 0);
+    return { autores_total: authors, libros_total: libros, vistas_total: vistas };
   },
 
   // ---- BAN / BLACKLIST ----
-  async isEmailBanned(email) {
+  async emailEstaBaneado(email) {
     if (isPg) {
       const r = await pgQuery(
-        `SELECT * FROM banned_users WHERE email=$1 AND unbanned_at IS NULL`, [email]);
+        `SELECT * FROM usuarios_baneados WHERE LOWER(email)=LOWER($1) AND unbanned_at IS NULL`, [email]);
       return r[0] || null;
     }
-    return loadJson().banned_users.find(b => b.email.toLowerCase()===email.toLowerCase() && !b.unbanned_at) || null;
+    return loadJson().usuarios_baneados.find(b => b.email.toLowerCase()===email.toLowerCase() && !b.unbanned_at) || null;
   },
-  async listBanned() {
+  async listarBaneados() {
     if (isPg) {
-      const rows = await pgQuery(`SELECT * FROM banned_users ORDER BY banned_at DESC`);
-      return this._groupBanRecords(rows);
+      const rows = await pgQuery(`SELECT * FROM usuarios_baneados ORDER BY banned_at DESC`);
+      return this._agruparRegistrosBaneo(rows);
     }
-    const rows = loadJson().banned_users.slice().sort((a,b)=>b.banned_at.localeCompare(a.banned_at));
-    return this._groupBanRecords(rows);
+    const rows = loadJson().usuarios_baneados.slice().sort((a,b)=>b.banned_at.localeCompare(a.banned_at));
+    return this._agruparRegistrosBaneo(rows);
   },
-  _groupBanRecords(rows) {
+  _agruparRegistrosBaneo(rows) {
     const byEmail = {};
     for (const r of rows) {
       const key = r.email.toLowerCase();
@@ -1126,535 +1140,668 @@ const api = {
       return bLast - aLast;
     });
   },
-  async banUser({ email, reason, banned_by }) {
+  async banearUsuario({ email, razon, banned_by }) {
     if (isPg) {
       await pgQuery(
-        `INSERT INTO banned_users (email,reason,banned_by) VALUES ($1,$2,$3)`,
-        [email, reason, banned_by || null]);
-      await pgQuery(`UPDATE users SET role='user' WHERE email=$1 AND role='moderator'`, [email]);
+        `INSERT INTO usuarios_baneados (email,razon,banned_at) VALUES ($1,$2,now())`,
+        [email, razon]);
+      await pgQuery(`UPDATE usuarios SET role='user' WHERE email=$1 AND role='moderator'`, [email]);
       return;
     }
     await withDb(db => {
-      db.banned_users.push({ id: uuidv4(), email, reason,
+      db.usuarios_baneados.push({ id: uuidv4(), email, razon,
                               banned_by: banned_by || null,
-                              appeal: null, appeal_submitted: false,
+                              apelacion: null, apelacion_enviada: false,
                               banned_at: new Date().toISOString(), unbanned_at: null });
-      const u = db.users.find(x => x.email.toLowerCase()===email.toLowerCase() && x.role === 'moderator');
+      const u = db.usuarios.find(x => x.email.toLowerCase()===email.toLowerCase() && x.role === 'moderator');
       if (u) u.role = 'user';
     });
   },
-  async unbanUser(email, unbanned_by) {
+  async unbanearUsuario(email, unbanned_by) {
     if (isPg) {
       await pgQuery(
-        `UPDATE banned_users SET unbanned_at=now(), unbanned_by=$2
+        `UPDATE usuarios_baneados SET unbanned_at=now()
          WHERE email=$1 AND unbanned_at IS NULL`,
-        [email, unbanned_by || null]);
+        [email]);
       return;
     }
     await withDb(db => {
-      const b = db.banned_users.find(x => x.email.toLowerCase()===email.toLowerCase() && !x.unbanned_at);
+      const b = db.usuarios_baneados.find(x => x.email.toLowerCase()===email.toLowerCase() && !x.unbanned_at);
       if (b) {
         b.unbanned_at = new Date().toISOString();
         b.unbanned_by = unbanned_by || null;
       }
     });
   },
-  async deleteBanRecord(email) {
+  async eliminarRegistroBaneo(email) {
     if (isPg) {
-      await pgQuery(`DELETE FROM banned_users WHERE email=$1`, [email]);
+      await pgQuery(`DELETE FROM usuarios_baneados WHERE email=$1`, [email]);
       return;
     }
     await withDb(db => {
-      db.banned_users = db.banned_users.filter(x => x.email.toLowerCase() !== email.toLowerCase());
+      db.usuarios_baneados = db.usuarios_baneados.filter(x => x.email.toLowerCase() !== email.toLowerCase());
     });
   },
-  async submitAppeal(email, appeal) {
+  async enviarApelacion(email, apelacion) {
     if (isPg) {
       await pgQuery(
-        `UPDATE banned_users SET appeal=$1, appeal_submitted=true
+        `UPDATE usuarios_baneados SET apelacion=$1, apelacion_enviada=true
          WHERE email=$2 AND unbanned_at IS NULL`,
-        [appeal, email]);
+        [apelacion, email]);
       return;
     }
     await withDb(db => {
-      const b = db.banned_users.find(x => x.email.toLowerCase()===email.toLowerCase() && !x.unbanned_at);
-      if (b) { b.appeal = appeal; b.appeal_submitted = true; }
+      const b = db.usuarios_baneados.find(x => x.email.toLowerCase()===email.toLowerCase() && !x.unbanned_at);
+      if (b) { b.apelacion = apelacion; b.apelacion_enviada = true; }
     });
   },
-  async blacklistToken(token, user_email) {
+  async agregarTokenListaNegra(token, email_usuario) {
     if (isPg) {
       await pgQuery(
-        `INSERT INTO token_blacklist (token,user_email) VALUES ($1,$2)
-         ON CONFLICT (token) DO NOTHING`, [token, user_email]);
+        `INSERT INTO lista_negra_tokens (token,email_usuario) VALUES ($1,$2)
+         ON CONFLICT (token) DO NOTHING`, [token, email_usuario]);
       return;
     }
     await withDb(db => {
-      if (!db.token_blacklist.find(t => t.token === token)) {
-        db.token_blacklist.push({ id: uuidv4(), token, user_email,
+      if (!db.lista_negra_tokens.find(t => t.token === token)) {
+        db.lista_negra_tokens.push({ id: uuidv4(), token, email_usuario,
                                   blacklisted_at: new Date().toISOString() });
       }
     });
   },
-  async isTokenBlacklisted(token) {
+  async tokenEstaEnListaNegra(token) {
     if (isPg) {
-      const r = await pgQuery(`SELECT 1 FROM token_blacklist WHERE token=$1`, [token]);
+      const r = await pgQuery(`SELECT 1 FROM lista_negra_tokens WHERE token=$1`, [token]);
       return r.length > 0;
     }
     return withDb(db => {
       const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      db.token_blacklist = db.token_blacklist.filter(t => !t.blacklisted_at || new Date(t.blacklisted_at).getTime() > cutoff);
-      return db.token_blacklist.some(t => t.token === token);
+      db.lista_negra_tokens = db.lista_negra_tokens.filter(t => !t.blacklisted_at || new Date(t.blacklisted_at).getTime() > cutoff);
+      return db.lista_negra_tokens.some(t => t.token === token);
     });
   },
-  async blacklistAllUserTokens(email) {
+  async agregarTokensUsuarioAListaNegra(email) {
     // En la práctica: marcamos un email como "todos los tokens emitidos antes de
-    // este instante son inválidos". Se persiste como entry especial en blacklist.
+    // este instante son inválidos". Se persiste como entrada especial en blacklist.
     if (isPg) {
       await pgQuery(
-        `INSERT INTO token_blacklist (token,user_email) VALUES ($1,$2)
+        `INSERT INTO lista_negra_tokens (token,email_usuario) VALUES ($1,$2)
          ON CONFLICT (token) DO NOTHING`,
         ['*all-before-'+Date.now(), email]);
       return;
     }
     await withDb(db => {
-      db.token_blacklist.push({ id: uuidv4(), token:'*all-before-'+Date.now(),
-                                user_email: email,
+      db.lista_negra_tokens.push({ id: uuidv4(), token:'*all-before-'+Date.now(),
+                                email_usuario: email,
                                 blacklisted_at: new Date().toISOString() });
     });
   },
-  async userTokensInvalidatedAfter(email) {
+  async tokensUsuarioInvalidadosDespuesDe(email) {
     if (isPg) {
       const r = await pgQuery(
-        `SELECT MAX(blacklisted_at) AS ts FROM token_blacklist
-         WHERE user_email=$1 AND token LIKE '*all-before-%'`, [email]);
+        `SELECT MAX(blacklisted_at) AS ts FROM lista_negra_tokens
+         WHERE LOWER(email_usuario)=LOWER($1) AND token LIKE '*all-before-%'`, [email]);
       return r[0] && r[0].ts ? new Date(r[0].ts).getTime() : 0;
     }
     const db = loadJson();
-    const tokens = db.token_blacklist.filter(t => t.user_email===email && t.token.startsWith('*all-before-'));
+    const tokens = db.lista_negra_tokens.filter(t => t.email_usuario.toLowerCase()===email.toLowerCase() && t.token.startsWith('*all-before-'));
     if (!tokens.length) return 0;
     return Math.max(...tokens.map(t => new Date(t.blacklisted_at).getTime()));
   },
 
   // ---- REFRESH TOKENS ----
-  async createRefreshToken(user_id) {
+  async crearTokenRefresco(usuario_id) {
     const token = uuidv4();
     const expires_at = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
-    const entry = { id: uuidv4(), user_id, token, expires_at, created_at: new Date().toISOString(), used_at: null };
+    const entrada = { id: uuidv4(), usuario_id, token, expires_at, created_at: new Date().toISOString(), used_at: null };
     if (isPg) {
       await pgQuery(
-        `INSERT INTO refresh_tokens (id,user_id,token,expires_at) VALUES ($1,$2,$3,$4)`,
-        [entry.id, entry.user_id, entry.token, entry.expires_at]);
+        `INSERT INTO tokens_refresco (id,usuario_id,token,expires_at) VALUES ($1,$2,$3,$4)`,
+        [entrada.id, entrada.usuario_id, entrada.token, entrada.expires_at]);
       return token;
     }
     return withDb(db => {
-      if (!db.refresh_tokens) db.refresh_tokens = [];
-      db.refresh_tokens.push(entry);
+      if (!db.tokens_refresco) db.tokens_refresco = [];
+      db.tokens_refresco.push(entrada);
       return token;
     });
   },
-  async validateRefreshToken(token) {
+  async validarTokenRefresco(token) {
     if (isPg) {
       const r = await pgQuery(
-        `SELECT * FROM refresh_tokens WHERE token=$1 AND used_at IS NULL AND expires_at > now()`,
+        `SELECT * FROM tokens_refresco WHERE token=$1 AND used_at IS NULL AND expires_at > now()`,
         [token]);
       return r[0] || null;
     }
     return withDb(db => {
       const now = new Date();
-      if (db.refresh_tokens)
-        db.refresh_tokens = db.refresh_tokens.filter(t => !t.used_at && new Date(t.expires_at) > now);
-      return db.refresh_tokens?.find(t => t.token === token && !t.used_at) || null;
+      if (db.tokens_refresco)
+        db.tokens_refresco = db.tokens_refresco.filter(t => !t.used_at && new Date(t.expires_at) > now);
+      return db.tokens_refresco?.find(t => t.token === token && !t.used_at) || null;
     });
   },
-  async revokeRefreshToken(token) {
+  async revocarTokenRefresco(token) {
     if (isPg) {
-      await pgQuery(`UPDATE refresh_tokens SET used_at=now() WHERE token=$1 AND used_at IS NULL`, [token]);
+      await pgQuery(`UPDATE tokens_refresco SET used_at=now() WHERE token=$1 AND used_at IS NULL`, [token]);
       return;
     }
     await withDb(db => {
-      const t = db.refresh_tokens?.find(x => x.token === token);
+      const t = db.tokens_refresco?.find(x => x.token === token);
       if (t) t.used_at = new Date().toISOString();
     });
   },
-  async revokeAllUserRefreshTokens(user_id) {
+  async revocarTokensRefrescoUsuario(usuario_id) {
     if (isPg) {
-      await pgQuery(`UPDATE refresh_tokens SET used_at=now() WHERE user_id=$1 AND used_at IS NULL`, [user_id]);
+      await pgQuery(`UPDATE tokens_refresco SET used_at=now() WHERE usuario_id=$1 AND used_at IS NULL`, [usuario_id]);
       return;
     }
     await withDb(db => {
-      for (const t of (db.refresh_tokens || [])) {
-        if (t.user_id === user_id && !t.used_at) t.used_at = new Date().toISOString();
+      for (const t of (db.tokens_refresco || [])) {
+        if (t.usuario_id === usuario_id && !t.used_at) t.used_at = new Date().toISOString();
       }
     });
   },
 
   // ---- AUTHORS (solo usuarios CON libros publicados) ----
-  async searchAuthors(q) {
+  async buscarAutores(q) {
     if (isPg) {
       return await pgQuery(
-        `SELECT u.id, u.email, u.display_name, u.avatar_url, u.created_at,
-                COUNT(b.id)::int AS book_count
-         FROM users u
-         JOIN books b ON b.author_id = u.id AND b.status = 'published'
-         WHERE ($1 = '' OR u.display_name ILIKE '%' || $1 || '%' ESCAPE '\' OR u.email ILIKE '%' || $1 || '%' ESCAPE '\')
+        `SELECT u.id, u.email, u.nombre_mostrado, u.url_avatar, u.created_at,
+                COUNT(b.id)::int AS conteo_libros
+         FROM usuarios u
+         JOIN libros b ON b.autor_id = u.id AND b.estado = 'publicado'
+         WHERE ($1 = '' OR u.nombre_mostrado ILIKE '%' || $1 || '%' ESCAPE '\' OR u.email ILIKE '%' || $1 || '%' ESCAPE '\')
          GROUP BY u.id
-         ORDER BY book_count DESC`,
+         ORDER BY conteo_libros DESC`,
         [q ? q.replace(/[%_\\]/g, '\\$&') : '']
       );
     }
     const db = loadJson();
-    const published = db.books.filter(b => b.status === 'published');
-    const authorIds = [...new Set(published.map(b => b.author_id))];
-    let authors = db.users.filter(u => authorIds.includes(u.id));
+    const published = db.libros.filter(b => b.estado === 'publicado');
+    const authorIds = [...new Set(published.map(b => b.autor_id))];
+    let authors = db.usuarios.filter(u => authorIds.includes(u.id));
     if (q) {
       const qq = q.toLowerCase();
       authors = authors.filter(u =>
-        (u.display_name || '').toLowerCase().includes(qq) ||
+        (u.nombre_mostrado || '').toLowerCase().includes(qq) ||
         u.email.toLowerCase().includes(qq)
       );
     }
     return authors.map(u => ({
-      id: u.id, email: u.email, display_name: u.display_name,
-      avatar_url: u.avatar_url, created_at: u.created_at,
-      book_count: published.filter(b => b.author_id === u.id).length
-    })).sort((a, b) => b.book_count - a.book_count);
+      id: u.id, email: u.email, nombre_mostrado: u.nombre_mostrado,
+      url_avatar: u.url_avatar, created_at: u.created_at,
+      conteo_libros: published.filter(b => b.autor_id === u.id).length
+    })).sort((a, b) => b.conteo_libros - a.conteo_libros);
   },
 
   // ---- MODERATION LOG ----
-  async logModeration({ actor_email, action, target, ip }) {
+  async registrarModeracion({ email_actor, accion, objetivo, ip }) {
     if (isPg) {
       await pgQuery(
-        `INSERT INTO moderation_logs (actor_email,action,target,ip)
-         VALUES ($1,$2,$3,$4)`, [actor_email, action, target, ip]);
+        `INSERT INTO registros_moderacion (email_actor,accion,objetivo,ip)
+         VALUES ($1,$2,$3,$4)`, [email_actor, accion, objetivo, ip]);
       return;
     }
     await withDb(db => {
-      db.moderation_logs.push({ id: uuidv4(), actor_email, action, target, ip,
+      db.registros_moderacion.push({ id: uuidv4(), email_actor, accion, objetivo, ip,
                                 created_at: new Date().toISOString() });
     });
   },
 
   // ---- CATEGORIES ----
-  async listCategories() {
-    if (isPg) return (await pgQuery('SELECT name FROM categories ORDER BY name')).map(r => r.name);
+  async listarCategorias() {
+    if (isPg) return (await pgQuery('SELECT nombre FROM categorias ORDER BY nombre')).map(r => r.nombre);
     return withDb(db => {
-      if (!db.categories) db.categories = ['fantasía','poesía','narrativa','educativa'];
-      return db.categories;
+      if (!db.categorias) db.categorias = ['fantasía','poesía','narrativa','educativa'];
+      return db.categorias;
     });
   },
-  async createCategory(name) {
-    if (isPg) { await pgQuery('INSERT INTO categories (name) VALUES ($1) ON CONFLICT DO NOTHING', [name]); return; }
+  async crearCategoria(nombre) {
+    if (isPg) { await pgQuery('INSERT INTO categorias (nombre) VALUES ($1) ON CONFLICT DO NOTHING', [nombre]); return; }
     await withDb(db => {
-      if (!db.categories) db.categories = [];
-      if (!db.categories.includes(name)) db.categories.push(name);
+      if (!db.categorias) db.categorias = [];
+      if (!db.categorias.includes(nombre)) db.categorias.push(nombre);
     });
   },
-  async deleteCategory(name) {
+  async eliminarCategoria(nombre) {
     if (isPg) {
-      const cats = await pgQuery('SELECT 1 FROM categories WHERE name=$1', [name]);
+      const cats = await pgQuery('SELECT 1 FROM categorias WHERE nombre=$1', [nombre]);
       if (cats.length === 0) return false;
-      await pgQuery(`UPDATE books SET category='en espera de categorización' WHERE category=$1`, [name]);
-      await pgQuery('DELETE FROM categories WHERE name=$1', [name]);
+      await pgQuery(`UPDATE libros SET categoria='en espera de categorización' WHERE categoria=$1`, [nombre]);
+      await pgQuery('DELETE FROM categorias WHERE nombre=$1', [nombre]);
       return true;
     }
     let found = false;
     await withDb(db => {
-      const before = (db.categories || []).length;
-      db.categories = (db.categories || []).filter(c => c !== name);
-      found = db.categories.length < before;
-      for (const b of db.books) {
-        if (b.category === name) b.category = 'en espera de categorización';
+      const before = (db.categorias || []).length;
+      db.categorias = (db.categorias || []).filter(c => c !== nombre);
+      found = db.categorias.length < before;
+      for (const b of db.libros) {
+        if (b.categoria === nombre) b.categoria = 'en espera de categorización';
       }
     });
     return found;
   },
 
   // ---- BOOKMARKS ----
-  async listBookmarks(user_id) {
+  async listarMarcadores(usuario_id) {
     if (isPg) {
       return await pgQuery(
-        `SELECT b.*, bk.chapter_index, bk.scroll_position, bk.finished, bk.updated_at AS marked_at,
+        `SELECT b.*, bk.indice_capitulo, bk.posicion_desplazamiento, bk.terminado, bk.updated_at AS marked_at,
                 bk.id AS bk_id
-         FROM bookmarks bk
-         JOIN books b ON b.id = bk.book_id
-         WHERE bk.user_id=$1 AND b.status!='deleted'
-         ORDER BY bk.updated_at DESC`, [user_id]);
+         FROM marcadores bk
+         JOIN libros b ON b.id = bk.libro_id
+         WHERE bk.usuario_id=$1 AND b.estado!='eliminado'
+         ORDER BY bk.updated_at DESC`, [usuario_id]);
     }
     const db = loadJson();
-    return (db.bookmarks || [])
-      .filter(bk => bk.user_id === user_id)
+    return (db.marcadores || [])
+      .filter(bk => bk.usuario_id === usuario_id)
       .map(bk => {
-        const book = db.books.find(b => b.id === bk.book_id);
-        if (!book || book.status === 'deleted') return null;
-        return { ...book, chapter_index: bk.chapter_index, scroll_position: bk.scroll_position,
-                       finished: bk.finished, marked_at: bk.updated_at, bk_id: bk.id };
+        const book = db.libros.find(b => b.id === bk.libro_id);
+        if (!book || book.estado === 'eliminado') return null;
+        return { ...book, indice_capitulo: bk.indice_capitulo, posicion_desplazamiento: bk.posicion_desplazamiento,
+                       terminado: bk.terminado, marked_at: bk.updated_at, bk_id: bk.id };
       })
       .filter(Boolean)
       .sort((a, b) => b.marked_at.localeCompare(a.marked_at));
   },
-  async getBookmark(user_id, book_id) {
+  async obtenerMarcador(usuario_id, libro_id) {
     if (isPg) {
-      return (await pgQuery('SELECT * FROM bookmarks WHERE user_id=$1 AND book_id=$2',
-        [user_id, book_id]))[0] || null;
+      return (await pgQuery('SELECT * FROM marcadores WHERE usuario_id=$1 AND libro_id=$2',
+        [usuario_id, libro_id]))[0] || null;
     }
     const db = loadJson();
-    return (db.bookmarks || []).find(bk => bk.user_id === user_id && bk.book_id === book_id) || null;
+    return (db.marcadores || []).find(bk => bk.usuario_id === usuario_id && bk.libro_id === libro_id) || null;
   },
-  async upsertBookmark({ user_id, book_id, chapter_id, chapter_index, scroll_position, finished }) {
+  async upsertarMarcador({ usuario_id, libro_id, capitulo_id, indice_capitulo, posicion_desplazamiento, terminado }) {
     const now = new Date().toISOString();
     if (isPg) {
       await pgQuery(
-        `INSERT INTO bookmarks (user_id, book_id, chapter_id, chapter_index, scroll_position, finished, created_at, updated_at)
+        `INSERT INTO marcadores (usuario_id, libro_id, capitulo_id, indice_capitulo, posicion_desplazamiento, terminado, created_at, updated_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$7)
-         ON CONFLICT (user_id, book_id) DO UPDATE
-         SET chapter_id=EXCLUDED.chapter_id,
-             chapter_index=EXCLUDED.chapter_index,
-             scroll_position=EXCLUDED.scroll_position,
-             finished=EXCLUDED.finished,
+         ON CONFLICT (usuario_id, libro_id) DO UPDATE
+         SET capitulo_id=EXCLUDED.capitulo_id,
+             indice_capitulo=EXCLUDED.indice_capitulo,
+             posicion_desplazamiento=EXCLUDED.posicion_desplazamiento,
+             terminado=EXCLUDED.terminado,
              updated_at=EXCLUDED.updated_at`,
-        [user_id, book_id, chapter_id || null, chapter_index, scroll_position, !!finished, now]);
+        [usuario_id, libro_id, capitulo_id || null, indice_capitulo, posicion_desplazamiento, !!terminado, now]);
       return;
     }
     await withDb(db => {
-      if (!db.bookmarks) db.bookmarks = [];
-      const existing = db.bookmarks.find(bk => bk.user_id === user_id && bk.book_id === book_id);
+      if (!db.marcadores) db.marcadores = [];
+      const existing = db.marcadores.find(bk => bk.usuario_id === usuario_id && bk.libro_id === libro_id);
       if (existing) {
-        existing.chapter_id = chapter_id || null;
-        existing.chapter_index = chapter_index;
-        existing.scroll_position = scroll_position;
-        existing.finished = !!finished;
+        existing.capitulo_id = capitulo_id || null;
+        existing.indice_capitulo = indice_capitulo;
+        existing.posicion_desplazamiento = posicion_desplazamiento;
+        existing.terminado = !!terminado;
         existing.updated_at = now;
       } else {
-        db.bookmarks.push({ id: uuidv4(), user_id, book_id, chapter_id: chapter_id || null,
-                            chapter_index, scroll_position, finished: !!finished,
+        db.marcadores.push({ id: uuidv4(), usuario_id, libro_id, capitulo_id: capitulo_id || null,
+                            indice_capitulo, posicion_desplazamiento, terminado: !!terminado,
                             created_at: now, updated_at: now });
       }
     });
   },
-  async markFinished(user_id, book_id, finished) {
+  async marcarTerminado(usuario_id, libro_id, terminado) {
     const now = new Date().toISOString();
     if (isPg) {
       await pgQuery(
-        `UPDATE bookmarks SET finished=$1, updated_at=$2 WHERE user_id=$3 AND book_id=$4`,
-        [!!finished, now, user_id, book_id]);
+        `UPDATE marcadores SET terminado=$1, updated_at=$2 WHERE usuario_id=$3 AND libro_id=$4`,
+        [!!terminado, now, usuario_id, libro_id]);
       return;
     }
     await withDb(db => {
-      const bk = (db.bookmarks || []).find(x => x.user_id === user_id && x.book_id === book_id);
-      if (bk) { bk.finished = !!finished; bk.updated_at = now; }
+      const bk = (db.marcadores || []).find(x => x.usuario_id === usuario_id && x.libro_id === libro_id);
+      if (bk) { bk.terminado = !!terminado; bk.updated_at = now; }
     });
   },
-  async deleteBookmark(user_id, book_id) {
+  async eliminarMarcador(usuario_id, libro_id) {
     if (isPg) {
-      await pgQuery('DELETE FROM bookmarks WHERE user_id=$1 AND book_id=$2', [user_id, book_id]);
+      await pgQuery('DELETE FROM marcadores WHERE usuario_id=$1 AND libro_id=$2', [usuario_id, libro_id]);
       return;
     }
     await withDb(db => {
-      db.bookmarks = (db.bookmarks || []).filter(bk => !(bk.user_id === user_id && bk.book_id === book_id));
+      db.marcadores = (db.marcadores || []).filter(bk => !(bk.usuario_id === usuario_id && bk.libro_id === libro_id));
     });
   },
 
   // ---- USER IMAGES (media library) ----
-  async listUserImages(user_id) {
-    if (isPg) return await pgQuery('SELECT * FROM user_images WHERE user_id=$1 ORDER BY sort_order ASC', [user_id]);
-    return (loadJson().user_images || []).filter(i => i.user_id === user_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
+  async listarImagenesUsuario(usuario_id) {
+    if (isPg) return await pgQuery('SELECT * FROM imagenes_usuario WHERE usuario_id=$1 ORDER BY orden_ordenamiento ASC', [usuario_id]);
+    return (loadJson().imagenes_usuario || []).filter(i => i.usuario_id === usuario_id).sort((a,b) => (a.orden_ordenamiento||0)-(b.orden_ordenamiento||0));
   },
-  async createUserImage({ user_id, storage_path, custom_name, sort_order }) {
+  async crearImagenUsuario({ usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento }) {
     const id = uuidv4();
     if (isPg) {
       await pgQuery(
-        'INSERT INTO user_images (id,user_id,storage_path,custom_name,sort_order) VALUES ($1,$2,$3,$4,$5)',
-        [id, user_id, storage_path, custom_name, sort_order ?? 0]);
-      return { id, user_id, storage_path, custom_name, sort_order: sort_order ?? 0 };
+        'INSERT INTO imagenes_usuario (id,usuario_id,ruta_almacenamiento,nombre_personalizado,orden_ordenamiento) VALUES ($1,$2,$3,$4,$5)',
+        [id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento ?? 0]);
+      return { id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento: orden_ordenamiento ?? 0 };
     }
-    const img = { id, user_id, storage_path, custom_name, sort_order: sort_order ?? 0, created_at: new Date().toISOString() };
+    const img = { id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento: orden_ordenamiento ?? 0, created_at: new Date().toISOString() };
     return withDb(db => {
-      if (!db.user_images) db.user_images = [];
-      db.user_images.push(img);
+      if (!db.imagenes_usuario) db.imagenes_usuario = [];
+      db.imagenes_usuario.push(img);
       return img;
     });
   },
-  async getUserImage(id) {
-    if (isPg) { const r = await pgQuery('SELECT * FROM user_images WHERE id=$1', [id]); return r[0] || null; }
-    return (loadJson().user_images || []).find(i => i.id === id) || null;
+  async obtenerImagenUsuario(id) {
+    if (isPg) { const r = await pgQuery('SELECT * FROM imagenes_usuario WHERE id=$1', [id]); return r[0] || null; }
+    return (loadJson().imagenes_usuario || []).find(i => i.id === id) || null;
   },
-  async getUserImageByCustomName(user_id, custom_name) {
+  async obtenerImagenUsuarioPorNombrePersonalizado(usuario_id, nombre_personalizado) {
     if (isPg) {
-      const r = await pgQuery('SELECT * FROM user_images WHERE user_id=$1 AND custom_name=$2', [user_id, custom_name]);
+      const r = await pgQuery('SELECT * FROM imagenes_usuario WHERE usuario_id=$1 AND nombre_personalizado=$2', [usuario_id, nombre_personalizado]);
       return r[0] || null;
     }
-    return (loadJson().user_images || []).find(i => i.user_id === user_id && i.custom_name === custom_name) || null;
+    return (loadJson().imagenes_usuario || []).find(i => i.usuario_id === usuario_id && i.nombre_personalizado === nombre_personalizado) || null;
   },
-  async updateUserImage(id, patch) {
+  async actualizarImagenUsuario(id, patch) {
     if (isPg) {
       const keys = Object.keys(patch); if (!keys.length) return;
-      if (keys.some(k => !/^[a-z_]+$/.test(k))) throw new Error('Invalid column name');
+      if (keys.some(k => !/^[a-z_]+$/.test(k))) throw new Error('Invalid column nombre');
       const sets = keys.map((k,i) => `"${k}"=$${i+1}`).join(',');
-      await pgQuery(`UPDATE user_images SET ${sets} WHERE id=$${keys.length+1}`, [...keys.map(k => patch[k]), id]);
+      await pgQuery(`UPDATE imagenes_usuario SET ${sets} WHERE id=$${keys.length+1}`, [...keys.map(k => patch[k]), id]);
       return;
     }
     await withDb(db => {
-      const img = (db.user_images || []).find(x => x.id === id);
+      const img = (db.imagenes_usuario || []).find(x => x.id === id);
       if (img) Object.assign(img, patch);
     });
   },
-  async deleteUserImage(id) {
-    if (isPg) { await pgQuery('DELETE FROM user_images WHERE id=$1', [id]); return; }
+  async eliminarImagenUsuario(id) {
+    if (isPg) { await pgQuery('DELETE FROM imagenes_usuario WHERE id=$1', [id]); return; }
     await withDb(db => {
-      db.user_images = (db.user_images || []).filter(x => x.id !== id);
+      db.imagenes_usuario = (db.imagenes_usuario || []).filter(x => x.id !== id);
     });
   },
-  async checkUserImageNameAvailable(user_id, custom_name, excludeId) {
+  async verificarDisponibilidadNombreImagenUsuario(usuario_id, nombre_personalizado, excludeId) {
     if (isPg) {
       if (excludeId) {
-        const r = await pgQuery('SELECT id FROM user_images WHERE user_id=$1 AND custom_name=$2 AND id!=$3', [user_id, custom_name, excludeId]);
+        const r = await pgQuery('SELECT id FROM imagenes_usuario WHERE usuario_id=$1 AND nombre_personalizado=$2 AND id!=$3', [usuario_id, nombre_personalizado, excludeId]);
         return r.length === 0;
       }
-      const r = await pgQuery('SELECT id FROM user_images WHERE user_id=$1 AND custom_name=$2', [user_id, custom_name]);
+      const r = await pgQuery('SELECT id FROM imagenes_usuario WHERE usuario_id=$1 AND nombre_personalizado=$2', [usuario_id, nombre_personalizado]);
       return r.length === 0;
     }
-    const list = loadJson().user_images || [];
-    return !list.some(i => i.user_id === user_id && i.custom_name === custom_name && i.id !== excludeId);
+    const list = loadJson().imagenes_usuario || [];
+    return !list.some(i => i.usuario_id === usuario_id && i.nombre_personalizado === nombre_personalizado && i.id !== excludeId);
+  },
+
+  // ---- MODERACIÓN DE IMÁGENES ----
+  async listarTodasImagenes({ busqueda, pagina = 1, limite = 40 } = {}) {
+    if (isPg) {
+      const offset = (pagina - 1) * limite;
+      let where = 'WHERE 1=1';
+      const params = [];
+      if (busqueda) {
+        params.push('%' + busqueda + '%');
+        where += ` AND (u.nombre_mostrado ILIKE $${params.length} OR u.email ILIKE $${params.length} OR i.nombre_personalizado ILIKE $${params.length})`;
+      }
+      const countR = await pgQuery(`SELECT COUNT(*)::int AS total FROM imagenes_usuario i JOIN usuarios u ON u.id = i.usuario_id ${where}`, params);
+      const total = countR[0]?.total || 0;
+      const imgs = await pgQuery(`
+        SELECT i.*, u.nombre_mostrado AS nombre_usuario, u.email AS email_usuario, u.url_avatar AS avatar_usuario
+        FROM imagenes_usuario i
+        JOIN usuarios u ON u.id = i.usuario_id
+        ${where}
+        ORDER BY i.created_at DESC
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      `, [...params, limite, offset]);
+      return { imagenes: imgs, total, paginas: Math.ceil(total / limite) };
+    }
+    return { imagenes: [], total: 0, paginas: 0 };
+  },
+  async moderarImagen(id, moderadaPor) {
+    if (isPg) {
+      await pgQuery('UPDATE imagenes_usuario SET moderada=true, moderada_por=$1, moderada_en=now() WHERE id=$2', [moderadaPor, id]);
+    } else {
+      await withDb(db => {
+        const img = (db.imagenes_usuario || []).find(x => x.id === id);
+        if (img) { img.moderada = true; img.moderada_por = moderadaPor; img.moderada_en = new Date().toISOString(); }
+      });
+    }
+  },
+  async desmoderarImagen(id) {
+    if (isPg) {
+      await pgQuery('UPDATE imagenes_usuario SET moderada=false, moderada_por=NULL, moderada_en=NULL WHERE id=$1', [id]);
+    } else {
+      await withDb(db => {
+        const img = (db.imagenes_usuario || []).find(x => x.id === id);
+        if (img) { img.moderada = false; img.moderada_por = null; img.moderada_en = null; }
+      });
+    }
   },
 
   // ---- CHANGELOGS ----
-  async listChangelogs() {
+  async listarHistoriales() {
     if (isPg) {
-      return await pgQuery('SELECT * FROM changelogs ORDER BY created_at DESC');
+      return await pgQuery('SELECT * FROM historiales ORDER BY created_at DESC');
     }
-      const list = loadJson().changelogs || [];
+      const list = loadJson().historiales || [];
       return list.slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
   },
-  async createChangelog({ version, title, entries }) {
+  async crearHistorial({ version, titulo, entradas }) {
     const now = new Date().toISOString();
-    const entry = { id: uuidv4(), version, title, entries, created_at: now, updated_at: now };
+    const entrada = { id: uuidv4(), version, titulo, entradas, created_at: now, updated_at: now };
     if (isPg) {
       await pgQuery(
-        'INSERT INTO changelogs (id, version, title, entries) VALUES ($1,$2,$3,$4)',
-        [entry.id, entry.version, entry.title, entry.entries]);
-      return entry;
+        'INSERT INTO historiales (id, version, titulo, entradas) VALUES ($1,$2,$3,$4)',
+        [entrada.id, entrada.version, entrada.titulo, entrada.entradas]);
+      return entrada;
     }
     return withDb(db => {
-      if (!db.changelogs) db.changelogs = [];
-      db.changelogs.push(entry);
-      return entry;
+      if (!db.historiales) db.historiales = [];
+      db.historiales.push(entrada);
+      return entrada;
     });
   },
-  async updateChangelog(id, { version, title, entries }) {
+  async actualizarHistorial(id, { version, titulo, entradas }) {
     if (isPg) {
       await pgQuery(
-        'UPDATE changelogs SET version=$1, title=$2, entries=$3, updated_at=now() WHERE id=$4',
-        [version, title, entries, id]);
+        'UPDATE historiales SET version=$1, titulo=$2, entradas=$3, updated_at=now() WHERE id=$4',
+        [version, titulo, entradas, id]);
       return;
     }
     await withDb(db => {
-      if (!db.changelogs) db.changelogs = [];
-      const e = db.changelogs.find(c => c.id === id);
-      if (e) { e.version = version; e.title = title; e.entries = entries; e.updated_at = new Date().toISOString(); }
+      if (!db.historiales) db.historiales = [];
+      const e = db.historiales.find(c => c.id === id);
+      if (e) { e.version = version; e.titulo = titulo; e.entradas = entradas; e.updated_at = new Date().toISOString(); }
     });
   },
-  async deleteChangelog(id) {
+  async eliminarHistorial(id) {
     if (isPg) {
-      await pgQuery('DELETE FROM changelogs WHERE id=$1', [id]);
+      await pgQuery('DELETE FROM historiales WHERE id=$1', [id]);
       return;
     }
     await withDb(db => {
-      if (!db.changelogs) db.changelogs = [];
-      db.changelogs = db.changelogs.filter(c => c.id !== id);
+      if (!db.historiales) db.historiales = [];
+      db.historiales = db.historiales.filter(c => c.id !== id);
     });
   },
-  async getChangelogConfig() {
+  async obtenerConfigHistorial() {
     if (isPg) {
-      const rows = await pgQuery("SELECT value FROM site_config WHERE key='changelog_link'");
-      return rows.length ? parseJsonb(rows[0].value, { link_text: 'Ver historial de versiones', current_version: '1.0.0' }) : { link_text: 'Ver historial de versiones', current_version: '1.0.0' };
+      const rows = await pgQuery("SELECT value FROM config_sitio WHERE key='enlace_historial'");
+      return rows.length ? parseJsonb(rows[0].value, { texto_enlace: 'Ver historial de versiones', version_actual: '1.0.0' }) : { texto_enlace: 'Ver historial de versiones', version_actual: '1.0.0' };
     }
-    return { link_text: 'Ver historial de versiones', current_version: '1.0.0', ...(loadJson().changelog_config || {}) };
+    return { texto_enlace: 'Ver historial de versiones', version_actual: '1.0.0', ...(loadJson().config_historial || {}) };
   },
-  async updateChangelogConfig({ link_text, current_version }) {
+  async actualizarConfigHistorial({ texto_enlace, version_actual }) {
     if (isPg) {
       await pgQuery(
-        "INSERT INTO site_config (key, value) VALUES ('changelog_link', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
-        [JSON.stringify({ link_text, current_version })]);
+        "INSERT INTO config_sitio (key, value) VALUES ('enlace_historial', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
+        [JSON.stringify({ texto_enlace, version_actual })]);
       return;
     }
     await withDb(db => {
-      if (!db.changelog_config) db.changelog_config = {};
-      db.changelog_config.link_text = link_text;
-      db.changelog_config.current_version = current_version;
+      if (!db.config_historial) db.config_historial = {};
+      db.config_historial.texto_enlace = texto_enlace;
+      db.config_historial.version_actual = version_actual;
     });
   },
-  async getEasterEggs() {
+  async obtenerHuevosPascua() {
     if (isPg) {
-      const rows = await pgQuery("SELECT value FROM site_config WHERE key='easter_eggs'");
+      const rows = await pgQuery("SELECT value FROM config_sitio WHERE key='huevos_pascua'");
       return rows.length ? parseJsonb(rows[0].value, []) : [];
     }
-    return loadJson().easter_eggs || [];
+    return loadJson().huevos_pascua || [];
   },
-  async getEasterEgg(id) {
-    const eggs = await this.getEasterEggs();
+  async obtenerHuevoPascua(id) {
+    const eggs = await this.obtenerHuevosPascua();
     return eggs.find(e => e.id === id) || null;
   },
-  async updateEasterEggs(eggs) {
+  async actualizarHuevosPascua(eggs) {
     if (isPg) {
       await pgQuery(
-        "INSERT INTO site_config (key, value) VALUES ('easter_eggs', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
+        "INSERT INTO config_sitio (key, value) VALUES ('huevos_pascua', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
         [JSON.stringify(eggs)]);
       return;
     }
-    await withDb(db => { db.easter_eggs = eggs; });
+    await withDb(db => { db.huevos_pascua = eggs; });
   },
-  async getTeamProfiles() {
+  async obtenerPerfilesEquipo() {
     if (isPg) {
-      const rows = await pgQuery("SELECT value FROM site_config WHERE key='team_profiles'");
+      const rows = await pgQuery("SELECT value FROM config_sitio WHERE key='perfiles_equipo'");
       return rows.length ? parseJsonb(rows[0].value, []) : [];
     }
-    return loadJson().team_profiles || [];
+    return loadJson().perfiles_equipo || [];
   },
-  async updateTeamProfile(id, data) {
-    const profiles = await this.getTeamProfiles();
-    const idx = profiles.findIndex(p => p.id === id);
+  async actualizarPerfilEquipo(id, datos) {
+    const perfiles = await this.obtenerPerfilesEquipo();
+    const idx = perfiles.findIndex(p => p.id === id);
     if (idx === -1) return null;
-    profiles[idx] = { ...profiles[idx], ...data };
+    perfiles[idx] = { ...perfiles[idx], ...datos };
     if (isPg) {
       await pgQuery(
-        "INSERT INTO site_config (key, value) VALUES ('team_profiles', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
-        [JSON.stringify(profiles)]);
-      return profiles[idx];
+        "INSERT INTO config_sitio (key, value) VALUES ('perfiles_equipo', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
+        [JSON.stringify(perfiles)]);
+      return perfiles[idx];
     }
-    await withDb(db => { db.team_profiles = profiles; });
-    return profiles[idx];
+    await withDb(db => { db.perfiles_equipo = perfiles; });
+    return perfiles[idx];
   },
-  async reorderTeamProfiles(orderedIds) {
-    const profiles = await this.getTeamProfiles();
-    const map = {};
-    profiles.forEach(p => { map[p.id] = p; });
-    const reordered = orderedIds.map(id => map[id]).filter(Boolean);
+  async reordenarPerfilesEquipo(idsOrdenados) {
+    const perfiles = await this.obtenerPerfilesEquipo();
+    const mapa = {};
+    perfiles.forEach(p => { mapa[p.id] = p; });
+    const reordenados = idsOrdenados.map(id => mapa[id]).filter(Boolean);
     if (isPg) {
       await pgQuery(
-        "INSERT INTO site_config (key, value) VALUES ('team_profiles', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
-        [JSON.stringify(reordered)]);
-      return reordered;
+        "INSERT INTO config_sitio (key, value) VALUES ('perfiles_equipo', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
+        [JSON.stringify(reordenados)]);
+      return reordenados;
     }
-    await withDb(db => { db.team_profiles = reordered; });
-    return reordered;
+    await withDb(db => { db.perfiles_equipo = reordenados; });
+    return reordenados;
   },
-  async getTeamTitle() {
+  async obtenerTituloEquipo() {
     if (isPg) {
-      const rows = await pgQuery("SELECT value FROM site_config WHERE key='team_title'");
-      return rows.length ? parseJsonb(rows[0].value, 'Nuestro Equipo') : 'Nuestro Equipo';
+      const rows = await pgQuery("SELECT value FROM config_sitio WHERE key='titulo_equipo'");
+      if (!rows.length) return 'Nuestro Equipo';
+      const v = rows[0].value;
+      return typeof v === 'string' ? v : String(v);
     }
     const db = loadJson();
-    return db.team_title || 'Nuestro Equipo';
+    return db.titulo_equipo || 'Nuestro Equipo';
   },
-  async setTeamTitle(title) {
+  async definirTituloEquipo(titulo) {
     if (isPg) {
       await pgQuery(
-        "INSERT INTO site_config (key, value) VALUES ('team_title', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
-        [JSON.stringify(title)]);
+        "INSERT INTO config_sitio (key, value) VALUES ('titulo_equipo', $1) ON CONFLICT (key) DO UPDATE SET value=$1",
+        [JSON.stringify(titulo)]);
       return;
     }
-    await withDb(db => { db.team_title = title; });
+    await withDb(db => { db.titulo_equipo = titulo; });
+  },
+
+  // ---- FOROS (JSON fallback) ----
+  async listarCategoriasForo() {
+    if (isPg) { /* TODO: implement */ }
+    return [];
+  },
+  async buscarHilosForo() {
+    if (isPg) { /* TODO: implement */ }
+    return { hilos: [], total: 0 };
+  },
+  async obtenerEstadisticasForo() {
+    if (isPg) { /* TODO: implement */ }
+    return { total_hilos: 0, total_respuestas: 0, usuarios_activos: 0 };
+  },
+  async obtenerCategoriaForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async crearHiloForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async obtenerHiloForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async actualizarHiloForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async eliminarHiloForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async toggleFijadoHiloForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async toggleCerradoHiloForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async listarRespuestasForo() {
+    if (isPg) { /* TODO: implement */ }
+    return { respuestas: [], total: 0 };
+  },
+  async crearRespuestaForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async actualizarRespuestaForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async eliminarRespuestaForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async crearReaccionForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async eliminarReaccionForo() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+
+  // ---- DESTACADOS (JSON fallback) ----
+  async listarDestacados() {
+    if (isPg) { /* TODO: implement */ }
+    return [];
+  },
+  async crearDestacado() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async actualizarDestacado() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
+  },
+  async eliminarDestacado() {
+    if (isPg) { /* TODO: implement */ }
+    return null;
   }
 };
 
 module.exports = api;
+module.exports.pgQuery = pgQuery;
+module.exports.isPg = isPg;

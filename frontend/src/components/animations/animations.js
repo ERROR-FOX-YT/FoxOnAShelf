@@ -1,5 +1,5 @@
 /**
- * BookShelf™ - Animaciones con anime.js (https://animejs.com).
+ * FoxOnAShelf™ - Animaciones con anime.js (https://animejs.com).
  *
  * Funciones reutilizables. Cada componente puede llamarlas con la ref
  * apropiada — anime.js está en dependencies en frontend/package.json.

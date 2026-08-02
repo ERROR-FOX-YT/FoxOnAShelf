@@ -15,7 +15,7 @@ export default function RatingStars({ bookId, initial = 0 }) {
     if (!user) { toast.error('Inicia sesión para calificar'); return; }
     prevRef.current = v;
     setV(n);
-    const r = await api.post('/api/books/' + bookId + '/rate', { rating: n });
+    const r = await api.post('/api/libros/' + bookId + '/calificar', { puntuacion: n });
     if (r && !r.__error) toast.ok('Calificación guardada');
     else setV(prevRef.current);
   }

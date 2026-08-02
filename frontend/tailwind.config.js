@@ -9,8 +9,10 @@ export default {
         ink:          '#1F2937',
         nightGray:    '#2B2F33',
         nightInk:     '#E6E7E8',
-        bookshelfBrown:  '#7B4B27',
-        bookshelfAccent: '#C8A26B'
+        foxBrown:  '#7B4B27',
+        foxAccent: '#C8A26B',
+        foxBlue:      '#1A5276',
+        foxBlueLight: '#2E86C1'
       },
       fontFamily: {
         serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -26,6 +26,18 @@ function ConfirmModal({ isOpen, title, children, confirmLabel, confirmClass, onC
   );
 }
 
+function AddNameInline({ onAdd }) {
+  const [val, setVal] = useState('');
+  return (
+    <div className="flex gap-1">
+      <input className="input text-xs flex-1" placeholder="Nuevo nombre exclusivo..."
+             value={val} onChange={e => setVal(e.target.value)}
+             onKeyDown={e => { if (e.key === 'Enter' && val.trim()) { onAdd(val.trim()); setVal(''); } }} />
+      <button className="btn-primary text-xs" onClick={() => { if (val.trim()) { onAdd(val.trim()); setVal(''); } }}>+</button>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -35,12 +47,12 @@ export default function Admin() {
   const [metrics, setM] = useState({});
   const [categories, setCategories] = useState([]);
   const [newCat, setNewCat] = useState('');
-  const [announcements, setAnn] = useState([]);
-  const [editPub, setEditPub] = useState(null);
-  const [pubText, setPubText] = useState('');
-  const [editAnn, setEditAnn] = useState(null);
-  const [editAnnTitle, setEditAnnTitle] = useState('');
-  const [editAnnContent, setEditAnnContent] = useState('');
+  const [anuncios, setAnuncios] = useState([]);
+  const [editandoPublicado, setEditandoPublicado] = useState(null);
+  const [textoPublicado, setTextoPublicado] = useState('');
+  const [editandoAnuncio, setEditandoAnuncio] = useState(null);
+  const [tituloEdicion, setTituloEdicion] = useState('');
+  const [contenidoEdicion, setContenidoEdicion] = useState('');
   const [contact, setContact] = useState('');
 
   // User table state
@@ -63,6 +75,10 @@ export default function Admin() {
   const [frontPreview, setFrontPreview] = useState(false);
   const [frontSaving, setFrontSaving] = useState(false);
 
+  // Changelog config state (footer)
+  const [footerVersion, setFooterVersion] = useState('');
+  const [footerLinkText, setFooterLinkText] = useState('');
+
   // Easter egg state
   const [easterEggs, setEasterEggs] = useState([]);
   const [eggOpen, setEggOpen] = useState(null);
@@ -71,25 +87,40 @@ export default function Admin() {
   const [confirm, setConfirm] = useState({ open: false, target: null });
 
   function loadCategories() {
-    api.get('/api/categories').then(r => !r.__error && setCategories(r.categories || []));
+    api.get('/api/categorias').then(r => !r.__error && setCategories(r.categories || []));
   }
-  function loadAnnouncements() {
-    api.get('/api/announcements').then(r => !r.__error && setAnn(r.announcements || []));
+  function cargarAnuncios() {
+    api.get('/api/anuncios').then(r => !r.__error && setAnuncios(r.anuncios || []));
   }
   function loadTrash() {
     setTrashLoading(true);
-    api.get('/api/users/trash/list').then(r => {
-      if (!r.__error) setTrash(r.trash || []);
+    api.get('/api/usuarios/papelera/listar').then(r => {
+      if (!r.__error) setTrash(r.papelera || []);
       setTrashLoading(false);
     });
   }
 
   function loadChangelogs() {
-    api.get('/api/changelogs/front').then(r => !r.__error && setFrontVersions(r.versions || []));
+    api.get('/api/historiales/frontend').then(r => !r.__error && setFrontVersions(r.versiones || []));
+  }
+
+  function loadChangelogConfig() {
+    api.get('/api/historiales/configuracion').then(r => {
+      if (!r.__error) {
+        setFooterVersion(r.version_actual || '');
+        setFooterLinkText(r.texto_enlace || '');
+      }
+    });
+  }
+
+  async function saveChangelogConfig() {
+    if (!footerVersion.trim() || !footerLinkText.trim()) { toast.error('Versión y texto del link requeridos'); return; }
+    const r = await api.put('/api/historiales/configuracion', { version_actual: footerVersion.trim(), texto_enlace: footerLinkText.trim() });
+    if (!r.__error) toast.ok('Configuración del footer actualizada');
   }
 
   function loadEasterEggs() {
-    api.get('/api/easter-eggs').then(r => !r.__error && setEasterEggs(r.easter_eggs || []));
+    api.get('/api/huevos-pascua').then(r => !r.__error && setEasterEggs(r.huevos_pascua || []));
   }
 
   const loadUsers = useCallback(async (page, q, role) => {
@@ -98,9 +129,9 @@ export default function Admin() {
     if (page) params.set('page', page);
     if (q) params.set('q', q);
     if (role) params.set('role', role);
-    const r = await api.get('/api/users?' + params.toString());
+    const r = await api.get('/api/usuarios?' + params.toString());
     if (!r.__error) {
-      setUsers(r.users || []);
+      setUsers(r.usuarios || []);
       setUsersTotal(r.total || 0);
     }
     setUsersLoading(false);
@@ -109,12 +140,13 @@ export default function Admin() {
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     if (!isAdmin()) { navigate('/'); return; }
-    api.get('/api/metrics').then(r => !r.__error && setM(r));
+    api.get('/api/metricas').then(r => !r.__error && setM(r));
     loadCategories();
-    loadAnnouncements();
+    cargarAnuncios();
     loadTrash();
-    api.get('/api/moderation/contact-info').then(j => !j.__error && setContact(j.contact_info || ''));
+    api.get('/api/moderacion/informacion-contacto').then(j => !j.__error && setContact(j.informacion_contacto || ''));
     loadChangelogs();
+    loadChangelogConfig();
     loadEasterEggs();
   }, [user, navigate, isAdmin]);
 
@@ -124,33 +156,33 @@ export default function Admin() {
 
   async function addCategory() {
     if (!newCat.trim()) { toast.error('Ingresa un nombre'); return; }
-    const r = await api.post('/api/categories', { name: newCat.trim() });
+    const r = await api.post('/api/categorias', { name: newCat.trim() });
     if (!r.__error) { setNewCat(''); loadCategories(); toast.ok('Categoría añadida'); }
   }
 
   async function deleteCategory(name) {
-    const r = await api.del('/api/categories/' + encodeURIComponent(name));
+    const r = await api.del('/api/categorias/' + encodeURIComponent(name));
     if (!r.__error) { loadCategories(); toast.ok('Categoría eliminada'); }
   }
 
-  async function toggleFeatured(id) {
-    const r = await api.put('/api/announcements/' + id + '/feature');
-    if (!r.__error) { loadAnnouncements(); toast.ok('Anuncio destacado actualizado'); }
+  async function alternarDestacado(id) {
+    const r = await api.put('/api/anuncios/' + id + '/destacado');
+    if (!r.__error) { cargarAnuncios(); toast.ok('Anuncio destacado actualizado'); }
   }
 
-  async function savePublishedBy(id) {
-    const r = await api.put('/api/announcements/' + id + '/published-by', { published_by: pubText });
-    if (!r.__error) { setEditPub(null); loadAnnouncements(); toast.ok('Texto actualizado'); }
+  async function guardarPublicadoPor(id) {
+    const r = await api.put('/api/anuncios/' + id + '/publicado-por', { publicado_por: textoPublicado });
+    if (!r.__error) { setEditandoPublicado(null); cargarAnuncios(); toast.ok('Texto actualizado'); }
   }
 
-  async function saveEditAnn(id) {
-    if (!editAnnTitle.trim() || !editAnnContent.trim()) { toast.error('Completa todos los campos'); return; }
-    const r = await api.put('/api/announcements/' + id, { title: editAnnTitle, content: editAnnContent });
-    if (!r.__error) { setEditAnn(null); loadAnnouncements(); toast.ok('Anuncio actualizado'); }
+  async function guardarEdicionAnuncio(id) {
+    if (!tituloEdicion.trim() || !contenidoEdicion.trim()) { toast.error('Completa todos los campos'); return; }
+    const r = await api.put('/api/anuncios/' + id, { titulo: tituloEdicion, contenido: contenidoEdicion });
+    if (!r.__error) { setEditandoAnuncio(null); cargarAnuncios(); toast.ok('Anuncio actualizado'); }
   }
 
   async function saveContact() {
-    const r = await api.put('/api/moderation/contact-info', { contact_info: contact });
+    const r = await api.put('/api/moderacion/informacion-contacto', { informacion_contacto: contact });
     if (!r.__error) toast.ok('Información actualizada');
   }
 
@@ -163,7 +195,7 @@ export default function Admin() {
   async function executeDelete() {
     const u = confirm.target;
     setConfirm({ open: false, target: null });
-    const delR = await api.del('/api/users/' + u.id);
+    const delR = await api.del('/api/usuarios/' + u.id);
     if (delR.__error) return;
     toast.ok('Usuario ' + u.email + ' enviado a la papelera');
     loadUsers(usersPage, usersSearch, usersRoleFilter);
@@ -177,7 +209,7 @@ export default function Admin() {
   async function executeRestore() {
     const entry = confirm.target;
     setConfirm({ open: false, target: null });
-    const r = await api.post('/api/users/trash/' + entry.id + '/restore');
+    const r = await api.post('/api/usuarios/papelera/' + entry.id + '/restore');
     if (r.__error) return;
     toast.ok('Usuario restaurado');
     loadTrash();
@@ -191,7 +223,7 @@ export default function Admin() {
   async function executePermanentDelete() {
     const entry = confirm.target;
     setConfirm({ open: false, target: null });
-    const r = await api.del('/api/users/trash/' + entry.id);
+    const r = await api.del('/api/usuarios/papelera/' + entry.id);
     if (r.__error) return;
     toast.ok('Usuario eliminado permanentemente');
     loadTrash();
@@ -203,7 +235,7 @@ export default function Admin() {
 
   async function executeCleanup() {
     setConfirm({ open: false, target: null });
-    const r = await api.post('/api/users/trash/cleanup');
+    const r = await api.post('/api/usuarios/papelera/limpiar');
     if (r.__error) return;
     toast.ok(r.message || 'Papelera limpiada');
     loadTrash();
@@ -213,10 +245,10 @@ export default function Admin() {
 
   function sectionsFromVersion(v) {
     const m = (name) => {
-      const sec = (v.sections || []).find(s => s.name === name);
-      return sec ? sec.items.join('\n') : '';
+      const sec = (v.secciones || []).find(s => s.nombre === name);
+      return sec ? sec.elementos.join('\n') : '';
     };
-    return { added: m('Añadido'), fixed: m('Corregido'), modified: m('Modificado'), removed: m('Eliminado'), notas: m('Notas'), author: v.author || '' };
+    return { added: m('Añadido'), fixed: m('Corregido'), modified: m('Modificado'), removed: m('Eliminado'), notas: m('Notas'), author: v.autor || '' };
   }
 
   function resetFrontForm() {
@@ -234,19 +266,19 @@ export default function Admin() {
     if (!frontHasContent(f)) { toast.error('Completa versión, fecha y al menos una sección'); return; }
     setFrontSaving(true);
     const sections = [];
-    if (f.added.trim())    sections.push({ name: 'Añadido', items: f.added.trim().split('\n') });
-    if (f.fixed.trim())    sections.push({ name: 'Corregido', items: f.fixed.trim().split('\n') });
-    if (f.modified.trim()) sections.push({ name: 'Modificado', items: f.modified.trim().split('\n') });
-    if (f.removed.trim())  sections.push({ name: 'Eliminado', items: f.removed.trim().split('\n') });
-    if (f.notas.trim())    sections.push({ name: 'Notas', items: f.notas.trim().split('\n') });
-    const entry = { version: f.version.trim(), date: f.date.trim(), author: f.author.trim(), sections };
+    if (f.added.trim())    sections.push({ nombre: 'Añadido', elementos: f.added.trim().split('\n') });
+    if (f.fixed.trim())    sections.push({ nombre: 'Corregido', elementos: f.fixed.trim().split('\n') });
+    if (f.modified.trim()) sections.push({ nombre: 'Modificado', elementos: f.modified.trim().split('\n') });
+    if (f.removed.trim())  sections.push({ nombre: 'Eliminado', elementos: f.removed.trim().split('\n') });
+    if (f.notas.trim())    sections.push({ nombre: 'Notas', elementos: f.notas.trim().split('\n') });
+    const entry = { version: f.version.trim(), fecha: f.date.trim(), autor: f.author.trim(), secciones: sections };
     let updated;
     if (frontEditIdx >= 0) {
       updated = frontVersions.map((v, i) => i === frontEditIdx ? entry : v);
     } else {
       updated = [entry, ...frontVersions];
     }
-    const r = await api.put('/api/changelogs/front', { versions: updated });
+    const r = await api.put('/api/historiales/frontend', { versiones: updated });
     if (!r.__error) { resetFrontForm(); loadChangelogs(); toast.ok('Versión guardada'); }
     else { toast.error('Error al guardar la versión'); }
     setFrontSaving(false);
@@ -254,7 +286,7 @@ export default function Admin() {
 
   function startFrontEdit(idx) {
     const v = frontVersions[idx];
-    setFrontForm({ version: v.version, date: v.date, ...sectionsFromVersion(v) });
+    setFrontForm({ version: v.version, date: v.fecha, ...sectionsFromVersion(v) });
     setFrontEditIdx(idx);
     setFrontOpen(null);
     setFrontPreview(false);
@@ -262,7 +294,7 @@ export default function Admin() {
 
   async function deleteFrontVersion(idx) {
     const updated = frontVersions.filter((_, i) => i !== idx);
-    const r = await api.put('/api/changelogs/front', { versions: updated });
+    const r = await api.put('/api/historiales/frontend', { versiones: updated });
     if (!r.__error) { loadChangelogs(); toast.ok('Versión eliminada'); }
   }
 
@@ -270,7 +302,7 @@ export default function Admin() {
     const updated = [...frontVersions];
     const target = idx + dir;
     [updated[idx], updated[target]] = [updated[target], updated[idx]];
-    const r = await api.put('/api/changelogs/front', { versions: updated });
+    const r = await api.put('/api/historiales/frontend', { versiones: updated });
     if (!r.__error) { setFrontOpen(null); loadChangelogs(); }
   }
 
@@ -294,12 +326,12 @@ export default function Admin() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-      <h1 className="font-serif text-2xl font-bold">Panel BookShelf</h1>
+      <h1 className="font-serif text-2xl font-bold">Panel FoxOnAShelf</h1>
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Stat label="Autores" value={metrics.authors_total ?? 0} />
-        <Stat label="Libros"  value={metrics.books_total ?? 0} />
-        <Stat label="Vistas"  value={metrics.views_total ?? 0} />
+        <Stat label="Autores" value={metrics.autores_total ?? 0} />
+        <Stat label="Libros"  value={metrics.libros_total ?? 0} />
+        <Stat label="Vistas"  value={metrics.vistas_total ?? 0} />
       </section>
 
       {/* --- USER TABLE --- */}
@@ -328,7 +360,7 @@ export default function Admin() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-bookshelfBrown/15 text-xs uppercase opacity-70">
+                <tr className="border-b border-foxBrown/15 text-xs uppercase opacity-70">
                   <th className="text-left py-2 pr-2 w-10"></th>
                   <th className="text-left py-2 pr-3">Nombre</th>
                   <th className="text-left py-2 pr-3">Correo</th>
@@ -339,13 +371,13 @@ export default function Admin() {
               </thead>
               <tbody>
                 {Array.from({length: 5}).map((_, i) => (
-                  <tr key={i} className="border-b border-bookshelfBrown/10 animate-pulse">
-                    <td className="py-2 pr-2"><div className="w-8 h-8 rounded-full bg-bookshelfBrown/10"></div></td>
-                    <td className="py-2 pr-3"><div className="h-4 bg-bookshelfBrown/10 rounded w-24"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-32"></div></td>
-                    <td className="py-2 pr-3"><div className="h-4 bg-bookshelfBrown/10 rounded w-16"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-20"></div></td>
-                    <td className="py-2"><div className="h-3 bg-bookshelfBrown/10 rounded w-12 ml-auto"></div></td>
+                  <tr key={i} className="border-b border-foxBrown/10 animate-pulse">
+                    <td className="py-2 pr-2"><div className="w-8 h-8 rounded-full bg-foxBrown/10"></div></td>
+                    <td className="py-2 pr-3"><div className="h-4 bg-foxBrown/10 rounded w-24"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-32"></div></td>
+                    <td className="py-2 pr-3"><div className="h-4 bg-foxBrown/10 rounded w-16"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-20"></div></td>
+                    <td className="py-2"><div className="h-3 bg-foxBrown/10 rounded w-12 ml-auto"></div></td>
                   </tr>
                 ))}
               </tbody>
@@ -357,7 +389,7 @@ export default function Admin() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-bookshelfBrown/15 text-xs uppercase opacity-70">
+                <tr className="border-b border-foxBrown/15 text-xs uppercase opacity-70">
                   <th className="text-left py-2 pr-2 w-10"></th>
                   <th className="text-left py-2 pr-3">Nombre</th>
                   <th className="text-left py-2 pr-3">Correo</th>
@@ -368,11 +400,11 @@ export default function Admin() {
               </thead>
               <tbody>
                 {users.map(u => {
-                  const initials = (u.display_name || u.email).charAt(0).toUpperCase();
-                  const avatarUrl = u.avatar_url;
+                  const initials = (u.nombre_mostrado || u.email).charAt(0).toUpperCase();
+                  const avatarUrl = u.url_avatar;
                   const isSelf = user && u.id === user.id;
                   return (
-                    <tr key={u.id} className="border-b border-bookshelfBrown/10 hover:bg-bookshelfBrown/5 transition-colors">
+                    <tr key={u.id} className="border-b border-foxBrown/10 hover:bg-foxBrown/5 transition-colors">
                       <td className="py-2 pr-2">
                         {avatarUrl ? (
                           <img src={avatarUrl} alt=""
@@ -380,11 +412,11 @@ export default function Admin() {
                                onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                           />
                         ) : null}
-                        <div className={'w-8 h-8 rounded-full bg-bookshelfBrown/20 text-bookshelfBrown text-xs font-bold items-center justify-center ' + (avatarUrl ? 'hidden' : 'flex')}>
+                        <div className={'w-8 h-8 rounded-full bg-foxBrown/20 text-foxBrown text-xs font-bold items-center justify-center ' + (avatarUrl ? 'hidden' : 'flex')}>
                           {initials}
                         </div>
                       </td>
-                      <td className="py-2 pr-3 font-medium">{u.display_name || '—'}</td>
+                      <td className="py-2 pr-3 font-medium">{u.nombre_mostrado || '—'}</td>
                       <td className="py-2 pr-3 text-xs opacity-80">{u.email}</td>
                       <td className="py-2 pr-3">
                         <span className={'text-[11px] uppercase px-1.5 py-0.5 rounded ' + (
@@ -438,47 +470,47 @@ export default function Admin() {
         )}
       </section>
 
-      {/* --- ANNOUNCEMENTS --- */}
+      {/* --- ANUNCIOS --- */}
       <div className="card p-4">
         <h2 className="font-serif text-xl font-bold mb-2">Anuncios</h2>
         <p className="text-xs opacity-70 mb-3">Gestiona los anuncios destacados y personaliza el texto de publicación.</p>
         <ul className="text-sm space-y-2">
-          {announcements.map(a => (
+          {anuncios.map(a => (
             <li key={a.id} className="flex items-center gap-2 flex-wrap">
-              <span className={a.featured ? 'font-bold' : ''}>
-                {a.featured ? '★ ' : ''}{a.title}
+              <span className={a.destacado ? 'font-bold' : ''}>
+                {a.destacado ? '★ ' : ''}{a.titulo}
               </span>
-              <span className={"text-[10px] uppercase px-1.5 py-0.5 rounded " + (a.created_by_role === 'admin' ? 'bg-amber-200/60 dark:bg-amber-600/40' : 'bg-blue-100 dark:bg-blue-900/40')}>
-                {a.created_by_role === 'admin' ? 'Admin' : 'Mod'}
+              <span className={"text-[10px] uppercase px-1.5 py-0.5 rounded " + (a.autorRol === 'admin' ? 'bg-amber-200/60 dark:bg-amber-600/40' : 'bg-blue-100 dark:bg-blue-900/40')}>
+                {a.autorRol === 'admin' ? 'Admin' : 'Mod'}
               </span>
-              <button className="btn-ghost text-xs" onClick={() => toggleFeatured(a.id)}>
-                {a.featured ? 'Quitar destacado' : 'Destacar'}
+              <button className="btn-ghost text-xs" onClick={() => alternarDestacado(a.id)}>
+                {a.destacado ? 'Quitar destacado' : 'Destacar'}
               </button>
-              {editAnn === a.id ? (
+              {editandoAnuncio === a.id ? (
                 <div className="flex gap-1 items-center">
-                  <input className="input text-xs w-20" value={editAnnTitle}
-                         onChange={e => setEditAnnTitle(e.target.value)}
+                  <input className="input text-xs w-20" value={tituloEdicion}
+                         onChange={e => setTituloEdicion(e.target.value)}
                          placeholder="Título" />
-                  <button className="btn-ghost text-xs" onClick={() => saveEditAnn(a.id)}>OK</button>
-                  <button className="btn-ghost text-xs" onClick={() => setEditAnn(null)}>✕</button>
+                  <button className="btn-ghost text-xs" onClick={() => guardarEdicionAnuncio(a.id)}>OK</button>
+                  <button className="btn-ghost text-xs" onClick={() => setEditandoAnuncio(null)}>✕</button>
                 </div>
               ) : (
                 <>
                   <button className="btn-ghost text-xs" title="Editar anuncio"
-                          onClick={() => { setEditAnn(a.id); setEditAnnTitle(a.title); setEditAnnContent(a.content); }}>
+                          onClick={() => { setEditandoAnuncio(a.id); setTituloEdicion(a.titulo); setContenidoEdicion(a.contenido); }}>
                     Editar
                   </button>
-                  {a.created_by_role === 'admin' && (
-                    editPub === a.id ? (
+                  {a.autorRol === 'admin' && (
+                    editandoPublicado === a.id ? (
                       <div className="flex gap-1 items-center">
-                        <input className="input text-xs w-28" value={pubText}
-                               onChange={e => setPubText(e.target.value)}
+                        <input className="input text-xs w-28" value={textoPublicado}
+                               onChange={e => setTextoPublicado(e.target.value)}
                                placeholder="Publicado por..." />
-                        <button className="btn-ghost text-xs" onClick={() => savePublishedBy(a.id)}>OK</button>
+                        <button className="btn-ghost text-xs" onClick={() => guardarPublicadoPor(a.id)}>OK</button>
                       </div>
                     ) : (
                       <button className="btn-ghost text-xs" title="Personalizar autor"
-                              onClick={() => { setEditPub(a.id); setPubText(a.published_by ?? ''); }}>
+                              onClick={() => { setEditandoPublicado(a.id); setTextoPublicado(a.publicadoPor ?? ''); }}>
                         ✏ Publicado por
                       </button>
                     )
@@ -487,7 +519,7 @@ export default function Admin() {
               )}
             </li>
           ))}
-          {announcements.length === 0 && <li className="opacity-70">No hay anuncios.</li>}
+          {anuncios.length === 0 && <li className="opacity-70">No hay anuncios.</li>}
         </ul>
       </div>
 
@@ -515,6 +547,19 @@ export default function Admin() {
         <p className="text-xs opacity-70 mb-2">Se muestra en el footer y se puede incluir el link al Discord oficial.</p>
         <textarea className="input min-h-[100px]" value={contact} onChange={e => setContact(e.target.value)} />
         <button className="btn-primary mt-2" onClick={saveContact}>Guardar</button>
+      </div>
+
+      {/* --- CHANGELOG CONFIG (footer version) --- */}
+      <div className="card p-4 space-y-3">
+        <h2 className="font-serif text-xl font-bold">Versión del footer</h2>
+        <p className="text-xs opacity-70">Controla qué versión se muestra en el pie de página y el texto del enlace.</p>
+        <div className="flex gap-2 flex-wrap">
+          <input className="input flex-1 min-w-[120px]" placeholder="Ej: Desarrollo - 12"
+                 value={footerVersion} onChange={e => setFooterVersion(e.target.value)} />
+          <input className="input flex-1 min-w-[120px]" placeholder="Ej: Ver historial de versiones"
+                 value={footerLinkText} onChange={e => setFooterLinkText(e.target.value)} />
+          <button className="btn-primary text-sm" onClick={saveChangelogConfig}>Guardar</button>
+        </div>
       </div>
 
       {/* --- FRONT CHANGELOGS (editable) --- */}
@@ -643,10 +688,10 @@ export default function Admin() {
                   >
                     <span className={`shrink-0 transition-transform ${frontOpen === idx ? 'rotate-90' : ''}`}>▸</span>
                     <span className="font-mono font-bold text-accent-main">{v.version}</span>
-                    <span className="text-xs opacity-60">{v.date}</span>
-                    {v.author && <span className="text-xs opacity-50 italic">por {v.author}</span>}
+                    <span className="text-xs opacity-60">{v.fecha}</span>
+                    {v.autor && <span className="text-xs opacity-50 italic">por {v.autor}</span>}
                     <span className="hidden sm:inline text-xs opacity-60 ml-2 truncate">
-                      {v.sections.map(s => s.name).join(', ')}
+                      {v.secciones.map(s => s.nombre).join(', ')}
                     </span>
                   </button>
                   <button className="btn-ghost text-xs" onClick={() => startFrontEdit(idx)}>✏</button>
@@ -656,11 +701,11 @@ export default function Admin() {
                 </div>
                 {frontOpen === idx && (
                   <div className="px-3 pb-2 text-xs space-y-2 border-t border-black/10 dark:border-white/10 pt-2">
-                    {v.sections.map((sec, si) => (
+                    {v.secciones.map((sec, si) => (
                       <div key={si}>
-                        <div className="font-bold opacity-80 mb-0.5">{sec.name}</div>
+                        <div className="font-bold opacity-80 mb-0.5">{sec.nombre}</div>
                         <ul className="list-disc list-inside space-y-0.5 opacity-80">
-                          {sec.items.map((item, ii) => {
+                          {sec.elementos.map((item, ii) => {
                             const bold = item.match(/^-\s*\*\*(.+?)\*\*/);
                             if (bold) {
                               const rest = item.slice(bold[0].length).replace(/^:\s*/, '');
@@ -681,44 +726,89 @@ export default function Admin() {
 
       {/* --- EASTER EGGS --- */}
       <div className="card p-4 space-y-3">
-        <h2 className="font-serif text-xl font-bold">Easter eggs</h2>
-        <p className="text-xs opacity-70">Si alguien intenta registrarse como "ERROR_FOX", se rechazará y aparecerá <strong>ERROR 418: &lt;mensaje&gt;</strong>. Puedes personalizar el mensaje aquí.</p>
+        <h2 className="font-serif text-xl font-bold">Easter eggs — Nombres exclusivos</h2>
+        <p className="text-xs opacity-70">Si alguien intenta registrarse con uno de estos nombres, se rechazará y aparecerá <strong>ERROR 418: &lt;mensaje&gt;</strong>. La comparación no distingue mayúsculas y acepta variaciones (0=O, _=-, etc.).</p>
         <div className="space-y-1">
-          {easterEggs.map((egg, idx) => (
-            <div key={egg.id} className="border border-black/10 dark:border-white/10 rounded-lg overflow-hidden">
-              <div className="flex items-center gap-2 p-2 text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                <button
-                  onClick={() => setEggOpen(eggOpen === idx ? null : idx)}
-                  className="flex items-center gap-2 flex-1 text-left"
-                >
-                  <span className={`shrink-0 transition-transform ${eggOpen === idx ? 'rotate-90' : ''}`}>▸</span>
-                  <span className="font-mono font-bold text-accent-main">{egg.message}</span>
-                  <span className="text-xs opacity-60 ml-2">{egg.id}</span>
-                </button>
-              </div>
-              {eggOpen === idx && (
-                <div className="px-3 pb-2 text-xs space-y-2 border-t border-black/10 dark:border-white/10 pt-2">
-                  <div className="opacity-80">{egg.description}</div>
-                  <div className="flex gap-2 items-center">
-                    <span className="opacity-70 shrink-0">Mensaje de error:</span>
-                    <input className="input text-xs flex-1" value={egg.message}
-                           onChange={e => {
-                             const updated = [...easterEggs];
-                             updated[idx] = { ...updated[idx], message: e.target.value };
-                             setEasterEggs(updated);
-                           }} />
+          {easterEggs.map((egg, idx) => {
+            const names = egg.names || ['ERROR_FOX'];
+            return (
+              <div key={egg.id} className="border border-black/10 dark:border-white/10 rounded-lg overflow-hidden">
+                <div className="flex items-center gap-2 p-2 text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                  <button
+                    onClick={() => setEggOpen(eggOpen === idx ? null : idx)}
+                    className="flex items-center gap-2 flex-1 text-left"
+                  >
+                    <span className={`shrink-0 transition-transform ${eggOpen === idx ? 'rotate-90' : ''}`}>▸</span>
+                    <span className="text-lg">{egg.emoji || '🦊'}</span>
+                    <span className="font-mono font-bold text-accent-main">{names.length} nombre{names.length !== 1 ? 's' : ''}</span>
+                    <span className="text-xs opacity-60 ml-2">{egg.id}</span>
+                  </button>
+                </div>
+                {eggOpen === idx && (
+                  <div className="px-3 pb-3 text-xs space-y-3 border-t border-black/10 dark:border-white/10 pt-2">
+                    <div className="opacity-80">{egg.descripcion}</div>
+
+                    {/* Emoji */}
+                    <div className="flex gap-2 items-center">
+                      <span className="opacity-70 shrink-0">Emoji:</span>
+                      <input className="input text-sm w-20 text-center" maxLength={10}
+                             value={egg.emoji || '🦊'}
+                             onChange={e => {
+                               const updated = [...easterEggs];
+                               updated[idx] = { ...updated[idx], emoji: e.target.value.slice(0, 10) };
+                               setEasterEggs(updated);
+                             }} />
+                      <span className="text-xs opacity-50">(máx. 10 caracteres)</span>
+                    </div>
+
+                    {/* Mensaje */}
+                    <div className="flex gap-2 items-center">
+                      <span className="opacity-70 shrink-0">Mensaje:</span>
+                      <input className="input text-xs flex-1" value={egg.message}
+                             onChange={e => {
+                               const updated = [...easterEggs];
+                               updated[idx] = { ...updated[idx], message: e.target.value };
+                               setEasterEggs(updated);
+                             }} />
+                    </div>
+
+                    {/* Nombres exclusivos */}
+                    <div>
+                      <span className="opacity-70 block mb-1">Nombres exclusivos:</span>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {names.map((n, ni) => (
+                          <span key={ni} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-mono">
+                            {n}
+                            <button className="hover:text-red-900 dark:hover:text-red-200 ml-0.5"
+                                    onClick={() => {
+                                      const updated = [...easterEggs];
+                                      const newNames = names.filter((_, i) => i !== ni);
+                                      updated[idx] = { ...updated[idx], names: newNames.length ? newNames : ['ERROR_FOX'] };
+                                      setEasterEggs(updated);
+                                    }}>×</button>
+                          </span>
+                        ))}
+                      </div>
+                      <AddNameInline onAdd={(name) => {
+                        const updated = [...easterEggs];
+                        const newNames = [...names, name];
+                        updated[idx] = { ...updated[idx], names: newNames };
+                        setEasterEggs(updated);
+                      }} />
+                    </div>
+
                     <button className="btn-primary text-xs"
                             onClick={async () => {
-                              const r = await api.put('/api/easter-eggs', { easter_eggs: easterEggs });
+                              const r = await api.put('/api/huevos-pascua', { huevos_pascua: easterEggs });
                               if (!r.__error) toast.ok('Easter egg actualizado');
                             }}>
                       Guardar
                     </button>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
           {easterEggs.length === 0 && <p className="text-xs opacity-70">No hay easter eggs configurados.</p>}
         </div>
       </div>
@@ -738,7 +828,7 @@ export default function Admin() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-bookshelfBrown/15 text-xs uppercase opacity-70">
+                <tr className="border-b border-foxBrown/15 text-xs uppercase opacity-70">
                   <th className="text-left py-2 pr-3">Usuario</th>
                   <th className="text-left py-2 pr-3">Email</th>
                   <th className="text-left py-2 pr-3">Rol</th>
@@ -751,15 +841,15 @@ export default function Admin() {
               </thead>
               <tbody>
                 {Array.from({length: 3}).map((_, i) => (
-                  <tr key={i} className="border-b border-bookshelfBrown/10 animate-pulse">
-                    <td className="py-2 pr-3"><div className="h-4 bg-bookshelfBrown/10 rounded w-20"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-28"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-12"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-8"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-16"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-16"></div></td>
-                    <td className="py-2 pr-3"><div className="h-3 bg-bookshelfBrown/10 rounded w-16"></div></td>
-                    <td className="py-2"><div className="h-3 bg-bookshelfBrown/10 rounded w-20 ml-auto"></div></td>
+                  <tr key={i} className="border-b border-foxBrown/10 animate-pulse">
+                    <td className="py-2 pr-3"><div className="h-4 bg-foxBrown/10 rounded w-20"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-28"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-12"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-8"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-16"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-16"></div></td>
+                    <td className="py-2 pr-3"><div className="h-3 bg-foxBrown/10 rounded w-16"></div></td>
+                    <td className="py-2"><div className="h-3 bg-foxBrown/10 rounded w-20 ml-auto"></div></td>
                   </tr>
                 ))}
               </tbody>
@@ -771,7 +861,7 @@ export default function Admin() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-bookshelfBrown/15 text-xs uppercase opacity-70">
+                <tr className="border-b border-foxBrown/15 text-xs uppercase opacity-70">
                   <th className="text-left py-2 pr-3">Usuario</th>
                   <th className="text-left py-2 pr-3">Email</th>
                   <th className="text-left py-2 pr-3">Rol</th>
@@ -784,22 +874,22 @@ export default function Admin() {
               </thead>
               <tbody>
                 {trash.map(t => {
-                  const daysLeft = Math.ceil((new Date(t.expires_at) - new Date()) / (1000*60*60*24));
+                  const daysLeft = Math.ceil((new Date(t.expira_en) - new Date()) / (1000*60*60*24));
                   return (
-                    <tr key={t.id} className="border-b border-bookshelfBrown/10 hover:bg-bookshelfBrown/5 transition-colors">
-                      <td className="py-2 pr-3 font-medium">{t.user?.display_name || '—'}</td>
-                      <td className="py-2 pr-3 text-xs opacity-80">{t.user_email}</td>
-                      <td className="py-2 pr-3 text-xs">{t.user?.role || '—'}</td>
-                      <td className="py-2 pr-3 text-xs">{t.book_count || 0}</td>
+                    <tr key={t.id} className="border-b border-foxBrown/10 hover:bg-foxBrown/5 transition-colors">
+                      <td className="py-2 pr-3 font-medium">{t.usuario?.nombre_mostrado || '—'}</td>
+                      <td className="py-2 pr-3 text-xs opacity-80">{t.email_usuario}</td>
+                      <td className="py-2 pr-3 text-xs">{t.usuario?.role || '—'}</td>
+                      <td className="py-2 pr-3 text-xs">{t.conteo_libros || 0}</td>
                       <td className="py-2 pr-3 text-xs whitespace-nowrap">
-                        {new Date(t.trashed_at).toLocaleDateString()}
+                        {new Date(t.eliminado_en).toLocaleDateString()}
                       </td>
                       <td className="py-2 pr-3 text-xs whitespace-nowrap">
                         <span className={daysLeft <= 3 ? 'text-red-600 font-semibold' : daysLeft <= 7 ? 'text-amber-600' : ''}>
                           {daysLeft > 0 ? daysLeft + ' días' : 'Expirado'}
                         </span>
                       </td>
-                      <td className="py-2 pr-3 text-xs opacity-70">{t.trashed_by}</td>
+                      <td className="py-2 pr-3 text-xs opacity-70">{t.eliminado_por}</td>
                       <td className="py-2 text-right whitespace-nowrap">
                         <button className="btn-ghost text-xs text-emerald-700 mr-1"
                                 onClick={() => openRestoreConfirm(t)}
@@ -834,7 +924,7 @@ export default function Admin() {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <span className="text-2xl">⚠️</span>
               <div>
-                <div className="font-semibold">{confirmTarget.display_name || 'Usuario'}</div>
+                <div className="font-semibold">{confirmTarget.nombre_mostrado || 'Usuario'}</div>
                 <div className="text-xs opacity-80">{confirmTarget.email}</div>
               </div>
             </div>
@@ -862,8 +952,8 @@ export default function Admin() {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
               <span className="text-2xl">♻️</span>
               <div>
-                <div className="font-semibold">{confirmTarget.user?.display_name || confirmTarget.user_email}</div>
-                <div className="text-xs opacity-80">{confirmTarget.user_email}</div>
+                <div className="font-semibold">{confirmTarget.usuario?.nombre_mostrado || confirmTarget.email_usuario}</div>
+                <div className="text-xs opacity-80">{confirmTarget.email_usuario}</div>
               </div>
             </div>
             <p className="text-xs mt-2">Se restaurará la cuenta con todos sus datos: perfil, comentarios, calificaciones, libros, favoritos y más.</p>
@@ -875,8 +965,8 @@ export default function Admin() {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <span className="text-2xl">🗑️</span>
               <div>
-                <div className="font-semibold">{confirmTarget.user?.display_name || confirmTarget.user_email}</div>
-                <div className="text-xs opacity-80">{confirmTarget.user_email}</div>
+                <div className="font-semibold">{confirmTarget.usuario?.nombre_mostrado || confirmTarget.email_usuario}</div>
+                <div className="text-xs opacity-80">{confirmTarget.email_usuario}</div>
               </div>
             </div>
             <p className="text-xs mt-2 font-semibold text-red-700 dark:text-red-400">
@@ -897,7 +987,7 @@ function Stat({ label, value }) {
   return (
     <div className="card p-4">
       <div className="text-xs uppercase opacity-70">{label}</div>
-      <div className="text-3xl font-serif font-bold text-bookshelfBrown">{value}</div>
+      <div className="text-3xl font-serif font-bold text-foxBrown">{value}</div>
     </div>
   );
 }

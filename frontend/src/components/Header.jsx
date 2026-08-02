@@ -1,7 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
+﻿import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { buttonPulse } from './animations/animations.js';
 
 export default function Header() {
@@ -10,6 +10,16 @@ export default function Header() {
   const navigate = useNavigate();
   const [q, setQ] = useState('');
   const [openMenu, setOpenMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!openMenu) return;
+    function onDocClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setOpenMenu(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [openMenu]);
 
   function onSearch(e) {
     e.preventDefault();
@@ -17,18 +27,23 @@ export default function Header() {
   }
 
   return (
-    <header className="border-b border-bookshelfBrown/15 bg-parchment/80 dark:bg-nightGray/80 backdrop-blur sticky top-0 z-30">
+    <header className="border-b border-foxBrown/15 bg-parchment/80 dark:bg-nightGray/80 backdrop-blur sticky top-0 z-30">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
-        <Link to="/" className="font-serif text-xl font-bold text-bookshelfBrown">
-          BookShelf<sup className="text-xs">™</sup>
+        <Link to="/" className="font-serif text-xl font-bold flex items-baseline">
+          <span style={{ color: 'var(--logo-a)' }}>Fox</span>
+          <span style={{ color: 'var(--logo-b)' }}>On</span>
+          <span style={{ color: 'var(--logo-a)' }}>A</span>
+          <span style={{ color: 'var(--logo-b)' }}>Shelf</span>
+          <sup className="text-xs ml-0.5" style={{ color: 'var(--logo-a)' }}>™</sup>
         </Link>
         <nav className="hidden md:flex items-center gap-4 text-sm">
           <Link to="/explore">Explorar</Link>
-          <Link to="/announcements">Anuncios</Link>
+          <Link to="/anuncios">Anuncios</Link>
+          <Link to="/foros">Foros</Link>
           {user && <Link to="/profile">Mi perfil</Link>}
           {user && <Link to="/library">Mis imágenes</Link>}
           {isAdmin() && <Link to="/admin">Admin</Link>}
-          {isModerator() && <Link to="/admin/moderation" className="font-semibold text-bookshelfBrown">Moderación</Link>}
+          {isModerator() && <Link to="/admin/moderation" className="font-semibold text-foxBrown">Moderación</Link>}
         </nav>
         <form onSubmit={onSearch} className="flex-1 max-w-md ml-auto">
            <input className="rm-search" placeholder="Buscar libros, autores, categorías..."
@@ -39,9 +54,9 @@ export default function Header() {
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
         {user ? (
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button onClick={() => setOpenMenu(o => !o)} className="btn-ghost text-sm">
-              {user.display_name || user.email}
+              {user.nombre_mostrado || user.email}
             </button>
             {openMenu && (
               <div className="absolute right-0 mt-2 w-48 card p-3 text-sm">

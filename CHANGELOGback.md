@@ -1,6 +1,154 @@
-# CHANGELOG — BookShelf™
+# CHANGELOG — FoxOnAShelf™
 
 Todas las fechas en formato YYYY-MM-DD.
+
+## [Desarrollo 14 | FoxOnAShelf] — 2026-08-01 — ERROR_FOX
+
+### Modificado
+- **Renombrado de BookShelf a FoxOnAShelf**: nombre de servicio en `/api/salud` (`FoxOnAShelf backend`), mensaje de arranque del servidor, comentarios de cabecera y nombres de paquete (`foxonashelf-backend`, `foxonashelf-frontend`).
+- Header de changelog exportado por la API (`changelogs.js`) actualizado a `FoxOnAShelf™`.
+
+### Añadido
+- **Migración 009 (`sistema_soporte.sql`)**: eliminación de las 6 categorías originales, creación de categoría "Soporte", añadido `resuelto` a `foro_hilos`, `es_solucion` a `foro_respuestas`, tablas nuevas `foro_votos` y `foro_historial_solucion`
+- **Reescritura completa de `foros.js`**:
+  - `GET /` → retorna solo la categoría Soporte
+  - `GET /estado/:estado` → lista de hilos filtrada por pendientes/resueltos (paginada)
+  - `GET /anuncios` → anuncios visibles para la columna derecha
+  - `POST /:hiloId/solucion` → marcar/desmarcar solución (1 por hilo)
+  - `PUT /respuestas/:id/solucion` → editar contenido de solución + registrar historial + reiniciar votos
+  - `GET /respuestas/:id/historial` → obtener historial de ediciones de una solución
+  - `POST /respuestas/:id/votos` → votar útil/no útil + auto-desmarcación al 80% no-útil con 10+ votos
+  - Eliminado `GET /estadisticas`
+  - Permisos: creator-only delete thread, mod/admin delete any response
+
+## [Desarrollo 13] — 2026-07-31 — ERROR_FOX
+
+### Notas
+- **Traducción global completa**: backend, base de datos, rutas, middlewares, servicios y seed completamente en español.
+- **Coordinación backend-front verificada**: 3 revisiones completas encontraron y corrigieron 30+ bugs de coordinación.
+- **Seed.js reescrito**: el seed ahora usa el esquema español completo (usuarios, libros, capitulos, anuncios, categorias).
+- **Datos de prueba limpiados**: libros de prueba con caracteres corruptos eliminados de la BD.
+
+### Añadido
+- **Método `buscarAutores(q)`**: búsqueda de autores por nombre con escape de caracteres especiales.
+- **Método `listarCategorias/crearCategoria/eliminarCategoria`**: CRUD completo de categorías.
+- **Método `obtenerConfigHistorial`**: lectura de configuración del changelog desde `site_config`.
+- **Métodos de imágenes de usuario**: `guardarImagen`, `listarImagenes`, `actualizarNombre`, `eliminarImagen`.
+- **Método `limpiarPapeleraExpirada`**: limpieza automática de libros eliminados expirados (>30 días).
+- **Sistema de foros completo** (`/api/foros`):
+  - Rutas: `foros.js` con 15 endpoints para categorías, hilos, respuestas y reacciones
+  - Migración: `007_crear_foros.sql` con tablas `foro_categorias`, `foro_hilos`, `foro_respuestas`, `foro_reacciones`
+  - Funciones JSON fallback en `db/index.js` para modo no-PostgreSQL
+- **Sistema de highlights/notas** (`/api/destacados`):
+  - Rutas: `destacados.js` con 5 endpoints para CRUD de highlights
+  - Migración: `008_crear_destacados_notas.sql` con tabla `destacados`
+  - Funciones JSON fallback en `db/index.js`
+- **Exportación `pgQuery` e `isPg`** de `db/index.js` para uso directo en rutas nuevas
+- **Script de reinicio de vistas**: `001_reiniciar_vistas.sql` para resetear contadores sin perder datos
+
+### Cambiados
+- **Traducción de todas las rutas**: `books.js` → `libros.js`, `users.js` → `usuarios.js`, `bookmarks.js` → `marcadores.js`, `changelogs.js` → `historiales.js`, `easter-eggs.js` → `huevos-pascua.js`, `metrics.js` → `metricas.js`, `search.js` → `busqueda.js`, `moderation.js` → `moderacion.js`, `user-images.js` → `imagenes-usuario.js`, `upload.js` → `subida.js`
+- **Traducción de middlewares**: `requireAuth` → `requiereAutenticacion`, `requireAdmin` → `requiereAdmin`
+- **Traducción de db/index.js**: todos los métodos renombrados (`listBooks`→`listarLibros`, `getBook`→`obtenerLibro`, `createBook`→`crearLibro`, `updateBook`→`actualizarLibro`, `deleteBook`→`eliminarLibro`, `banUser`→`banearUsuario`, `unbanUser`→`unbanearUsuario`, `listBanned`→`listarBaneados`, etc.)
+- **Traducción de server.js**: montaje de rutas en español (`/api/libros`, `/api/usuarios`, `/api/marcadores`, `/api/historiales`, `/api/huevos-pascua`, `/api/metricas`, `/api/busqueda`, `/api/moderacion`, `/api/imagenes-usuario`, `/api/subida`)
+- **Traducción de conversion.js**: `titulo`, `contenido`, `orden`
+- **Traducción de chat.js**: `usuario_id` en tabla `mensajes_chat`
+
+### Corregido
+- **Bug de `path.dirnombre()`**: crash en modo JSON al iniciar. Corregido a `path.dirname()`.
+- **Bug de `limpiarPapeleraExpirada`**: usaba `t.expires_at` en vez de `t.expira_en` en la rama JSON.
+- **Bug de `chat.js`**: usaba `user_id` en vez de `usuario_id` para la tabla `mensajes_chat`.
+- **Bug de `anuncios.js`**: campos `rutaImagen` y `publicadoPor` en camelCase en vez de snake_case (`ruta_imagen`, `publicado_por`).
+- **Bug de `team.js`**: campo `urlFoto` en camelCase en vez de snake_case (`url_foto`).
+- **Variable renombrada**: `RECOVERY_WINDOW_MS` → `VENTANA_RECUPERACION_MS`.
+
+### Eliminado
+- **Archivos `.tmp.js`**: scripts temporales de testing eliminados.
+
+## [Intermedio 12/13] — 2026-07-30
+
+### Notas
+- **BookShelf sale del proyecto media técnica UPB de la IEBS**: el proyecto pasa a ser personal y el desarrollador tiene libertad total sobre el código y los datos.
+- El sitio ahora es un proyecto de una sola persona; toda referencia pública a los miembros anteriores fue eliminada.
+
+### Eliminado
+- **Cuentas Leyder y Slayer**: borrado permanente (`deleteUser` con `{ permanent: true }`) de `adminLMG@bookshelf.app` y `adminSlayer@bookshelf.app`. Quedaron fuera: libros, imágenes, anuncios, comentarios, favoritos, ratings, marcadores, colecciones, refresh_tokens, book_views (no tenían registros propios relevantes).
+- **Perfiles de equipo `jeison-sossa` y `leyder-montoya`**: removidos de `site_config.team_profiles`.
+- **Fotos de storage**: eliminados `backend/storage/team/Slayer.jpeg` y `backend/storage/team/Leyder.jpeg`.
+- **Anuncio con referencia a Slayer**: `42ffc447-8c1c-4839-b8ae-289684f888f4` marcado como no visible (`visible=false`).
+
+### Modificado
+- **Migración de cuenta**: `lopezsanty2008@gmail.com` → `ef.samlq@gmail.com` (`UPDATE users SET email, display_name='zorro correcto'`). Se conservaron rol (moderator), libro "Cepallo", 12 anuncios, refresh tokens y 10 filas de `token_blacklist` migradas (`user_email`).
+- **Perfil de equipo renombrado**: `santiago-lopez` → `error-fox`. Nombre público `ERROR_FOX`, contacto `adminFox@bookshelf.app`.
+- **`site_config`**: `current_version` → `Intermedio 12/13`, `changelog_link` actualizado.
+- **Footer**: copyright a solo `ERROR_FOX` (Frontend `Footer.jsx`).
+
+### Corregido
+- **Bug pre-existente en `banned_users`**: `banUser`, `unbanUser` y `deleteUser` insertaban/actualizaban columnas inexistentes (`banned_by`, `unbanned_by`). El esquema real es `(id, email, reason, appeal, appeal_submitted, banned_at, unbanned_at, deleted_at)` con UNIQUE en `email`. Corregido en `backend/src/db/index.js`: `banUser` inserta `(email, reason, banned_at)`, `unbanUser` solo `unbanned_at=now()`, `deleteUser` inserta `(email, reason, banned_at, deleted_at)` con `ON CONFLICT (email) DO UPDATE SET deleted_at=now()`.
+
+### Añadido
+- **Aviso "Sin acceso al servidor"**: `ServerStatusContext.jsx` hace polling a `/api/health` cada 10s; si la BD está caída muestra `ServerBanner.jsx` fijo con la hora de la última comprobación. `client.js` suprime toasts de error repetidos mientras el servidor está caído. `/api/health` ahora hace ping real a la BD (`ping()` en `db/index.js`: SELECT 1 en Postgres, loadJson en modo JSON).
+
+### Traducción del código a español
+- **Módulo Anuncios**: columnas de `announcements` renombradas en Postgres (31 filas): `title→titulo`, `content→contenido`, `image_path→ruta_imagen`, `featured→destacado`, `created_by_name→autor_nombre`, `created_by_role→autor_rol`, `published_by→publicado_por` (se conservan `id`, `admin_id`, `visible`, `created_at`). El API devuelve claves camelCase: `anuncios`, `titulo`, `contenido`, `rutaImagen`, `destacado`, `publicadoPor`, `autorNombre`, `autorRol`.
+- **Backend**: `routes/announcements.js` → `routes/anuncios.js` montado en `/api/anuncios` (`GET /`, `POST /`, `PUT /:id/destacado`, `PUT /:id/publicado-por`, `PUT /:id`, `DELETE /:id`). En `db/index.js`: `listAnnouncements→listarAnuncios`, `createAnnouncement→crearAnuncio`, `getAnnouncement→obtenerAnuncio`, `deleteAnnouncement→eliminarAnuncio`, `setFeaturedAnnouncement→alternarDestacado`, `updateAnnouncement→actualizarAnuncio`, `updatePublishedBy→definirPublicadoPor`. Body de creación/edición con `{titulo, contenido, rutaImagen}`.
+- **Esquema y seeds**: `database/migrations/001_create_tables.sql` y `database/seeds/seed.js` con las columnas en español; `backend/migrate_data.js` mapea claves nuevas y antiguas.
+- **Frontend**: `pages/Announcements.jsx` → `pages/Anuncios.jsx` (ruta `/anuncios`). Estados y campos en español. `Home.jsx` (banner, sidebar y "anuncios anteriores") y `Admin.jsx` (panel de anuncios) actualizados a la nueva API.
+- **Módulo Equipo (registro pendiente del piloto)**: `/api/team` → `/api/equipo`; `users.orden_equipo` (antes `team_sort`); `site_config` con `perfiles_equipo`, `titulo_equipo` y claves jsonb en español (`nombre`, `edad`, `contacto`, `informacion`, `urlFoto`); `pages/Team.jsx` → `pages/Equipo.jsx` (ruta `/equipo`). Se conservan `role`, `mod` y `admin` sin traducir.
+
+## [Desarrollo/Parche 12] — 2026-07-21
+
+### Notas
+- Revisión general del código fuente en 3 passes. Se encontraron y corrigieron 25+ problemas de seguridad, bugs, código muerto y malas prácticas.
+
+### Corregido
+- **CRITICAL — `db.json` expuesto vía HTTP**: el archivo `db.json` era accesible desde `/storage/db.json` por cualquier usuario. Se añadió middleware en `server.js` que bloquea esa ruta devolviendo 404.
+- **CRITICAL — `routes/chat.js` crash al arrancar**: `createClient()` se ejecutaba en load time del módulo. Si faltaban `SUPABASE_URL` o `SUPABASE_SERVICE_KEY`, la app entera crasheaba. Ahora se usa `getSupabase()` lazy con retorno de 503 si no está disponible.
+- **`parseJsonb` retornaba valor en vez de fallback**: cuando `JSON.parse` fallaba, la función devolvía el valor crudo en vez del fallback proporcionado.
+- **`listAnnouncements` desaparecía al borrar usuario**: usaba `JOIN` en vez de `LEFT JOIN` con la tabla users. Al eliminar un usuario, todos sus anuncios dejaban de mostrarse.
+- **Dead variable `cutoff`** eliminada de `cleanupExpiredTrash` — se calculaba pero nunca se usaba.
+
+### Eliminado
+- **Archivos muertos**: `pages/Login.jsx`, `pages/Register.jsx`, `api/base.js` — ninguno era importado.
+- **Función muerta `resolveImageUrl`** eliminada de `api/userImages.js`.
+- **Imports no usados**: `React` en ChatWidget.jsx, `api` en ChatWidget.jsx, `cfg` en routes/books.js y routes/upload.js.
+- **`console.log` de debug** eliminado de ReadingMode.jsx.
+- **Estado muerto `flipOverlay`** eliminado de ReadingMode.jsx.
+- **CSS muerta `.chat-name-prompt`** eliminada de ChatWidget.css.
+
+## [Desarrollo - 12 Parte 2] — 2026-07-21
+
+### Añadido
+- **Layout de Home reestructurado**: contenido principal a la izquierda, panel de anuncios compactos a la derecha con espacio reservado para publicidad.
+- **Libros destacados como hero principal**: al entrar al dashboard, lo primero que se ve son los libros destacados en un recuadro centrado con el logo BookShelf™ y descripción.
+- **Barra "Explorar más libros"**: componente `home-explore-bar` — botón de ancho completo (`width: 100%`) al fondo del recuadro de destacados, con ícono de lupa.
+- **Stats en la parte superior**: componente `Stat` simplificado (sin hint), grid `grid-cols-3` en el top del Home.
+- **Ordenamiento de anuncios**: sidebar ampliado a 9 anuncios con `sideVisible.slice(0, 9)`. Espacios de publicidad insertados cada 3 anuncios usando `(i + 1) % 3 === 0`.
+- **Estilos dorados**: anuncios de admin y destacados tienen borde y fondo dorado tanto en modo claro como oscuro.
+- **Preview antes de publicar**: botón "Ver preview" en el formulario de creación de anuncios para previsualizar cómo se verá antes de publicar.
+- **Mejoras estéticas en Explorar**: pestañas con iconos, contador de resultados, estados vacíos con iconos, skeleton de carga mejorado.
+- **Estilos `.ann-card` y `.ann-badge`**: clases CSS reutilizables para anuncios con variantes doradas para admin/destacados.
+- **Pestañas de Explorar re-diseñadas**: estilo limpio con `.explore-tab` y `.explore-tab--active`.
+- **Dev Account Switcher**: componente `DevAccountSwitcher.jsx` con botones flotantes (`.dev-switch-fab`) al lado del chat FAB. Cuenta con 3 cuentas de test: adminfox, usuariocomun, lopezsanty2008. Login directo vía `fetch('/api/auth/login')` + `window.location.reload()`. Solo visible con `import.meta.env.DEV`.
+- **Tarjetas de libros uniformes**: `min-h-[1.25rem]` en el espacio de descripción de `BookCard.jsx` para uniformidad de altura.
+- **Público objetivo en línea separada**: age_group renderizado en su propio `<div>` debajo de autor y categoría en `BookCard.jsx`.
+
+### Corregido
+- **Libros no estirados**: `align-self: start` en `.book-card` + `items-start` en `BookList.jsx` para evitar estiramiento vertical en el grid.
+
+## [Desarrollo - 12 Parte 1] — 2026-07-18
+
+### Notas
+- BookShelf™ fue presentada en un semi-evento del "Programa Nivelatorio con Aporte de Empleados" de la Universidad de EAFIT.
+
+### Añadido
+- **Página DualAuth**: nueva vista `/login` y `/register` con login y registro lado a lado. Efecto visual: la card activa se agranda e ilumina al pasar el mouse; la otra se oscurece y reduce.
+- **Estética glassmorphism**: efecto de cristal esmerilado con `backdrop-filter: blur` en las cards de autenticación.
+- **Fondo animado**: orbes de gradiente flotantes y partículas ascendentes con CSS puro.
+- **Inputs flotantes**: labels que se animan hacia arriba al enfocar el campo, con línea de acento que se expande.
+- **Efecto glow**: borde luminoso animado en la card activa usando gradientes de color.
+- **Responsive**: diseño adaptado para móvil (cards apiladas verticalmente).
+- **Easter eggs personalizables**: sección de administración para gestionar nombres exclusivos, mensajes y emojis. La comparación no distingue mayúsculas y acepta variaciones (0=O, _=-, etc.).
 
 ## [Desarrollo - 11] — 2026-06-14
 
@@ -8,17 +156,6 @@ Todas las fechas en formato YYYY-MM-DD.
 - **API /api/team**: nuevo endpoint GET (público) y PUT /:id (admin-only) para gestionar perfiles del equipo. Funciones `getTeamProfiles`, `updateTeamProfile` en db/index.js. Ruta montada en server.js.
 - **Página /team**: tres tarjetas de perfil (foto circular, nombre, edad, contacto, info) con edición inline para admins. Botón "Editar perfil" visible solo para admin.
 - **Footer**: el texto "BookShelf™ — Plataforma de lectura digital" ahora es un link a /team.
-
-### Corregido
-- **Migración de cuentas**: `admin@bookshelf.app` eliminado. Sus libros (1), comentarios (8) y marcadores (4) transferidos a `adminFox@bookshelf.app`.
-- **Nuevas cuentas admin**: `adminLMG@bookshelf.app` (Leyder Montoya) y `adminSlayer@bookshelf.app` (Santiago López) creadas con contraseña `admin123`.
-
-### Notas
-- Las fotos de perfil usan placeholder `/storage/team/placeholder.png`. El usuario debe proveer las imágenes reales.
-
-## [Desarrollo/Parche 11.A] — 2026-06-14
-
-### Añadido
 - **Imágenes reales**: movidas `sam.jpeg`, `Jeichon.jpeg`, `lider.jpeg` a `backend/storage/team/` renombradas como `ERROR_FOX.jpeg`, `Slayer.jpeg`, `Leyder.jpeg`.
 - **Campo `role`**: nuevo campo editable en perfiles de equipo, almacenado en `db.json team_profiles[].role`. Validación en `PUT /:id`.
 - **Campo `admin_email`**: correo admin por perfil, pre-cargado con los emails reales de cada admin.
@@ -28,7 +165,35 @@ Todas las fechas en formato YYYY-MM-DD.
 - **Crash handlers**: añadidos `process.on('uncaughtException')` y `process.on('unhandledRejection')` en server.js.
 
 ### Corregido
+- **Migración de cuentas**: `admin@bookshelf.app` eliminado. Sus libros (1), comentarios (8) y marcadores (4) transferidos a `adminFox@bookshelf.app`.
+- **Nuevas cuentas admin**: `adminLMG@bookshelf.app` y `adminSlayer@bookshelf.app` creadas con contraseña `admin123`.
 - **Ruta PUT /:id duplicada**: el handler de `PUT /:id` tenía copiada la lógica de `reorder` en vez de `updateTeamProfile`. Restaurada la implementación correcta con validación de campos permitidos.
+
+### Notas
+- Las fotos de perfil usan placeholder `/storage/team/placeholder.png`. El usuario debe proveer las imágenes reales.
+
+## [Desarrollo/Parche 11.A] — 2026-06-16
+
+### Añadido
+- **Supabase Storage**: imágenes, archivos importados y subidas ahora se guardan en Supabase Storage (bucket `bookshelf`) en vez del disco local. Nuevo servicio `services/storage.js`. Middleware `upload.js` cambiado a `memoryStorage`.
+- **Chat experimental**: widget flotante en `_chat_test/` con mensajes persistentes en Supabase (tabla `chat_messages`), polling cada 3s, autenticación requerida. Backend route `routes/chat.js`.
+- **Soporte multi-origen CORS**: `FRONTEND_URL` acepta múltiples URLs separadas por coma.
+
+### Corregido
+- **Login insensible a mayúsculas**: `getUserByEmail`, `isEmailBanned` y `userTokensInvalidatedAfter` usan `LOWER()` en Postgres (y `toLowerCase()` en rama JSON) para que `adminfox` y `adminFox` sean el mismo correo.
+- **deleteUser JSON**: comparación de email ahora es case-insensitive en rama JSON (`token_blacklist.filter`, `banned_users.find`).
+- **user-images DELETE**: guard `cfg.SUPABASE_URL &&` para evitar que `startsWith('')` coincida con cualquier ruta.
+- **backend/.env**: eliminadas claves duplicadas (`DB_MODE=json` sobreescribía `postgres`, `JWT_SECRET` dev placeholder sobreescribía el real).
+- **package.json raíz**: eliminado GitHub PAT incrustado en repository URL.
+- **Archivos túnel**: eliminados `tunnel.ps1`, `start_tunnel.ps1`, `tunnel.out/err/log`, `deploy.js`.
+- **Git tracking**: `server.err` y `start_tunnel.js` removidos del control de versiones. `.gitignore` actualizado.
+
+### Modificado
+- **README.md**: actualizado para reflejar que Supabase (Postgres cloud) es obligatorio — modo JSON desactivado. Sección de almacenamiento actualizada a Supabase Storage.
+
+### Eliminado
+- **GitHub Pages**: branch `gh-pages` eliminado del remoto, sitio despublicado.
+- **Dependencias raíz**: `node_modules` del package.json raíz mantenido solo para el chat experimental.
 
 ## [Desarrollo/Parche 10.A] — 2026-06-14
 

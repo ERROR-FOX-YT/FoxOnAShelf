@@ -13,7 +13,7 @@ export default function FavoritesButton({ bookId, initial = false }) {
   async function toggle(e) {
     buttonPulse(e.currentTarget);
     if (!user) { toast.error('Inicia sesión para guardar favoritos'); return; }
-    const r = await api.post('/api/books/' + bookId + '/favorite');
+    const r = await api.post('/api/libros/' + bookId + '/favorito');
     if (r && !r.__error) setFav(r.favorited);
   }
   return (

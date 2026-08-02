@@ -1,4 +1,4 @@
-# Roles y permisos — BookShelf™
+# Roles y permisos — FoxOnAShelf™
 
 ## Roles
 
@@ -11,8 +11,8 @@
 | admin       | Administrador — acceso completo a todo el sistema. |
 | system      | Reservado para tareas internas.                  |
 
-No existe el flag `is_admin_fox`; tanto `admin@bookshelf.app` como
-`adminFox@bookshelf.app` son administradores con **privilegios idénticos**.
+No existe el flag `is_admin_fox`; tanto `admin@foxonashelf.app` como
+`adminFox@foxonashelf.app` son administradores con **privilegios idénticos**.
 
 ## Matriz de permisos
 

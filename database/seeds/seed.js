@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * BookShelf™ - seed.js
+ * FoxOnAShelf™ - seed.js
  * Inserta los datos de ejemplo de forma idempotente.
  *
  * Estrategia:
@@ -23,23 +23,23 @@ const HASH     = bcrypt.hashSync(PASSWORD, 10);
 
 const users = [
   { id: '11111111-1111-1111-1111-111111111111',
-    email: 'usuarioTest@bookshelf.app', display_name: 'Usuario Test',
+    email: 'usuarioTest@foxonashelf.app', display_name: 'Usuario Test',
     role: 'creator', password_hash: HASH,
     contact_info: null, avatar_url: null,
     created_at: new Date().toISOString() },
   { id: '22222222-2222-2222-2222-222222222222',
-    email: 'admin@bookshelf.app', display_name: 'Administrador',
+    email: 'admin@foxonashelf.app', display_name: 'Administrador',
     role: 'admin', password_hash: HASH,
-    contact_info: 'Discord oficial: https://discord.gg/j543pdNhae | contacto@bookshelf.example',
+    contact_info: 'Discord oficial: https://discord.gg/j543pdNhae | contacto@foxonashelf.example',
     avatar_url: null,
     created_at: new Date().toISOString() },
   { id: '33333333-3333-3333-3333-333333333333',
-    email: 'adminFox@bookshelf.app', display_name: 'Admin Fox',
+    email: 'adminFox@foxonashelf.app', display_name: 'Admin Fox',
     role: 'admin', password_hash: HASH,
     contact_info: null, avatar_url: null,
     created_at: new Date().toISOString() },
   { id: '44444444-4444-4444-4444-444444444444',
-    email: 'userTest@bookshelf.app', display_name: 'Usuario Regular',
+    email: 'userTest@foxonashelf.app', display_name: 'Usuario Regular',
     role: 'user', password_hash: HASH,
     contact_info: null, avatar_url: null,
     created_at: new Date().toISOString() }
@@ -107,7 +107,7 @@ const chapters = [
 const announcements = [
   { id: 'cccccccc-0000-0000-0000-000000000001',
     admin_id: '22222222-2222-2222-2222-222222222222',
-    title: 'Bienvenido a BookShelf',
+    title: 'Bienvenido a FoxOnAShelf',
     content: 'Plataforma de lectura digital abierta y justa. Comienza explorando libros gratuitos.',
     image_path: null, visible: true,
     created_at: new Date().toISOString() }
@@ -167,7 +167,7 @@ async function seedPostgres() {
   }
 
   await client.end();
-  console.log('[seed] Postgres listo. Cuentas: usuarioTest@bookshelf.app, admin@bookshelf.app (admin123).');
+  console.log('[seed] Postgres listo. Cuentas: usuarioTest@foxonashelf.app, admin@foxonashelf.app (admin123).');
 }
 
 function seedJson() {
@@ -203,7 +203,7 @@ function seedJson() {
 
   fs.writeFileSync(target, JSON.stringify(db, null, 2));
   console.log('[seed] db.json regenerado en', target);
-  console.log('[seed] Cuentas: usuarioTest@bookshelf.app, admin@bookshelf.app  (contraseña: admin123)');
+  console.log('[seed] Cuentas: usuarioTest@foxonashelf.app, admin@foxonashelf.app  (contraseña: admin123)');
 }
 
 (async () => {

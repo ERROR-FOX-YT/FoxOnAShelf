@@ -1,13 +1,56 @@
 /**
- * BookShelf™ - Middlewares de autenticación y roles.
+ * FoxOnAShelf™ - Middlewares de autenticación y roles.
  */
 const jwt = require('jsonwebtoken');
 const cfg = require('../config');
 const db  = require('../db');
 
-function signToken(user) {
+const DOMINIO_FOX = '@foxonashelf.app';
+
+function esCuentaFox(email) {
+  return typeof email === 'string' && email.toLowerCase().endsWith(DOMINIO_FOX);
+}
+
+function normalizarIp(ip) {
+  if (!ip) return '';
+  return String(ip).trim().toLowerCase().replace(/^::ffff:/, '').replace(/^\[|\]$/g, '');
+}
+
+function esPrivada(ip) {
+  const n = normalizarIp(ip);
+  if (!n) return false;
+  if (n === '::1' || n.startsWith('127.')) return true;
+  if (n.startsWith('10.') || n.startsWith('192.168.')) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(n)) return true;
+  if (n.startsWith('169.254.') || n.startsWith('fe80:')) return true;
+  return false;
+}
+
+function obtenerIpCliente(req) {
+  const xff = req.headers['x-forwarded-for'];
+  const candidatos = [];
+  if (xff) candidatos.push(...xff.split(',').map(s => s.trim()));
+  if (req.socket && req.socket.remoteAddress) candidatos.push(req.socket.remoteAddress);
+  const norm = candidatos.map(normalizarIp).filter(Boolean);
+  if (norm.length === 0) return '';
+  for (let i = norm.length - 1; i >= 0; i--) {
+    if (!esPrivada(norm[i])) return norm[i];
+  }
+  return norm[norm.length - 1];
+}
+
+function ipVerificada(ip) {
+  const n = normalizarIp(ip);
+  if (!n) return false;
+  if (n === '::1' || n.startsWith('127.')) return true;
+  return cfg.IPS_VERIFICADAS.includes(n);
+}
+
+function signToken(user, extra = {}) {
+  const payload = { sub: user.id, email: user.email, role: user.role };
+  if (extra.ip) payload.ip = extra.ip;
   return jwt.sign(
-    { sub: user.id, email: user.email, role: user.role },
+    payload,
     cfg.JWT_SECRET,
     { expiresIn: cfg.JWT_EXPIRES_IN }
   );
@@ -18,16 +61,28 @@ async function auth(req, res, next) {
   const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
   if (!token) return res.status(401).json({ error: 'Token requerido', code: 401 });
   try {
-    if (await db.isTokenBlacklisted(token)) {
+    if (await db.tokenEstaEnListaNegra(token)) {
       return res.status(401).json({ error: 'Sesión revocada', code: 401 });
     }
     const payload = jwt.verify(token, cfg.JWT_SECRET);
-    const cutoff = await db.userTokensInvalidatedAfter(payload.email);
+    const cutoff = await db.tokensUsuarioInvalidadosDespuesDe(payload.email);
     if (cutoff && (payload.iat * 1000) < cutoff) {
       return res.status(401).json({ error: 'Sesión revocada', code: 401 });
     }
-    if (await db.isEmailBanned(payload.email)) {
+    if (await db.emailEstaBaneado(payload.email)) {
       return res.status(403).json({ error: 'Usuario baneado', code: 403 });
+    }
+    if (esCuentaFox(payload.email)) {
+      const ipActual = obtenerIpCliente(req);
+      if (!ipVerificada(ipActual)) {
+        return res.status(403).json({ error: 'Acceso restringido: esta cuenta solo funciona desde IPs verificadas', code: 403 });
+      }
+      if (!payload.ip) {
+        return res.status(401).json({ error: 'Sesión no vinculada a una IP. Vuelve a iniciar sesión', code: 401 });
+      }
+      if (payload.ip !== ipActual) {
+        return res.status(401).json({ error: 'Sesión vinculada a otra IP. Vuelve a iniciar sesión', code: 401 });
+      }
     }
     req.user = payload;
     next();
@@ -44,11 +99,16 @@ async function optionalAuth(req, res, next) {
   if (!token) return next();
   try {
     const payload = jwt.verify(token, cfg.JWT_SECRET);
-    if (await db.isTokenBlacklisted(token)) return next();
-    const cutoff = await db.userTokensInvalidatedAfter(payload.email);
+    if (await db.tokenEstaEnListaNegra(token)) return next();
+    const cutoff = await db.tokensUsuarioInvalidadosDespuesDe(payload.email);
     if (cutoff && (payload.iat * 1000) < cutoff) return next();
-    if (await db.isEmailBanned(payload.email)) return next();
-    const user = await db.getUserById(payload.sub);
+    if (await db.emailEstaBaneado(payload.email)) return next();
+    if (esCuentaFox(payload.email)) {
+      const ipActual = obtenerIpCliente(req);
+      if (!ipVerificada(ipActual)) return next();
+      if (!payload.ip || payload.ip !== ipActual) return next();
+    }
+    const user = await db.obtenerUsuarioPorId(payload.sub);
     if (!user) return next();
     req.user = payload;
     next();
@@ -73,12 +133,12 @@ function requireModerator(req, res, next) {
 async function isAuthorOrModerator(req, res, next) {
   try {
     if (!req.user) return res.status(401).json({ error: 'No autenticado', code: 401 });
-    const book = await db.getBook(req.params.id);
+    const book = await db.obtenerLibro(req.params.id);
     if (!book) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
-    const owner = book.author_id === req.user.sub;
+    const owner = book.autor_id === req.user.sub;
     const mod   = ['admin','moderator'].includes(req.user.role);
     if (!owner && !mod) return res.status(403).json({ error: 'No tienes permisos sobre este libro', code: 403 });
-    if (!owner && req.user.role === 'moderator' && !book.is_free)
+    if (!owner && req.user.role === 'moderator' && !book.es_gratis)
       return res.status(403).json({ error: 'Moderadores sólo pueden gestionar libros gratuitos', code: 403 });
     req.book = book;
     next();
@@ -88,9 +148,9 @@ async function isAuthorOrModerator(req, res, next) {
 async function isOwnerOrAdmin(req, res, next) {
   try {
     if (!req.user) return res.status(401).json({ error: 'No autenticado', code: 401 });
-    const book = await db.getBook(req.params.id);
+    const book = await db.obtenerLibro(req.params.id);
     if (!book) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });
-    const owner = book.author_id === req.user.sub;
+    const owner = book.autor_id === req.user.sub;
     if (!owner && req.user.role !== 'admin')
       return res.status(403).json({ error: 'No tienes permisos para esta acción', code: 403 });
     req.book = book;
@@ -99,4 +159,5 @@ async function isOwnerOrAdmin(req, res, next) {
 }
 
 module.exports = { signToken, auth, optionalAuth, requireAdmin, requireModerator,
-                   isAuthorOrModerator, isOwnerOrAdmin };
+                   isAuthorOrModerator, isOwnerOrAdmin,
+                   esCuentaFox, obtenerIpCliente, ipVerificada };

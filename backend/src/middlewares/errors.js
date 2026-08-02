@@ -1,5 +1,5 @@
 /**
- * BookShelf™ - Manejo de errores centralizado.
+ * FoxOnAShelf™ - Manejo de errores centralizado.
  *
  * El frontend espera respuestas JSON consistentes:
  *   { error: 'mensaje', code: 400|401|403|404|500 }

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+﻿import { Component } from 'react';
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -23,7 +23,7 @@ export default class ErrorBoundary extends Component {
         <div className="flex items-center justify-center min-h-[40vh] p-8">
           <div className="rm-card p-8 max-w-lg w-full text-center space-y-4">
             <div className="text-5xl opacity-40">📖</div>
-            <h2 className="font-serif text-xl font-bold text-bookshelfBrown">Algo salió mal</h2>
+            <h2 className="font-serif text-xl font-bold text-foxBrown">Algo salió mal</h2>
             <p className="text-sm opacity-70">
               {this.state.error?.message || 'Ocurrió un error inesperado al cargar esta sección.'}
             </p>

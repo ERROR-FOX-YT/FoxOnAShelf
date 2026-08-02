@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+﻿import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { THEMES, OUTERS, FONTS, WIDTHS, FONT_SIZES, LINE_HEIGHTS } from './readerConstants.js';
 
@@ -14,7 +14,7 @@ const PAGE_CONTENT = 'content';
 
 function buildDisplayPages(chapter, book, chapters, showOpening) {
   if (!showOpening) {
-    const contentPages = splitIntoPages(chapter?.content || '');
+    const contentPages = splitIntoPages(chapter?.contenido || chapter?.content || '');
     return contentPages.map((text, i) => ({
       type: PAGE_CONTENT, id: 'c-' + i, text, pageNum: i + 1
     }));
@@ -23,7 +23,7 @@ function buildDisplayPages(chapter, book, chapters, showOpening) {
   pages.push({ type: PAGE_COVER, id: 'cover', book });
   pages.push({ type: PAGE_TITLE, id: 'title', book });
   pages.push({ type: PAGE_TOC, id: 'toc', book, chapters });
-  const contentPages = splitIntoPages(chapter?.content || '');
+  const contentPages = splitIntoPages(chapter?.contenido || chapter?.content || '');
   contentPages.forEach((text, i) => {
     pages.push({ type: PAGE_CONTENT, id: 'cp-' + i, text, pageNum: i + 1 });
   });
@@ -56,7 +56,7 @@ function pageTextToHTML(text, authorId) {
     const img = part.match(/^!\[(.*?)\]\((.*?)\)$/);
     if (img) return `<img src="${img[2]}" alt="${img[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
     const userImg = part.match(/^@img:(.+)$/);
-    if (userImg) return `<img src="/api/user-images/resolve/${authorId || ''}/${encodeURIComponent(userImg[1])}" alt="${userImg[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
+    if (userImg) return `<img src="/api/imagenes-usuario/resolver/${authorId || ''}/${encodeURIComponent(userImg[1])}" alt="${userImg[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
     const paras = part.split(/\n\n+/).filter(Boolean);
     return paras.map(p => `<p>${p.replace(/\n/g, ' ')}</p>`).join('');
   }).join('');
@@ -72,7 +72,7 @@ function PageContent({ content, title, pageNum, theme, font, fontSize, lineHeigh
     }
     const userImg = p.match(/^@img:(.+)$/);
     if (userImg) {
-      const src = '/api/user-images/resolve/' + authorId + '/' + encodeURIComponent(userImg[1]);
+      const src = '/api/imagenes-usuario/resolver/' + authorId + '/' + encodeURIComponent(userImg[1]);
       return <img key={i} src={src} alt={userImg[1]} className="max-w-full h-auto my-4 mx-auto rounded" />;
     }
     return <span key={i}>{p}</span>;
@@ -126,7 +126,7 @@ function CoverPage({ book, theme, children }) {
             maxWidth: '90%'
           }}
         >
-          {book.title}
+          {book.titulo}
         </h1>
         <div className="page__cover-divider"
           style={{
@@ -143,7 +143,7 @@ function CoverPage({ book, theme, children }) {
             margin: 0
           }}
         >
-          {book.author_name || ('Autor #' + (book.author_id || '?'))}
+          {book.nombre_autor || ('Autor #' + (book.autor_id || '?'))}
         </h2>
         <div className="page__cover-publisher"
           style={{
@@ -153,7 +153,7 @@ function CoverPage({ book, theme, children }) {
             opacity: 0.4, color: theme?.fg || '#2A2935'
           }}
         >
-          BookShelf Edition
+          FoxOnAShelf Edition
         </div>
       </div>
     </div>
@@ -175,7 +175,7 @@ function TitlePage({ book, theme }) {
           color: theme?.fg || '#2A2935'
         }}
       >
-        BookShelf Reader
+        FoxOnAShelf Reader
       </div>
       <h1 className="page__title-book-title"
         style={{
@@ -184,7 +184,7 @@ function TitlePage({ book, theme }) {
           color: theme?.fg || '#2A2935', margin: 0
         }}
       >
-        {book.title}
+        {book.titulo}
       </h1>
       <h2 className="page__title-author"
         style={{
@@ -194,7 +194,7 @@ function TitlePage({ book, theme }) {
           opacity: 0.75
         }}
       >
-        {book.author_name || ('Autor #' + (book.author_id || '?'))}
+        {book.nombre_autor || ('Autor #' + (book.autor_id || '?'))}
       </h2>
       <div className="page__title-rule"
         style={{
@@ -210,7 +210,7 @@ function TitlePage({ book, theme }) {
           color: theme?.fg || '#2A2935', maxWidth: '70%'
         }}
       >
-        <span>BookShelf Digital Edition</span>
+        <span>FoxOnAShelf Digital Edition</span>
       </div>
       <div className="page__title-copyright"
         style={{
@@ -228,7 +228,7 @@ function TitlePage({ book, theme }) {
 
 function TOCPage({ chapters, theme, onChapterClick, currentIdx }) {
   if (!chapters || chapters.length === 0) {
-    return <div className="page__toc-empty">No chapters available</div>;
+    return <div className="page__toc-empty">No hay capítulos disponibles</div>;
   }
   return (
     <div className="page__toc" style={{
@@ -245,7 +245,7 @@ function TOCPage({ chapters, theme, onChapterClick, currentIdx }) {
           borderBottom: '1px solid ' + (theme?.border || '#7B4B27') + '33'
         }}
       >
-        Contents
+        Contenido
       </h1>
       <div className="page__toc-list" style={{ flex: 1, overflowY: 'auto' }}>
         {chapters.map((ch, i) => (
@@ -276,7 +276,7 @@ function TOCPage({ chapters, theme, onChapterClick, currentIdx }) {
               {String(i + 1).padStart(2, '0')}.
             </span>
             <span className="page__toc-label" style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {ch.title || ('Capítulo ' + (i + 1))}
+              {ch.titulo || ('Capítulo ' + (i + 1))}
             </span>
             {currentIdx === i && (
               <span style={{ fontSize: '0.65rem', opacity: 0.6 }}>— leyendo</span>
@@ -305,7 +305,6 @@ function renderPageArea(pageObj, isBack, opts) {
       );
 
     default:
-      console.log('[DEBUG renderPageArea] default:', { text: pageObj.text?.slice(0,80), pageNum, pageType: pageObj.type });
       return (
         <div className="reader-book__page-content" style={contentStyle}>
           <PageContent
@@ -328,7 +327,8 @@ function renderPageArea(pageObj, isBack, opts) {
 
 export default function ReadingMode({
   book, chapters, chapter, chapterIndex, totalChapters,
-  prefs, onPrev, onNext, onExit, onMarkPage, onBookmark, onPrefsChange, onGoToChapter
+  prefs, onPrev, onNext, onExit, onMarkPage, onBookmark, onPrefsChange, onGoToChapter,
+  savedScrollPos, onToggleHighlights
 }) {
   const [showPrefs, setShowPrefs] = useState(false);
   const [showBookOpening, setShowBookOpening] = useState(true);
@@ -339,10 +339,10 @@ export default function ReadingMode({
   const exitingRef = useRef(false);
   const modeRef = useRef({ onNext, onPrev, onExit });
   const isFirstRender = useRef(true);
+  const scrollRestoredRef = useRef(false);
 
   const pageMode = prefs.pageMode === true || prefs.pageMode === 'true';
   const [currentSpread, setCurrentSpread] = useState(0);
-  const [flipOverlay, setFlipOverlay] = useState(null);
   const flippingRef = useRef(null);
   const bookRef = useRef(null);
   const overlayRef = useRef(null);
@@ -387,8 +387,8 @@ export default function ReadingMode({
     flippingRef.current = true;
     const frontPage = step === 1 ? cur.right : cur.left;
     const backPage  = step === 1 ? nxt.left : nxt.right;
-    const frontHTML = pageTextToHTML(frontPage?.text || '', book.author_id);
-    const backHTML = pageTextToHTML(backPage?.text || '', book.author_id);
+    const frontHTML = pageTextToHTML(frontPage?.text || '', book.autor_id);
+    const backHTML = pageTextToHTML(backPage?.text || '', book.autor_id);
 
     const bookEl = bookRef.current;
     if (!bookEl) { flippingRef.current = false; return; }
@@ -450,8 +450,8 @@ export default function ReadingMode({
     if (isFirstRender.current) { isFirstRender.current = false; return; }
     setCurrentSpread(0);
     setShowBookOpening(false);
-    setFlipOverlay(null);
     flippingRef.current = false;
+    scrollRestoredRef.current = false;
   }, [chapterIndex, chapter]);
 
   // Create page-turn overlay via DOM (outside React) — matches reference HTML exactly
@@ -493,7 +493,16 @@ export default function ReadingMode({
   }, []);
 
   useEffect(() => {
-    if (pageRef.current) pageRef.current.scrollTop = 0;
+    if (!pageMode && pageRef.current) {
+      if (!scrollRestoredRef.current && savedScrollPos > 0) {
+        scrollRestoredRef.current = true;
+        requestAnimationFrame(() => {
+          if (pageRef.current) pageRef.current.scrollTop = savedScrollPos;
+        });
+      } else {
+        pageRef.current.scrollTop = 0;
+      }
+    }
     scrollFn.current?.();
   }, [chapterIndex, chapter]);
 
@@ -561,7 +570,7 @@ export default function ReadingMode({
       >
         <div className="rm-card p-8 max-w-md text-center space-y-3">
           <div className="text-5xl opacity-40">📖</div>
-          <h2 className="font-serif text-xl font-bold text-bookshelfBrown">Capítulo no encontrado</h2>
+          <h2 className="font-serif text-xl font-bold text-foxBrown">Capítulo no encontrado</h2>
           <p className="text-sm opacity-70">El capítulo solicitado no existe o no está disponible.</p>
           <button className="btn-primary text-sm" onClick={onExit}>Volver</button>
         </div>
@@ -572,14 +581,14 @@ export default function ReadingMode({
   }
 
   // Si el contenido está vacío, mostrar aviso
-  if (chapter.content == null || chapter.content === '') {
+  if (chapter.contenido == null || chapter.contenido === '') {
     const emptyContent = (
       <div className="fixed inset-0 z-40 flex items-center justify-center"
         style={{ backgroundColor: outer }}
       >
         <div className="rm-card p-8 max-w-md text-center space-y-3">
           <div className="text-5xl opacity-40">📖</div>
-          <p className="font-serif text-xl font-bold text-bookshelfBrown">Este libro aún no tiene contenido disponible.</p>
+          <p className="font-serif text-xl font-bold text-foxBrown">Este libro aún no tiene contenido disponible.</p>
           <p className="text-sm opacity-70">El autor no ha agregado contenido a este capítulo.</p>
           <button className="btn-primary text-sm" onClick={onExit}>Volver</button>
         </div>
@@ -594,24 +603,11 @@ export default function ReadingMode({
     const spread = spreads[currentSpread] || { left: null, right: null };
     const firstContentSpread = spreads.findIndex(s => s.left?.type === PAGE_CONTENT);
 
-    function pageToHTMLString(text) {
-      if (!text) return '';
-      const parts = text.split(IMG_PATTERN).filter(Boolean);
-      return parts.map(part => {
-        const img = part.match(/^!\[(.*?)\]\((.*?)\)$/);
-        if (img) return `<img src="${img[2]}" alt="${img[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
-        const userImg = part.match(/^@img:(.+)$/);
-        if (userImg) return `<img src="/api/user-images/resolve/${book.author_id}/${encodeURIComponent(userImg[1])}" alt="${userImg[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
-        const paras = part.split(/\n\n+/).filter(Boolean);
-        return paras.map(p => `<p>${p.replace(/\n/g, ' ')}</p>`).join('');
-      }).join('');
-    }
+    const leftHTML = pageTextToHTML(spread.left?.text || '', book.autor_id);
+    const rightHTML = pageTextToHTML(spread.right?.text || '', book.autor_id);
 
-    const leftHTML = pageToHTMLString(spread.left?.text || '');
-    const rightHTML = pageToHTMLString(spread.right?.text || '');
-
-    const chapterTitleHTML = (currentSpread === firstContentSpread && chapter?.title)
-      ? `<h2 class="chapter-title">${chapter.title}</h2>`
+    const chapterTitleHTML = (currentSpread === firstContentSpread && chapter?.titulo)
+      ? `<h2 class="chapter-title">${chapter.titulo}</h2>`
       : '';
 
     const pageModeContent = (
@@ -642,9 +638,9 @@ export default function ReadingMode({
             <span style={{ fontSize: 20, lineHeight: 1 }}>✕</span>
           </button>
           <div className="flex-1 text-sm text-white/90 text-center truncate select-none px-2 flex items-center justify-center gap-2">
-            <span className="font-serif text-base font-bold text-white">BookShelf<span className="text-xs align-super opacity-70">™</span></span>
+            <span className="font-serif text-base font-bold text-white">FoxOnAShelf<span className="text-xs align-super opacity-70">™</span></span>
             <span className="opacity-50">·</span>
-            <span className="text-white truncate">{book.title}</span>
+            <span className="text-white truncate">{book.titulo}</span>
           </div>
           <button onClick={() => onPrefsChange?.({ ...prefs, pageMode: false })}
             title="Modo desplazamiento (scroll)"
@@ -653,12 +649,19 @@ export default function ReadingMode({
           >
             📖 Scroll
           </button>
-          <button onClick={() => onBookmark?.(chapterIndex, pageRef.current?.scrollTop || 0)}
+          <button onClick={() => onBookmark?.(chapterIndex, pageMode ? currentSpread : (pageRef.current?.scrollTop || 0))}
             title="Marcar página actual"
             className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition"
             style={{ backgroundColor: '#00000066' }}
           >
             <span style={{ fontSize: 16 }}>🔖</span>
+          </button>
+          <button onClick={() => onToggleHighlights?.()}
+            title="Resaltados"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition"
+            style={{ backgroundColor: '#00000066' }}
+          >
+            <span style={{ fontSize: 16 }}>💡</span>
           </button>
           <button onClick={() => setShowPrefs(p => !p)}
             title="Personalización (P)"
@@ -678,8 +681,8 @@ export default function ReadingMode({
               {/* Page-turn overlay is created via DOM in useLayoutEffect — not in JSX */}
 
               <header>
-                <h1>{book.title}</h1>
-                <h6>{book.author_name || ''}</h6>
+                <h1>{book.titulo}</h1>
+                <h6>{book.nombre_autor || ''}</h6>
               </header>
               <article>
                 {spread.left?.type === PAGE_CONTENT ? (
@@ -694,7 +697,7 @@ export default function ReadingMode({
                 ) : (
                   renderPageArea(spread.left, false, {
                     theme, font, fontSize: prefs.fontSize, lineHeight,
-                    authorId: book.author_id, book, chapters,
+                    authorId: book.autor_id, book, chapters,
                     goToChapter, chapterIndex, contentStyle: {
                       fontFamily: font.stack,
                       fontSize: (prefs.fontSize || 16) + 'px',
@@ -921,9 +924,9 @@ export default function ReadingMode({
           <span style={{ fontSize: 20, lineHeight: 1 }}>✕</span>
         </button>
         <div className="flex-1 text-sm text-white/90 text-center truncate select-none px-2 flex items-center justify-center gap-2">
-          <span className="font-serif text-base font-bold text-white">BookShelf<span className="text-xs align-super opacity-70">™</span></span>
+          <span className="font-serif text-base font-bold text-white">FoxOnAShelf<span className="text-xs align-super opacity-70">™</span></span>
           <span className="opacity-50">·</span>
-          <span className="text-white truncate">{book.title}</span>
+          <span className="text-white truncate">{book.titulo}</span>
         </div>
         <button onClick={() => onPrefsChange?.({ ...prefs, pageMode: true })}
           title="Modo libro (páginas)"
@@ -932,12 +935,19 @@ export default function ReadingMode({
         >
           📖 Libro
         </button>
-        <button onClick={() => onBookmark?.(chapterIndex, pageRef.current?.scrollTop || 0)}
+        <button onClick={() => onBookmark?.(chapterIndex, pageMode ? currentSpread : (pageRef.current?.scrollTop || 0))}
           title="Marcar página actual"
           className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition"
           style={{ backgroundColor: '#00000066' }}
         >
           <span style={{ fontSize: 16 }}>🔖</span>
+        </button>
+        <button onClick={() => onToggleHighlights?.()}
+          title="Resaltados"
+          className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition"
+          style={{ backgroundColor: '#00000066' }}
+        >
+          <span style={{ fontSize: 16 }}>💡</span>
         </button>
         <button onClick={() => setShowPrefs(p => !p)}
           title="Personalización (P)"
@@ -986,14 +996,14 @@ export default function ReadingMode({
               <div key={page.id || i}>
                 <PageContent
                   content={page.text || ''}
-                  title={chapter?.title}
+                  title={chapter?.titulo}
                   pageNum={i + 1}
                   theme={theme} font={font}
                   fontSize={prefs.fontSize}
                   lineHeight={lineHeight}
                   showTitle={i === 0}
                   showEndMarker={i === pages.length - 1}
-                  authorId={book.author_id}
+                  authorId={book.autor_id}
                 />
               </div>
             ))}

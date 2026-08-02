@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import ReadingMode from './ReadingMode.jsx';
 import ErrorBoundary from './ErrorBoundary.jsx';
+import HighlightsPanel from './HighlightsPanel.jsx';
+import { HighlightsToggle } from './HighlightsPanel.jsx';
 import { THEMES, OUTERS, FONTS, WIDTHS, FONT_SIZES, LINE_HEIGHTS, DARK_THEMES } from './readerConstants.js';
 
 const PREFS_KEY = 'bookshelf.reader.prefs';
@@ -31,7 +33,7 @@ function savePrefs(p) { localStorage.setItem(PREFS_KEY, JSON.stringify(p)); }
  * Al tocar un capítulo, abre ReadingMode en fullscreen.
  * Props:
  *  - book, chapters
- *  - bookmark: objeto del backend con chapter_index, scroll_position, finished
+ *  - bookmark: objeto del backend con indice_capitulo, posicion_desplazamiento, terminado
  *  - onMarkPage(idx, scroll) — para sincronizar con backend
  */
 export default function Reader({ book, chapters, bookmark }) {
@@ -42,9 +44,10 @@ export default function Reader({ book, chapters, bookmark }) {
 
   const [prefs, setPrefs] = useState(loadPrefs);
   const [reading, setReading] = useState(false);
-  const [currentIdx, setCurrentIdx] = useState(bookmark?.chapter_index || 0);
-  const [scrollPos, setScrollPos]   = useState(bookmark?.scroll_position || 0);
+  const [currentIdx, setCurrentIdx] = useState(bookmark?.indice_capitulo || 0);
+  const [scrollPos, setScrollPos]   = useState(bookmark?.posicion_desplazamiento || 0);
   const [cropOpen, setCropOpen]     = useState(false);
+  const [showHighlights, setShowHighlights] = useState(false);
   const stripRef = useRef(null);
 
   useEffect(() => { savePrefs(prefs); }, [prefs]);
@@ -54,9 +57,9 @@ export default function Reader({ book, chapters, bookmark }) {
     if (user) return;
     try {
       const saved = JSON.parse(localStorage.getItem('bookshelf.reader.mark.' + book.id) || 'null');
-      if (saved && Number.isInteger(saved.chapter_index)) {
-        setCurrentIdx(saved.chapter_index);
-        setScrollPos(saved.scroll_position || 0);
+      if (saved && Number.isInteger(saved.indice_capitulo)) {
+        setCurrentIdx(saved.indice_capitulo);
+        setScrollPos(saved.posicion_desplazamiento || 0);
       }
     } catch {}
   }, [book.id, user]);
@@ -88,19 +91,19 @@ export default function Reader({ book, chapters, bookmark }) {
 
   function persistProgress(idx, scroll) {
     if (user) {
-      api.post('/api/bookmarks', {
-        book_id: book.id, chapter_id: chapters[idx]?.id,
-        chapter_index: idx, scroll_position: scroll || 0, finished: false
+      api.post('/api/marcadores', {
+        libro_id: book.id, capitulo_id: chapters[idx]?.id,
+        indice_capitulo: idx, posicion_desplazamiento: scroll || 0, terminado: false
       });
     } else {
       localStorage.setItem('bookshelf.reader.mark.' + book.id,
-        JSON.stringify({ chapter_index: idx, scroll_position: scroll || 0, saved_at: Date.now() }));
+        JSON.stringify({ indice_capitulo: idx, posicion_desplazamiento: scroll || 0, saved_at: Date.now() }));
     }
   }
 
   function markFinished() {
     if (!user) { toast.error('Inicia sesión para marcar como terminado'); return; }
-    api.put('/api/bookmarks/' + book.id + '/finish', { finished: true })
+    api.put('/api/marcadores/' + book.id + '/finish', { terminado: true })
       .then(r => { if (!r.__error) toast.ok('Libro marcado como terminado'); });
   }
 
@@ -112,7 +115,7 @@ export default function Reader({ book, chapters, bookmark }) {
       {/* Índice arrastrable de capítulos */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-serif text-xl font-bold text-bookshelfBrown">Capítulos</h3>
+          <h3 className="font-serif text-xl font-bold text-foxBrown">Capítulos</h3>
           <span className="text-xs opacity-70">
             {chapters.length} cap · arrastra o toca para leer
           </span>
@@ -130,9 +133,9 @@ export default function Reader({ book, chapters, bookmark }) {
               style={{ backgroundColor: t, color: isDark ? '#EEE' : '#1F2937', borderColor: currentIdx === i ? 'var(--accent-main)' : undefined }}
             >
               <div className="text-xs opacity-70">Capítulo {i + 1}</div>
-              <div className="font-bold mt-1 line-clamp-3">{c.title || 'Sin título'}</div>
-              <div className="text-xs opacity-60 mt-3 line-clamp-4">{c.content?.slice(0, 120)}…</div>
-              {bookmark && currentIdx === i && bookmark.chapter_index === i && !bookmark.finished && (
+              <div className="font-bold mt-1 line-clamp-3">{c.titulo || 'Sin título'}</div>
+              <div className="text-xs opacity-60 mt-3 line-clamp-4">{c.contenido?.slice(0, 120)}…</div>
+              {bookmark && currentIdx === i && bookmark.indice_capitulo === i && !bookmark.terminado && (
                 <div className="text-xs mt-3 inline-block px-2 py-0.5 rounded"
                      style={{ backgroundColor: 'rgba(var(--accent-main-rgb), 0.30)' }}>📌 Continuar</div>
               )}
@@ -142,7 +145,7 @@ export default function Reader({ book, chapters, bookmark }) {
       </div>
 
       {/* Personalización rápida (preview + ajustes) */}
-      <div className="border-t border-bookshelfBrown/15 pt-4">
+      <div className="border-t border-foxBrown/15 pt-4">
         <div className="text-xs opacity-70 mb-2">Personaliza tu experiencia de lectura</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -157,7 +160,7 @@ export default function Reader({ book, chapters, bookmark }) {
             </div>
             <div className="text-xs opacity-70 mb-1 mt-3">Imagen de fondo</div>
             <div className="flex flex-wrap items-center gap-2">
-              <label className="cursor-pointer px-3 py-1 text-xs rounded border hover:opacity-80 border-bookshelfBrown/30">
+              <label className="cursor-pointer px-3 py-1 text-xs rounded border hover:opacity-80 border-foxBrown/30">
                 {prefs.bgImage ? 'Cambiar imagen' : 'Seleccionar imagen'}
                 <input type="file" accept="image/*" className="hidden"
                   onChange={e => {
@@ -172,19 +175,19 @@ export default function Reader({ book, chapters, bookmark }) {
               {prefs.bgImage && (
                 <>
                   <button
-                    className="px-3 py-1 text-xs rounded border hover:opacity-80 border-bookshelfBrown/30"
+                    className="px-3 py-1 text-xs rounded border hover:opacity-80 border-foxBrown/30"
                     onClick={() => setCropOpen(true)}>
                     ✂ Recortar
                   </button>
                   <button
-                    className="px-3 py-1 text-xs rounded border hover:opacity-80 border-bookshelfBrown/30"
+                    className="px-3 py-1 text-xs rounded border hover:opacity-80 border-foxBrown/30"
                     onClick={() => setPrefs({ ...prefs, bgImage: null })}>
                     Quitar
                   </button>
                 </>
               )}
             </div>
-            <div className="mt-2 relative h-24 rounded overflow-hidden border border-bookshelfBrown/20 flex items-center justify-center"
+            <div className="mt-2 relative h-24 rounded overflow-hidden border border-foxBrown/20 flex items-center justify-center"
                  style={{
                    backgroundColor: OUTERS[prefs.outer] || OUTERS.walnut,
                    ...(prefs.bgImage ? {
@@ -220,7 +223,7 @@ export default function Reader({ book, chapters, bookmark }) {
               {Object.entries(FONTS).map(([k, f]) => (
                 <button key={k}
                   className={'px-3 py-1 text-xs rounded border '
-                    + (prefs.font === k ? 'bg-bookshelfBrown text-parchment border-bookshelfBrown' : 'border-bookshelfBrown/30')}
+                    + (prefs.font === k ? 'bg-foxBrown text-parchment border-foxBrown' : 'border-foxBrown/30')}
                   style={{ fontFamily: f.stack }}
                   onClick={() => setPrefs({ ...prefs, font: k })}>
                   {f.label}
@@ -232,7 +235,7 @@ export default function Reader({ book, chapters, bookmark }) {
               {FONT_SIZES.map(s => (
                 <button key={s.value}
                   className={'px-3 py-1 text-xs rounded border min-w-[2.5rem] '
-                    + (prefs.fontSize === s.value ? 'bg-bookshelfBrown text-parchment border-bookshelfBrown' : 'border-bookshelfBrown/30')}
+                    + (prefs.fontSize === s.value ? 'bg-foxBrown text-parchment border-foxBrown' : 'border-foxBrown/30')}
                   onClick={() => setPrefs({ ...prefs, fontSize: s.value })}>
                   {s.label}
                 </button>
@@ -243,7 +246,7 @@ export default function Reader({ book, chapters, bookmark }) {
               {Object.entries(LINE_HEIGHTS).map(([k, lh]) => (
                 <button key={k}
                   className={'px-2 py-1 text-xs rounded border '
-                    + (prefs.lineHeight === k ? 'bg-bookshelfBrown text-parchment border-bookshelfBrown' : 'border-bookshelfBrown/30')}
+                    + (prefs.lineHeight === k ? 'bg-foxBrown text-parchment border-foxBrown' : 'border-foxBrown/30')}
                   onClick={() => setPrefs({ ...prefs, lineHeight: k })}>
                   {lh.label}
                 </button>
@@ -254,7 +257,7 @@ export default function Reader({ book, chapters, bookmark }) {
               {Object.entries(WIDTHS).map(([k, w]) => (
                 <button key={k}
                   className={'px-2 py-1 text-xs rounded border '
-                    + (prefs.width === k ? 'bg-bookshelfBrown text-parchment border-bookshelfBrown' : 'border-bookshelfBrown/30')}
+                    + (prefs.width === k ? 'bg-foxBrown text-parchment border-foxBrown' : 'border-foxBrown/30')}
                   onClick={() => setPrefs({ ...prefs, width: k })}>
                   {w.label}
                 </button>
@@ -264,13 +267,13 @@ export default function Reader({ book, chapters, bookmark }) {
             <div className="flex gap-1">
               <button
                 className={'px-3 py-1 text-xs rounded border '
-                  + (!prefs.pageMode ? 'bg-bookshelfBrown text-parchment border-bookshelfBrown' : 'border-bookshelfBrown/30')}
+                  + (!prefs.pageMode ? 'bg-foxBrown text-parchment border-foxBrown' : 'border-foxBrown/30')}
                 onClick={() => setPrefs({ ...prefs, pageMode: false })}>
                 📜 Scroll
               </button>
               <button
                 className={'px-3 py-1 text-xs rounded border '
-                  + (prefs.pageMode ? 'bg-bookshelfBrown text-parchment border-bookshelfBrown' : 'border-bookshelfBrown/30')}
+                  + (prefs.pageMode ? 'bg-foxBrown text-parchment border-foxBrown' : 'border-foxBrown/30')}
                 onClick={() => setPrefs({ ...prefs, pageMode: true })}>
                 📖 Páginas
               </button>
@@ -279,7 +282,7 @@ export default function Reader({ book, chapters, bookmark }) {
         </div>
 
         {/* Vista previa con la elección actual */}
-        <div className="mt-4 rounded-lg p-4 border border-bookshelfBrown/20 relative overflow-hidden"
+        <div className="mt-4 rounded-lg p-4 border border-foxBrown/20 relative overflow-hidden"
              style={{
                backgroundColor: OUTERS[prefs.outer] || OUTERS.walnut,
                ...(prefs.bgImage ? {
@@ -306,30 +309,40 @@ export default function Reader({ book, chapters, bookmark }) {
             <div className="text-[10px] uppercase tracking-wider opacity-60 mb-2">Color de la hoja</div>
             <div style={{ fontFamily: FONTS[prefs.font].stack, fontSize: prefs.fontSize + 'px',
                           lineHeight: LINE_HEIGHTS[prefs.lineHeight].value, maxWidth: WIDTHS[prefs.width].value + 'rem' }}>
-              <strong>Capítulo 1 — {chapters[0]?.title}</strong>
-              <p className="mt-2 whitespace-pre-wrap line-clamp-6">{chapters[0]?.content?.slice(0, 400)}…</p>
+              <strong>Capítulo 1 — {chapters[0]?.titulo}</strong>
+              <p className="mt-2 whitespace-pre-wrap line-clamp-6">{chapters[0]?.contenido?.slice(0, 400)}…</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Acciones */}
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-bookshelfBrown/15">
+      <div className="flex flex-wrap gap-2 pt-2 border-t border-foxBrown/15">
         <button className="btn-primary" onClick={() => openChapter(currentIdx)}>
-          {bookmark && !bookmark.finished ? '▶ Continuar lectura' : '▶ Empezar a leer'}
+          {bookmark && !bookmark.terminado ? '▶ Continuar lectura' : '▶ Empezar a leer'}
         </button>
-        {bookmark && !bookmark.finished && (
+        {bookmark && !bookmark.terminado && (
           <button className="btn-ghost text-sm" onClick={markFinished}>
             ✓ Marcar como terminado
           </button>
         )}
-        {bookmark && bookmark.finished && (
+        {bookmark && bookmark.terminado && (
           <span className="text-sm opacity-70 self-center">✓ Terminado</span>
         )}
         <button className="btn-ghost text-sm ml-auto" onClick={() => navigate(-1)}>
           ← Volver
         </button>
       </div>
+
+      {/* Highlights Panel */}
+      {showHighlights && (
+        <HighlightsPanel
+          libroId={book.id}
+          capitulos={chapters}
+          onClose={() => setShowHighlights(false)}
+          visible={showHighlights}
+        />
+      )}
 
       {/* Modo lectura (fullscreen) */}
       {reading && (
@@ -338,7 +351,7 @@ export default function Reader({ book, chapters, bookmark }) {
                style={{ backgroundColor: OUTERS[prefs.outer] || '#3E2723' }}>
             <div className="rm-card p-8 max-w-md text-center space-y-4">
               <div className="text-5xl opacity-40">📖</div>
-              <h2 className="font-serif text-xl font-bold text-bookshelfBrown">Error en el lector</h2>
+              <h2 className="font-serif text-xl font-bold text-foxBrown">Error en el lector</h2>
               <p className="text-sm opacity-70">
                 {err?.message || 'Ocurrió un error al abrir el modo lectura.'}
               </p>
@@ -368,6 +381,8 @@ export default function Reader({ book, chapters, bookmark }) {
               persistProgress(idx, scroll);
               toast.ok('🔖 Página marcada');
             }}
+            savedScrollPos={scrollPos}
+            onToggleHighlights={() => setShowHighlights(v => !v)}
           />
         </ErrorBoundary>
       )}
@@ -521,7 +536,7 @@ function CropModal({ src, onClose, onApply }) {
           <span className="opacity-70">Proporción:</span>
           {Object.keys(ASPECTS).map(k => (
             <button key={k}
-                    className={'px-2 py-0.5 rounded border transition ' + (aspect === k ? 'bg-bookshelfBrown text-parchment border-bookshelfBrown' : 'border-bookshelfBrown/30 hover:opacity-80')}
+                    className={'px-2 py-0.5 rounded border transition ' + (aspect === k ? 'bg-foxBrown text-parchment border-foxBrown' : 'border-foxBrown/30 hover:opacity-80')}
                     onClick={() => setAspect(k)}>
               {k}
             </button>
@@ -568,7 +583,7 @@ function CropModal({ src, onClose, onApply }) {
           <div className="flex flex-col items-center gap-2 min-w-[210px]">
             <div className="text-[10px] uppercase tracking-wider opacity-70">Vista previa</div>
             <canvas ref={previewRef}
-                    className="rounded border border-bookshelfBrown/30"
+                    className="rounded border border-foxBrown/30"
                     style={{ backgroundColor: '#1A1816', maxWidth: '200px' }} />
             <div className="text-[10px] opacity-60 text-center">
               Resultado tras recortar

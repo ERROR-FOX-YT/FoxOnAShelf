@@ -1,5 +1,5 @@
 -- =====================================================================
--- BookShelf™ - Plataforma de lectura digital
+-- FoxOnAShelf™ - Plataforma de lectura digital
 -- Migración 001: creación de tablas, índices y RLS de ejemplo
 -- Compatible con Postgres 13+ / Supabase
 -- =====================================================================

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import { listUserImages, uploadUserImage, updateUserImage, deleteUserImage } from '../api/userImages.js';
 import { safeUrl } from '../api/safe.js';
 import { useToast } from '../context/ToastContext.jsx';
@@ -44,32 +44,32 @@ export default function ImageManager({ onInsert, chapters }) {
     setUploadName('');
     if (uploadRef.current) uploadRef.current.value = '';
     await loadImages();
-    toast.ok('Imagen subida como "' + img.custom_name + '"');
+    toast.ok('Imagen subida como "' + img.nombre_personalizado + '"');
   }
 
   async function handleRename(id) {
     const name = editValue.trim();
     const err = validateName(name);
     if (err) { toast.error('Nombre: ' + err); return; }
-    const ok = await updateUserImage(id, { custom_name: name });
+    const ok = await updateUserImage(id, { nombre_personalizado: name });
     if (!ok) { toast.error('Error al renombrar'); return; }
-    setImages(prev => prev.map(i => i.id === id ? { ...i, custom_name: name } : i));
+    setImages(prev => prev.map(i => i.id === id ? { ...i, nombre_personalizado: name } : i));
     setEditingId(null);
     toast.ok('Nombre actualizado');
   }
 
   async function handleReorder(id, dir) {
-    const sorted = [...images].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    const sorted = [...images].sort((a, b) => (a.orden || 0) - (b.orden || 0));
     const idx = sorted.findIndex(i => i.id === id);
     if (idx === -1) return;
     const swapIdx = idx + dir;
     if (swapIdx < 0 || swapIdx >= sorted.length) return;
     const a = sorted[idx];
     const b = sorted[swapIdx];
-    const aOrder = a.sort_order || 0;
-    const bOrder = b.sort_order || 0;
-    const r1 = await updateUserImage(a.id, { sort_order: bOrder });
-    const r2 = await updateUserImage(b.id, { sort_order: aOrder });
+    const aOrder = a.orden || 0;
+    const bOrder = b.orden || 0;
+    const r1 = await updateUserImage(a.id, { orden: bOrder });
+    const r2 = await updateUserImage(b.id, { orden: aOrder });
     if (!r1 || !r2) { toast.error('Error al reordenar'); return; }
     await loadImages();
   }
@@ -77,7 +77,7 @@ export default function ImageManager({ onInsert, chapters }) {
   async function handleDelete(id) {
     const img = images.find(i => i.id === id);
     if (!img) return;
-    if (!window.confirm('¿Eliminar "' + img.custom_name + '"? No se puede deshacer.')) return;
+    if (!window.confirm('¿Eliminar "' + img.nombre_personalizado + '"? No se puede deshacer.')) return;
     const ok = await deleteUserImage(id);
     if (!ok) { toast.error('Error al eliminar'); return; }
     setImages(prev => prev.filter(i => i.id !== id));
@@ -99,7 +99,7 @@ export default function ImageManager({ onInsert, chapters }) {
         </button>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3 p-3 border border-bookshelfBrown/15 rounded">
+      <div className="flex flex-wrap items-end gap-3 p-3 border border-foxBrown/15 rounded">
         <label className="flex flex-col text-sm flex-1 min-w-[160px]">
           <span className="text-xs opacity-70 mb-1">Archivo (.jpg .jpeg .png .webp)</span>
           <input type="file" accept=".jpg,.jpeg,.png,.webp" className="input text-sm py-1"
@@ -123,9 +123,9 @@ export default function ImageManager({ onInsert, chapters }) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {images.map(img => (
-            <div key={img.id} className="border border-bookshelfBrown/15 rounded p-2 flex flex-col gap-1 min-w-0 overflow-hidden">
-              <div className="aspect-video bg-bookshelfBrown/5 rounded overflow-hidden">
-                <img src={safeUrl(img.url)} alt={img.custom_name}
+            <div key={img.id} className="border border-foxBrown/15 rounded p-2 flex flex-col gap-1 min-w-0 overflow-hidden">
+              <div className="aspect-video bg-foxBrown/5 rounded overflow-hidden">
+                <img src={safeUrl(img.url)} alt={img.nombre_personalizado}
                      className="w-full h-full object-contain" />
               </div>
               <div className="flex items-center gap-1 text-xs">
@@ -140,11 +140,11 @@ export default function ImageManager({ onInsert, chapters }) {
                   </>
                 ) : (
                   <>
-                    <span className="flex-1 font-mono truncate" title={img.custom_name}>
-                      {img.custom_name}
+                    <span className="flex-1 font-mono truncate" title={img.nombre_personalizado}>
+                      {img.nombre_personalizado}
                     </span>
-                    <span className={'text-[10px] px-1 rounded ' + (img.in_use ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400')}>
-                      {img.in_use ? 'ok' : '—'}
+                    <span className={'text-[10px] px-1 rounded ' + (img.en_uso ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400')}>
+                      {img.en_uso ? 'ok' : '—'}
                     </span>
                   </>
                 )}
@@ -156,7 +156,7 @@ export default function ImageManager({ onInsert, chapters }) {
                       <div className="flex flex-wrap gap-1">
                         {(chapters || []).map((ch, ci) => (
                           <button key={ci} className="btn-ghost text-[10px] px-1 py-0.5 truncate max-w-[80px]"
-                                  onClick={() => startInsert(ci, img.custom_name)}>
+                                  onClick={() => startInsert(ci, img.nombre_personalizado)}>
                             Cap.{ci + 1}
                           </button>
                         ))}
@@ -169,7 +169,7 @@ export default function ImageManager({ onInsert, chapters }) {
                       </button>
                     )}
                     <button className="btn-ghost text-[10px] px-1 py-0.5"
-                            onClick={() => { setEditingId(img.id); setEditValue(img.custom_name); }}>
+                            onClick={() => { setEditingId(img.id); setEditValue(img.nombre_personalizado); }}>
                       Renombrar
                     </button>
                     <button className="btn-ghost text-[10px] px-1 py-0.5" onClick={() => handleReorder(img.id, -1)}>↑</button>

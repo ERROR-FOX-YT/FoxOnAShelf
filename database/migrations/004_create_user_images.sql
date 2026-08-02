@@ -1,5 +1,5 @@
 -- =====================================================================
--- BookShelf™ - Migración 004: tabla de imágenes de usuario (media library)
+-- FoxOnAShelf™ - Migración 004: tabla de imágenes de usuario (media library)
 -- Almacena imágenes subidas por el usuario, disponibles para cualquier libro.
 -- =====================================================================
 

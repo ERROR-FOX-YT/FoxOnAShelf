@@ -10,8 +10,8 @@ export default function Author() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    api.get('/api/users/' + authorId).then(r => { if (r.__error) setError(true); else setUser(r.user); });
-    api.get('/api/books?author_id=' + authorId).then(r => setBooks(r.books || []));
+    api.get('/api/usuarios/' + authorId).then(r => { if (r.__error) setError(true); else setUser(r.user); });
+    api.get('/api/libros?autor_id=' + authorId).then(r => setBooks(r.libros || []));
   }, [authorId]);
 
   if (error) return <div className="max-w-6xl mx-auto p-6 opacity-70">Usuario no encontrado.</div>;
@@ -20,7 +20,7 @@ export default function Author() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-4">
       <header className="rm-card p-6">
-        <h1 className="font-serif text-2xl font-bold">{user.display_name || user.email}</h1>
+        <h1 className="font-serif text-2xl font-bold">{user.nombre_mostrado || user.email}</h1>
         <div className="text-xs opacity-70">Rol: {user.role}</div>
       </header>
       <h2 className="font-serif text-xl font-bold">Libros</h2>

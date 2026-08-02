@@ -1,7 +1,10 @@
+import { apiBase } from './client';
+
 export function safeUrl(url) {
   if (!url) return '';
   try {
-    const u = new URL(url, window.location.origin);
+    const base = (url.startsWith('/') && apiBase()) || window.location.origin;
+    const u = new URL(url, base);
     const protocol = u.protocol.toLowerCase();
     if (['http:', 'https:', 'ftp:', 'data:', 'blob:'].includes(protocol)) return u.href;
     return '';

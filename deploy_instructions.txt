@@ -1,9 +1,9 @@
 ==============================================================
-BookShelf™ — Instrucciones rápidas de inicialización LOCAL
-© 2026 Jeison Sossa, Santiago López, Leyder Montoya — MIT
+FoxOnAShelf™ — Instrucciones rápidas de inicialización LOCAL
+© 2026 ERROR_FOX — MIT
 ==============================================================
 
-BookShelf es una página web. Estas instrucciones explican cómo ejecutarla
+FoxOnAShelf es una página web. Estas instrucciones explican cómo ejecutarla
 localmente. NO se usan plataformas de despliegue externas.
 
 ------------------------------------------------------------------
@@ -58,9 +58,9 @@ PASO 4. Probar
 ------------------------------------------------------------------
 - Abre http://localhost:3100
 - Ingresa con cualquiera de las 3 cuentas de prueba:
-    usuarioTest@bookshelf.app  /  admin123   (autor de los libros, NO mod)
-    admin@bookshelf.app        /  admin123   (admin + moderator)
-    adminFox@bookshelf.app     /  admin123   (admin + moderator, adminFox)
+    usuarioTest@foxonashelf.app  /  admin123   (autor de los libros, NO mod)
+    admin@foxonashelf.app        /  admin123   (admin + moderator)
+    adminFox@foxonashelf.app     /  admin123   (admin + moderator, adminFox)
 - Para ver el panel exclusivo: /admin/moderation
 - Health check del backend:
     node scripts/healthcheck.js

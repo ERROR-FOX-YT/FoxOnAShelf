@@ -1,4 +1,4 @@
-# BookShelf™ — Frontend
+# FoxOnAShelf™ — Frontend
 
 React 18 + Vite + Tailwind + anime.js + react-router-dom.
 
@@ -47,7 +47,7 @@ src/
 │  ├─ Login.jsx                 Inicio de sesión (con apelación)
 │  ├─ Register.jsx              Registro
 │  ├─ Profile.jsx               Perfil de usuario (marcadores, libros propios)
-│  ├─ Admin.jsx                 Panel BookShelf (categorías, anuncios, moderadores, métricas)
+│  ├─ Admin.jsx                 Panel FoxOnAShelf (categorías, anuncios, moderadores, métricas)
 │  ├─ AdminModeration.jsx       Panel de moderación (tabla usuarios, filtros, baneo inline, historial baneos, cuentas eliminadas, export CSV)
 │  ├─ MediaLibrary.jsx          Biblioteca de imágenes de usuario (@img:nombre, upload, rename, reorder, delete)
 │  └─ ErrorPages.jsx            Páginas de error (400, 404, 500)

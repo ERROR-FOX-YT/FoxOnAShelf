@@ -9,71 +9,71 @@ const router = express.Router();
 
 router.get('/', async (_req, res, next) => {
   try {
-    const list = await db.listChangelogs();
-    res.json({ changelogs: list });
+    const list = await db.listarHistoriales();
+    res.json({ historiales: list });
   } catch (e) { next(e); }
 });
 
-router.put('/front',
+router.put('/frontend',
   auth, requireAdmin,
   async (req, res, next) => {
     try {
-      const { versions } = req.body;
-      if (!Array.isArray(versions)) {
-        return res.status(400).json({ error: 'versions debe ser un array', code: 400 });
+      const { versiones } = req.body;
+      if (!Array.isArray(versiones)) {
+        return res.status(400).json({ error: 'versiones debe ser un array', code: 400 });
       }
       const mdPath = path.join(__dirname, '../../../CHANGELOGfront.md');
-      const header = '# CHANGELOG \u2014 BookShelf\u2122\n\nTodas las fechas en formato YYYY-MM-DD.\n';
-      const body = versions.map(v => {
-        const sections = (v.sections || []).map(s => {
-          return '### ' + s.name + '\n' + (s.items || []).join('\n');
+      const header = '# CHANGELOG \u2014 FoxOnAShelf\u2122\n\nTodas las fechas en formato YYYY-MM-DD.\n';
+      const contenidoMd = versiones.map(v => {
+        const secciones = (v.secciones || []).map(s => {
+          return '### ' + s.nombre + '\n' + (s.elementos || []).join('\n');
         }).join('\n\n');
-        return '\n## [' + v.version + '] \u2014 ' + v.date + (v.author ? ' \u2014 ' + v.author : '') + '\n\n' + sections;
+        return '\n## [' + v.version + '] \u2014 ' + v.fecha + (v.autor ? ' \u2014 ' + v.autor : '') + '\n\n' + secciones;
       }).join('\n');
-      fs.writeFileSync(mdPath, header + body, 'utf8');
+      fs.writeFileSync(mdPath, header + contenidoMd, 'utf8');
       res.json({ ok: true });
     } catch (e) { next(e); }
   }
 );
 
-router.get('/front', async (_req, res, next) => {
+router.get('/frontend', async (_req, res, next) => {
   try {
     const mdPath = path.join(__dirname, '../../../CHANGELOGfront.md');
     const raw = fs.readFileSync(mdPath, 'utf8');
-    const versions = [];
+    const versiones = [];
     const versionRx = /^## \[(.+?)\] — (.+)$/gm;
     const sectionRx = /^### (.+)$/gm;
     let match;
-    let current = null;
-    let currentSection = null;
+    let actual = null;
+    let seccionActual = null;
     const lines = raw.split('\n');
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].replace(/\r$/, '');
       const vMatch = line.match(/^## \[(.+?)\] — (\d{4}-\d{2}-\d{2}|\?\?\/\?\?\/\?\?\?\?)(?: — (.+))?$/);
       if (vMatch) {
-        if (current) versions.push(current);
-        current = { version: vMatch[1], date: vMatch[2], author: vMatch[3] || '', sections: [] };
-        currentSection = null;
+        if (actual) versiones.push(actual);
+        actual = { version: vMatch[1], fecha: vMatch[2], autor: vMatch[3] || '', secciones: [] };
+        seccionActual = null;
         continue;
       }
       const sMatch = line.match(/^### (.+)$/);
-      if (sMatch && current) {
-        currentSection = { name: sMatch[1], items: [] };
-        current.sections.push(currentSection);
+      if (sMatch && actual) {
+        seccionActual = { nombre: sMatch[1], elementos: [] };
+        actual.secciones.push(seccionActual);
         continue;
       }
-      if (currentSection && line.trim()) {
-        currentSection.items.push(line);
+      if (seccionActual && line.trim()) {
+        seccionActual.elementos.push(line);
       }
     }
-    if (current) versions.push(current);
-    res.json({ versions });
+    if (actual) versiones.push(actual);
+    res.json({ versiones });
   } catch (e) { next(e); }
 });
 
-router.get('/config', async (_req, res, next) => {
+router.get('/configuracion', async (_req, res, next) => {
   try {
-    const cfg = await db.getChangelogConfig();
+    const cfg = await db.obtenerConfigHistorial();
     res.json(cfg);
   } catch (e) { next(e); }
 });
@@ -81,27 +81,27 @@ router.get('/config', async (_req, res, next) => {
 router.post('/',
   auth, requireAdmin,
   body('version').notEmpty().withMessage('Número de versión requerido'),
-  body('title').notEmpty().withMessage('Título requerido'),
-  body('entries').notEmpty().withMessage('Entradas requeridas'),
+  body('titulo').notEmpty().withMessage('Título requerido'),
+  body('entradas').notEmpty().withMessage('Entradas requeridas'),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const entry = await db.createChangelog(req.body);
+      const entry = await db.crearHistorial(req.body);
       res.status(201).json(entry);
     } catch (e) { next(e); }
   }
 );
 
-router.put('/config',
+router.put('/configuracion',
   auth, requireAdmin,
-  body('link_text').notEmpty().withMessage('Texto del link requerido'),
-  body('current_version').notEmpty().withMessage('Versión actual requerida'),
+  body('texto_enlace').notEmpty().withMessage('Texto del link requerido'),
+  body('version_actual').notEmpty().withMessage('Versión actual requerida'),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      await db.updateChangelogConfig(req.body);
+      await db.actualizarConfigHistorial(req.body);
       res.json({ ok: true });
     } catch (e) { next(e); }
   }
@@ -110,13 +110,13 @@ router.put('/config',
 router.put('/:id',
   auth, requireAdmin,
   body('version').notEmpty().withMessage('Número de versión requerido'),
-  body('title').notEmpty().withMessage('Título requerido'),
-  body('entries').notEmpty().withMessage('Entradas requeridas'),
+  body('titulo').notEmpty().withMessage('Título requerido'),
+  body('entradas').notEmpty().withMessage('Entradas requeridas'),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      await db.updateChangelog(req.params.id, req.body);
+      await db.actualizarHistorial(req.params.id, req.body);
       res.json({ ok: true });
     } catch (e) { next(e); }
   }
@@ -126,7 +126,7 @@ router.delete('/:id',
   auth, requireAdmin,
   async (req, res, next) => {
     try {
-      await db.deleteChangelog(req.params.id);
+      await db.eliminarHistorial(req.params.id);
       res.json({ ok: true });
     } catch (e) { next(e); }
   }

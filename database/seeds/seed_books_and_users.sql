@@ -1,5 +1,5 @@
 -- =====================================================================
--- BookShelf™ - Seeds honestos
+-- FoxOnAShelf™ - Seeds honestos
 -- =====================================================================
 -- Reglas:
 --   * Sólo 3 cuentas: usuarioTest (creator), admin (admin+mod), adminFox (admin+mod).
@@ -18,15 +18,15 @@
 INSERT INTO users (id, email, password_hash, display_name, role)
 VALUES
   ('11111111-1111-1111-1111-111111111111',
-   'usuarioTest@bookshelf.app',
+   'usuarioTest@foxonashelf.app',
    '$2b$10$KIXkLDk5WXxJ8b0OQk7M6.AmDqK5N0J5/wA9d3aWVxYXJqJq3pHQ.',
    'Usuario Test', 'creator'),
   ('22222222-2222-2222-2222-222222222222',
-   'admin@bookshelf.app',
+   'admin@foxonashelf.app',
    '$2b$10$KIXkLDk5WXxJ8b0OQk7M6.AmDqK5N0J5/wA9d3aWVxYXJqJq3pHQ.',
    'Administrador', 'admin'),
   ('33333333-3333-3333-3333-333333333333',
-   'adminFox@bookshelf.app',
+   'adminFox@foxonashelf.app',
    '$2b$10$KIXkLDk5WXxJ8b0OQk7M6.AmDqK5N0J5/wA9d3aWVxYXJqJq3pHQ.',
    'Admin Fox', 'admin')
 ON CONFLICT (email) DO UPDATE
@@ -37,8 +37,8 @@ SET display_name = EXCLUDED.display_name,
 -- INFORMACIÓN Y CONTACTOS (editable desde panel admin)
 -- ---------------------------------------------------------------------
 UPDATE users SET contact_info =
-  'Discord oficial: https://discord.gg/j543pdNhae | contacto@bookshelf.example'
-WHERE email = 'admin@bookshelf.app';
+  'Discord oficial: https://discord.gg/j543pdNhae | contacto@foxonashelf.example'
+WHERE email = 'admin@foxonashelf.app';
 
 -- ---------------------------------------------------------------------
 -- LIBROS DE EJEMPLO (autor = usuarioTest)
@@ -143,7 +143,7 @@ INSERT INTO announcements (id, admin_id, title, content, visible)
 VALUES
   ('cccccccc-0000-0000-0000-000000000001',
    '22222222-2222-2222-2222-222222222222',
-   'Bienvenido a BookShelf',
+   'Bienvenido a FoxOnAShelf',
    'Plataforma de lectura digital abierta y justa. Comienza explorando libros gratuitos.',
    true)
 ON CONFLICT (id) DO UPDATE

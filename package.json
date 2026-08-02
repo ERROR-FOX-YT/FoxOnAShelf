@@ -1,0 +1,28 @@
+{
+  "name": "foxonashelf",
+  "version": "1.0.0",
+  "description": "> © 2026 **ERROR_FOX**. Todos los derechos reservados. — MIT License",
+  "main": "deploy.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ERROR-FOX-YT/FoxOnAShelf.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ERROR-FOX-YT/FoxOnAShelf/issues"
+  },
+  "homepage": "https://github.com/ERROR-FOX-YT/FoxOnAShelf#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "pg": "^8.21.0"
+  }
+}

@@ -1,14 +1,10 @@
-# BookShelf™ — Plataforma de lectura digital
+# FoxOnAShelf™ — Plataforma de lectura digital
 
-> © 2026 **Jeison Sossa**, **Santiago López**, **Leyder Montoya**. Todos los derechos reservados. — MIT License
+> © 2026 **ERROR_FOX**. Todos los derechos reservados. — MIT License
 
 Plataforma web de lectura digital abierta y justa: incentiva la lectura y la
 creatividad narrativa evitando prácticas abusivas. Pensada para iniciar en
 Colombia, modular, escalable y fácil de modificar.
-
-> **Importante:** BookShelf es **exclusivamente una página web**, no una aplicación
-> nativa. Todo el proyecto corre localmente con Git y las instrucciones de este
-> README. No depende de ninguna plataforma de despliegue externa.
 
 ---
 
@@ -18,8 +14,9 @@ Colombia, modular, escalable y fácil de modificar.
 |------------|-----------------------------------------------------------|
 | Frontend   | React 18 + Vite + TailwindCSS + anime.js + react-router-dom + Recharts |
 | Backend    | Node.js + Express + JWT + bcryptjs + multer + express-validator |
-| Base datos | PostgreSQL 13+ (o Supabase). Fallback demo: JSON local.   |
-| Conversión | mammoth (.docx), parser propio (.md/.txt/.rtf)            |
+| Base datos | PostgreSQL 13+ (Supabase)                                |
+| Storage    | Supabase Storage (imágenes, archivos importados)         |
+| Conversión | mammoth (.docx), parser propio (.md/.txt/.rtf)           |
 | Export CSV | csv-writer                                                |
 | Categorías | CRUD completo desde panel admin + asignación desde moderación |
 | Lector     | ReadingMode (fullscreen portal, teclas, scroll progreso, preferencias localStorage) |
@@ -30,12 +27,13 @@ Colombia, modular, escalable y fácil de modificar.
 
 ```
 BookShelf/
-├─ frontend/    React + Vite + Tailwind + animejs
-├─ backend/     Node.js + Express, auth JWT, moderación, conversión
-├─ database/    Migraciones SQL y seeds idempotentes
-├─ docs/        architecture.md  api.md  roles_permissions.md
-├─ scripts/     healthcheck.js  export_banned_example.sh
-├─ .env.example .gitignore LICENSE README.md CHANGELOG.md
+├─ frontend/     React + Vite + Tailwind + animejs
+├─ backend/      Node.js + Express, auth JWT, moderación, conversión
+├─ backend/src/_chat_test/    Widget de chat experimental (sólo usuarios registrados)
+├─ database/     Migraciones SQL y seeds idempotentes
+├─ docs/         architecture.md  api.md  roles_permissions.md
+├─ scripts/      healthcheck.js  export_banned_example.sh
+├─ .env.example  .gitignore LICENSE README.md CHANGELOG.md
 └─ deploy_instructions.txt
 ```
 
@@ -47,8 +45,25 @@ BookShelf/
 
 - **Node.js 18+**
 - **Git**
-- (Opcional) **PostgreSQL 13+** si quieres usar la BD real. Si no, el proyecto
-  arranca en modo JSON con cero instalación adicional.
+- **Conexión a internet** (la base de datos y el almacenamiento están en Supabase cloud)
+
+### Configurar Supabase
+
+El proyecto usa **Supabase** como base de datos y almacenamiento de archivos.
+Necesitas un proyecto Supabase con:
+
+1. Una base de datos PostgreSQL (plan gratuito).
+2. Un bucket público llamado `bookshelf` en Supabase Storage.
+3. Las siguientes variables en el archivo `.env` (en la raíz del repo):
+
+```
+DB_MODE=postgres
+DATABASE_URL="postgresql://..."
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_KEY=tu-service-role-key
+JWT_SECRET=una-clave-segura
+FRONTEND_URL=http://localhost:3100
+```
 
 ### Pasos
 
@@ -57,13 +72,13 @@ BookShelf/
 cd BookShelf
 
 # 2) Variables de entorno
-cp .env.example .env       # en Windows PowerShell: Copy-Item .env.example .env
-# Edita .env si quieres cambiar PORT, JWT_SECRET o usar Postgres.
+cp .env.example .env       # Windows: Copy-Item .env.example .env
+# Edita .env con tus credenciales de Supabase y JWT_SECRET.
 
 # 3) Backend
 cd backend
 npm install
-npm run seed               # genera datos (Postgres o backend/storage/db.json)
+npm run seed               # genera datos de ejemplo en Supabase
 npm start                  # http://localhost:4000
 
 # 4) Frontend (en otra terminal)
@@ -82,9 +97,9 @@ Abre [http://localhost:3100](http://localhost:3100).
 
 | Email                    | Contraseña | Rol                     | Notas |
 |--------------------------|------------|-------------------------|-------|
-| usuarioTest@bookshelf.app   | admin123   | creator                 | Autor de todos los libros de ejemplo. No es moderador. |
-| admin@bookshelf.app         | admin123   | admin + moderator       | Administrador principal. |
-| adminFox@bookshelf.app      | admin123   | admin + moderator       | Segundo administrador (privilegios idénticos a admin). |
+| usuarioTest@foxonashelf.app   | admin123   | creator                 | Autor de todos los libros de ejemplo. No es moderador. |
+| admin@foxonashelf.app         | admin123   | admin + moderator       | Administrador principal. |
+| adminFox@foxonashelf.app      | admin123   | admin + moderator       | Segundo administrador (privilegios idénticos a admin). |
 
 Los administradores **no pueden eliminarse entre sí ni a sí mismos**.
 
@@ -94,7 +109,7 @@ navega a `/admin/moderation`.
 **Cuenta moderadora** (puede crear anuncios, moderar libros y asignar categorías):
 | Email                    | Contraseña | Rol       | Notas |
 |--------------------------|------------|-----------|-------|
-| lopezsanty2008@gmail.com    | admin123   | moderator | Creada manualmente para pruebas de moderación. |
+| ef.samlq@gmail.com    | admin123   | moderator | Creada manualmente para pruebas de moderación. |
 
 > Los moderadores pueden crear anuncios y asignar categorías a libros sin categorizar.
 > Sólo los administradores pueden crear/eliminar categorías, gestionar moderadores,
@@ -123,7 +138,7 @@ Los anuncios pueden ser creados por **administradores** y **moderadores**.
 
 - **Administradores**: el anuncio se muestra con fondo degradado dorado y
   la etiqueta **Admin**. El texto de autoría ("Publicado por") es editable
-  desde el panel BookShelf — incluso se puede dejar vacío para ocultarlo.
+  desde el panel FoxOnAShelf — incluso se puede dejar vacío para ocultarlo.
 - **Moderadores**: el anuncio se muestra con fondo simple y la etiqueta
   **Moderador**. El autor es su `display_name`.
 - **Anuncio destacado**: cualquier anuncio (admin o moderador) puede ser
@@ -150,7 +165,7 @@ Desde el editor (`/book/:id/edit`) puedes subir:
 
 - Texto: `.txt`, `.md`, `.docx`, `.rtf` — se parsea y se divide en capítulos
   (detección de `# Encabezado`, `Capítulo N` o saltos triples).
-- Imágenes: `.jpg`, `.jpeg`, `.png`, `.webp` — se suben a la biblioteca personal
+- Imágenes: `.jpg`, `.jpeg`, `.png`, `.webp` — se suben a Supabase Storage
   con nombre custom (`@img:nombre`) y se insertan desde el ImageManager en el editor
   o con la referencia `@img:nombre_custom` en el contenido del capítulo.
 - Las imágenes de usuario se gestionan desde la página `/library` (Mis imágenes) o
@@ -162,9 +177,9 @@ Límite: **5 MB** por archivo (`MAX_UPLOAD_SIZE_BYTES` en `.env`).
 > asignar una categoría existente o dejar el libro como
 > **"En espera de categorización"** para que moderadores/admin la asignen después.
 
-El archivo original se guarda en `backend/storage/`. Puede mantenerse **privado**
-(sólo visible para el autor) o liberarse para descarga pública (`original_public`
-en el editor).
+Los archivos originales se almacenan en **Supabase Storage** (bucket `bookshelf`).
+Pueden mantenerse **privados** (sólo visibles para el autor) o liberarse para
+descarga pública (`original_public` en el editor).
 
 ---
 
@@ -195,7 +210,7 @@ visible según permisos).
 
 ---
 
-## Panel BookShelf (admin)
+## Panel FoxOnAShelf (admin)
 
 Ruta: **`/admin`**. Visible sólo para administradores.
 
@@ -255,8 +270,6 @@ Ver `docs/roles_permissions.md` para la matriz completa.
 - Inputs validados con `express-validator`.
 - **Rate limiting**: 5 registros/minuto y 10 login attempts/minuto por IP en endpoints de auth.
 - Consultas parametrizadas con `pg`.
-- Protección contra path traversal en subida de archivos (resolución de ruta
-  contra `STORAGE_PATH`).
 - Categorías escapadas contra inyección LIKE (`%` y `_` escapados con `ESCAPE`).
 - CORS restringido a `FRONTEND_URL`.
 - Auditoría: `moderation_logs` (actor, acción, target, IP, timestamp).
@@ -269,7 +282,7 @@ Ver `docs/roles_permissions.md` para la matriz completa.
 ## CI (informal)
 
 No incluimos pipeline real; en su lugar, prácticas recomendadas para el equipo
-(Jeison, Santiago, Leyder):
+(ERROR_FOX):
 
 - Ramas: `main` (estable) y `dev` (integración).
 - Cada feature en su propia rama: `feature/<nombre>`.
@@ -295,5 +308,5 @@ No incluimos pipeline real; en su lugar, prácticas recomendadas para el equipo
 
 MIT. Ver [LICENSE](LICENSE).
 
-BookShelf™ — Plataforma de lectura digital
-© 2026 Jeison Sossa, Santiago López, Leyder Montoya.
+FoxOnAShelf™ — Plataforma de lectura digital
+© 2026 ERROR_FOX.

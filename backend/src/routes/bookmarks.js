@@ -8,43 +8,43 @@ const router = express.Router();
 router.use(auth);
 
 router.get('/', async (req, res, next) => {
-  try { res.json({ bookmarks: await db.listBookmarks(req.user.sub) }); }
+  try { res.json({ marcadores: await db.listarMarcadores(req.user.sub) }); }
   catch (e) { next(e); }
 });
 
-router.get('/:bookId', async (req, res, next) => {
+router.get('/:libroId', async (req, res, next) => {
   try {
-    const bk = await db.getBookmark(req.user.sub, req.params.bookId);
-    res.json({ bookmark: bk });
+    const bk = await db.obtenerMarcador(req.user.sub, req.params.libroId);
+    res.json({ marcador: bk });
   } catch (e) { next(e); }
 });
 
 router.post('/', async (req, res, next) => {
   try {
-    const { book_id, chapter_id, chapter_index, scroll_position, finished } = req.body;
-    if (!book_id) return res.status(400).json({ error: 'book_id requerido', code: 400 });
-    await db.upsertBookmark({
-      user_id: req.user.sub, book_id,
-      chapter_id: chapter_id || null,
-      chapter_index: chapter_index || 0,
-      scroll_position: scroll_position || 0,
-      finished: !!finished
+    const { libro_id, capitulo_id, indice_capitulo, posicion_desplazamiento, terminado } = req.body;
+    if (!libro_id) return res.status(400).json({ error: 'libro_id requerido', code: 400 });
+    await db.upsertarMarcador({
+      usuario_id: req.user.sub, libro_id,
+      capitulo_id: capitulo_id || null,
+      indice_capitulo: indice_capitulo || 0,
+      posicion_desplazamiento: posicion_desplazamiento || 0,
+      terminado: !!terminado
     });
     res.json({ ok: true });
   } catch (e) { next(e); }
 });
 
-router.put('/:bookId/finish', async (req, res, next) => {
+router.put('/:libroId/terminar', async (req, res, next) => {
   try {
-    const { finished } = req.body;
-    await db.markFinished(req.user.sub, req.params.bookId, finished !== false);
+    const { terminado } = req.body;
+    await db.marcarTerminado(req.user.sub, req.params.libroId, terminado !== false);
     res.json({ ok: true });
   } catch (e) { next(e); }
 });
 
-router.delete('/:bookId', async (req, res, next) => {
+router.delete('/:libroId', async (req, res, next) => {
   try {
-    await db.deleteBookmark(req.user.sub, req.params.bookId);
+    await db.eliminarMarcador(req.user.sub, req.params.libroId);
     res.json({ ok: true });
   } catch (e) { next(e); }
 });

@@ -1,38 +1,26 @@
-/**
- * BookShelf™ - Conversión de archivos a estructura de libro.
- *
- * - .md / .txt: parseo nativo. Capítulos detectados por:
- *               líneas que empiezan con "# " (markdown header)
- *               o líneas con "Capítulo" / "Chapter"
- *               o doble salto de línea (heurística secundaria).
- * - .docx:      con la librería mammoth (extrae texto plano).
- * - .rtf:       extracción muy básica (strip de comandos RTF).
- */
-const fs = require('fs');
 const path = require('path');
 
-async function convertFileToChapters(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
+async function convertFileToChapters(buffer, originalName) {
+  const ext = path.extname(originalName).toLowerCase();
   let raw = '';
 
   if (ext === '.docx') {
     try {
       const mammoth = require('mammoth');
-      const r = await mammoth.extractRawText({ path: filePath });
+      const r = await mammoth.extractRawText({ buffer });
       raw = r.value || '';
     } catch (e) {
       throw new Error('Error convirtiendo archivo .docx. Verifica que sea un documento válido.');
     }
   } else if (ext === '.rtf') {
     try {
-      const src = fs.readFileSync(filePath, 'utf8');
-      raw = src.replace(/\\pard?/g, '\n').replace(/\\[a-z]+-?\d* ?/gi, '').replace(/[{}]/g, '');
+      raw = buffer.toString('utf8').replace(/\\pard?/g, '\n').replace(/\\[a-z]+-?\d* ?/gi, '').replace(/[{}]/g, '');
     } catch (e) {
       throw new Error('Error leyendo archivo RTF. Verifica que sea un documento válido.');
     }
   } else {
     try {
-      raw = fs.readFileSync(filePath, 'utf8');
+      raw = buffer.toString('utf8');
     } catch (e) {
       throw new Error('Error leyendo archivo. Verifica que exista y sea accesible.');
     }
@@ -42,7 +30,7 @@ async function convertFileToChapters(filePath) {
 }
 
 function splitIntoChapters(raw, ext) {
-  if (!raw || !raw.trim()) return [{ title: 'Capítulo 1', content: '', order: 1 }];
+  if (!raw || !raw.trim()) return [{ titulo: 'Capítulo 1', contenido: '', orden: 1 }];
 
   const lines = raw.split(/\r?\n/);
   const chapters = [];
@@ -60,24 +48,24 @@ function splitIntoChapters(raw, ext) {
     const hdr = isHeader(line);
     if (hdr) {
       if (current) chapters.push(current);
-      current = { title: hdr, content: '', order: order++ };
+      current = { titulo: hdr, contenido: '', orden: order++ };
     } else {
-      if (!current) current = { title: 'Capítulo 1', content: '', order: order++ };
-      current.content += line + '\n';
+      if (!current) current = { titulo: 'Capítulo 1', contenido: '', orden: order++ };
+      current.contenido += line + '\n';
     }
   }
   if (current) chapters.push(current);
 
   // Heurística secundaria: si no se detectaron capítulos, partir por dobles saltos.
   if (chapters.length <= 1 && raw.includes('\n\n\n')) {
-    const blocks = raw.split(/\n{3,}/).map(b => b.trim()).filter(Boolean);
-    return blocks.map((content, i) => ({
-      title: 'Capítulo ' + (i + 1),
-      content,
-      order: i + 1
+    const bloques = raw.split(/\n{3,}/).map(b => b.trim()).filter(Boolean);
+    return bloques.map((contenido, i) => ({
+      titulo: 'Capítulo ' + (i + 1),
+      contenido,
+      orden: i + 1
     }));
   }
-  return chapters.map(c => ({ ...c, content: c.content.trim() }));
+  return chapters.map(c => ({ ...c, contenido: c.contenido.trim() }));
 }
 
 module.exports = { convertFileToChapters };

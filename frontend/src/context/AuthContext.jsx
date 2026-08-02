@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
     try {
       const u = JSON.parse(stored);
       if (u && u.id) {
-        api.get('/api/users/' + u.id).then(r => {
+        api.get('/api/usuarios/' + u.id).then(r => {
           if (cancelled) return;
           if (r.__error) {
             if (r.code === 401) {
@@ -49,9 +49,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function login(email, password) {
-    const r = await api.post('/api/auth/login', { email, password });
+    const r = await api.post('/api/auth/iniciar-sesion', { email, password });
     if (r && r.__error) {
-      if (r.banned) return { banned: true, can_appeal: r.can_appeal, reason: r.reason };
+      if (r.baneado) return { baneado: true, puede_apelar: r.puede_apelar, motivo: r.motivo };
       if (r.code === 401)            return { error: 'Credenciales inválidas' };
       return { error: r.error || 'Error al iniciar sesión' };
     }
@@ -63,9 +63,9 @@ export function AuthProvider({ children }) {
     return { ok: true };
   }
 
-  async function register(email, password, display_name) {
-    const r = await criticalPost('/api/auth/register', { email, password, display_name });
-    if (r && r.__error) return { error: r.error, easter_egg: r.easter_egg };
+  async function register(email, password, nombre_mostrado) {
+    const r = await criticalPost('/api/auth/registro', { email, password, nombre_mostrado });
+    if (r && r.__error) return { error: r.error, huevo_pascua: r.huevo_pascua, emoji: r.emoji };
     localStorage.setItem('bookshelf.token', r.token);
     localStorage.setItem('bookshelf.refreshToken', r.refreshToken);
     localStorage.setItem('bookshelf.user', JSON.stringify(r.user));
@@ -77,7 +77,7 @@ export function AuthProvider({ children }) {
   function logout() {
     const token = localStorage.getItem('bookshelf.token');
     if (token) {
-      fetch('/api/auth/logout', {
+      fetch('/api/auth/salir', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
       }).catch(() => {});
@@ -91,8 +91,8 @@ export function AuthProvider({ children }) {
     navigate('/login');
   }
 
-  async function submitAppeal(email, appeal) {
-    const r = await api.post('/api/auth/appeal', { email, appeal });
+  async function submitAppeal(email, apelacion) {
+    const r = await api.post('/api/auth/apelar', { email, apelacion });
     if (r && r.__error) return { error: r.error };
     return { ok: true };
   }
