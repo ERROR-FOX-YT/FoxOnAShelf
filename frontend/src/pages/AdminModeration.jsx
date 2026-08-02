@@ -129,7 +129,7 @@ export default function AdminModeration() {
 
   async function addMod() {
     if (!modEmail.trim()) { toast.error('Ingresa un correo'); return; }
-    const r = await api.post('/api/moderacion/asignar-moderador', { email: modEmail });
+    const r = await api.post('/api/moderacion/establecer-moderador', { email: modEmail });
     if (!r.__error) { setModEmail(''); loadAll(); toast.ok('Moderador añadido'); }
   }
 
