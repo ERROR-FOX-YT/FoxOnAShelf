@@ -57,13 +57,6 @@ app.use('/api/chat',          require('./routes/chat'));
 app.use('/api/foros',         require('./routes/foros'));
 app.use('/api/destacados',    require('./routes/destacados'));
 
-// Producción: servir frontend compilado como estático
-if (process.env.NODE_ENV === 'production') {
-  const dist = path.join(__dirname, '../../frontend/dist');
-  app.use(express.static(dist));
-  app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
-}
-
 // Error handlers
 const { notFound, errorHandler } = require('./middlewares/errors');
 app.use('/api', notFound);
