@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     const r = await api.post('/api/auth/iniciar-sesion', { email, password });
     if (r && r.__error) {
-      if (r.baneado) return { baneado: true, puede_apelar: r.puede_apelar, motivo: r.motivo };
+      if (r.baneado) return { baneado: true, puede_apelar: r.puede_apelar, motivo: r.razon };
       if (r.code === 401)            return { error: 'Credenciales inválidas' };
       return { error: r.error || 'Error al iniciar sesión' };
     }

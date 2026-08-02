@@ -52,7 +52,7 @@ export default function AdminModeration() {
     if (!isModerator()) { navigate('/'); return; }
     loadAll();
     loadUncategorized();
-    api.get('/api/categorias').then(r => !r.__error && setCategories(r.categories || []));
+    api.get('/api/categorias').then(r => !r.__error && setCategories(r.categorias || []));
   }, [user, navigate, isModerator]);
 
   async function loadAll(skipLoading) {
@@ -72,12 +72,12 @@ export default function AdminModeration() {
 
   async function loadUncategorized() {
     const r = await api.get('/api/libros?categoria='
-      + encodeURIComponent('en espera de categorización') + '&status=all');
+      + encodeURIComponent('en espera de categorización')       + '&estado=all');
     if (!r.__error) setUncatBooks(r.libros || []);
   }
 
   async function assignCategory(bookId, newCat) {
-    const r = await api.put('/api/libros/' + bookId, { category: newCat });
+    const r = await api.put('/api/libros/' + bookId, { categoria: newCat });
     if (!r.__error) {
       loadUncategorized();
       toast.ok('Categoría asignada');
@@ -86,7 +86,7 @@ export default function AdminModeration() {
 
   async function doBan() {
     if (!banningUser || !banReason.trim()) { toast.error('Motivo requerido'); return; }
-    const r = await api.post('/api/moderacion/banear', { email: banningUser.email, reason: banReason.trim() });
+    const r = await api.post('/api/moderacion/banear', { email: banningUser.email, razon: banReason.trim() });
     if (!r.__error) {
       setBanningUser(null); setBanReason('');
       toast.ok('Usuario baneado'); loadAll();
@@ -143,7 +143,7 @@ export default function AdminModeration() {
 
   const filteredUsers = allUsers.filter(u => {
     if (roleFilter === 'banned') return u.esta_baneado;
-    if (roleFilter === 'deleted') return (u.historial_baneos || []).some(b => b.eliminado_en);
+    if (roleFilter === 'deleted') return (u.historial_baneos || []).some(b => b.deleted_at);
     if (roleFilter) {
       if (roleFilter === 'admin') return u.role === 'admin';
       if (roleFilter === 'moderator') return u.role === 'moderator';
@@ -319,10 +319,10 @@ export default function AdminModeration() {
               </thead>
               <tbody>
                 {deletedAccounts.map((d, idx) => (
-                  <tr key={d.email + '_' + (d.eliminado_en || idx)} className="border-b border-foxBrown/10 hover:bg-foxBrown/5 transition-colors">
+                  <tr key={d.email + '_' + (d.deleted_at || idx)} className="border-b border-foxBrown/10 hover:bg-foxBrown/5 transition-colors">
                     <td className="py-2 pr-3 font-medium">{d.email}</td>
-                    <td className="py-2 pr-3 text-xs">{d.eliminado_en ? new Date(d.eliminado_en).toLocaleDateString() : '—'}</td>
-                    <td className="py-2 pr-3 text-xs">{d.eliminado_por || '—'}</td>
+                    <td className="py-2 pr-3 text-xs">{d.deleted_at ? new Date(d.deleted_at).toLocaleDateString() : '—'}</td>
+                    <td className="py-2 pr-3 text-xs">{d.deleted_by || '—'}</td>
                     <td className="py-2 pr-3">
                       {d.tiene_nuevo_usuario ? (
                         <span className="text-[11px] uppercase px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-medium">
@@ -441,7 +441,7 @@ export default function AdminModeration() {
                                   onClick={async () => {
                                     setReordering(true);
                                     setMovedId({ id: m.id, dir: 'up' });
-                                    const r = await api.post('/api/moderacion/moderadores/reordenar', { id: m.id, direction: 'up' });
+                                    const r = await api.post('/api/moderacion/moderadores/reordenar', { id: m.id, direccion: 'up' });
                                     if (r && !r.__error) {
                                       const b = await api.get('/api/moderacion/moderadores');
                                       if (!b.__error) { setMods(b.moderadores || []); setAnimKey(k => k + 1); }
@@ -454,7 +454,7 @@ export default function AdminModeration() {
                                   onClick={async () => {
                                     setReordering(true);
                                     setMovedId({ id: m.id, dir: 'down' });
-                                    const r = await api.post('/api/moderacion/moderadores/reordenar', { id: m.id, direction: 'down' });
+                                    const r = await api.post('/api/moderacion/moderadores/reordenar', { id: m.id, direccion: 'down' });
                                     if (r && !r.__error) {
                                       const b = await api.get('/api/moderacion/moderadores');
                                       if (!b.__error) { setMods(b.moderadores || []); setAnimKey(k => k + 1); }
@@ -557,16 +557,16 @@ function UserRow({ u, isAdmin, currentUser, onBan, onUnban, onDelete, onRemoveMo
   const isTargetAdmin = u.role === 'admin';
   const isTargetMod = u.role === 'moderator';
 
-  const canBan = !u.pre_banned && !isSelf && !isTargetAdmin && !(isTargetMod && !isAdmin());
-  const canDelete = !u.pre_banned && isAdmin() && !isSelf && !isTargetAdmin;
-  const canRemoveMod = !u.pre_banned && isAdmin() && isTargetMod;
+  const canBan = !u.pre_baneado && !isSelf && !isTargetAdmin && !(isTargetMod && !isAdmin());
+  const canDelete = !u.pre_baneado && isAdmin() && !isSelf && !isTargetAdmin;
+  const canRemoveMod = !u.pre_baneado && isAdmin() && isTargetMod;
 
   return (
     <tr className="border-b border-foxBrown/10 hover:bg-foxBrown/5 transition-colors">
-      <td className="py-2 pr-3 font-medium">{u.pre_banned ? '(sin registro)' : (u.nombre_mostrado || '—')}</td>
+      <td className="py-2 pr-3 font-medium">{u.pre_baneado ? '(sin registro)' : (u.nombre_mostrado || '—')}</td>
       <td className="py-2 pr-3 text-xs opacity-60">{u.email}</td>
       <td className="py-2 pr-3">
-        {u.pre_banned ? (
+        {u.pre_baneado ? (
           <span className="text-[11px] uppercase px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700/40 text-gray-500 dark:text-gray-400 font-medium">
             Sin registrar
           </span>
@@ -581,11 +581,11 @@ function UserRow({ u, isAdmin, currentUser, onBan, onUnban, onDelete, onRemoveMo
           <span className="text-[11px] uppercase px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-medium">
             Baneado
           </span>
-        ) : (u.historial_baneos || []).some(b => b.eliminado_en) ? (
+        ) : (u.historial_baneos || []).some(b => b.deleted_at) ? (
           <span className="text-[11px] uppercase px-1.5 py-0.5 rounded bg-gray-300 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 font-medium">
             Anteriormente eliminado
           </span>
-        ) : (u.historial_baneos || []).some(b => b.desbaneado_en) ? (
+        ) : (u.historial_baneos || []).some(b => b.unbanned_at) ? (
           <span className="text-[11px] uppercase px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium">
             Desbaneado
           </span>
@@ -610,9 +610,9 @@ function UserRow({ u, isAdmin, currentUser, onBan, onUnban, onDelete, onRemoveMo
 }
 
 function BanAccordion({ group, isAdmin, expanded, onToggle, onUnban, onDeleteRecord }) {
-  const activeBan = group.bans.find(b => !b.desbaneado_en);
-  const hasUnban = group.bans.some(b => b.desbaneado_en && !b.eliminado_en);
-  const hasDelete = group.bans.some(b => b.eliminado_en);
+  const activeBan = group.bans.find(b => !b.unbanned_at);
+  const hasUnban = group.bans.some(b => b.unbanned_at && !b.deleted_at);
+  const hasDelete = group.bans.some(b => b.deleted_at);
 
   return (
     <div className="border border-foxBrown/10 rounded-lg overflow-hidden">
@@ -667,8 +667,8 @@ function BanAccordion({ group, isAdmin, expanded, onToggle, onUnban, onDeleteRec
 }
 
 function BanDetail({ ban }) {
-  const isActive = !ban.desbaneado_en;
-  const isDeleted = !!ban.eliminado_en;
+  const isActive = !ban.unbanned_at;
+  const isDeleted = !!ban.deleted_at;
 
   const statusText = isActive ? 'Baneado' : isDeleted ? 'Anteriormente eliminado' : 'Desbaneado';
   const statusColor = isActive ? 'text-red-700 dark:text-red-300'
@@ -686,28 +686,28 @@ function BanDetail({ ban }) {
         </div>
         <div>
           <span className="opacity-50">Fecha: </span>
-          <span>{ban.baneado_en ? new Date(ban.baneado_en).toLocaleString() : '—'}</span>
+          <span>{ban.banned_at ? new Date(ban.banned_at).toLocaleString() : '—'}</span>
         </div>
         <div>
           <span className="opacity-50">Motivo: </span>
-          <span>{ban.reason || '—'}</span>
+          <span>{ban.razon || '—'}</span>
         </div>
-        {ban.baneado_por && (
+        {ban.banned_by && (
           <div>
             <span className="opacity-50">Baneado por: </span>
-            <span>{ban.baneado_por}</span>
+            <span>{ban.banned_by}</span>
           </div>
         )}
-        {ban.desbaneado_en && (
+        {ban.unbanned_at && (
           <div>
             <span className="opacity-50">Desbaneado: </span>
-            <span>{new Date(ban.desbaneado_en).toLocaleString()}</span>
+            <span>{new Date(ban.unbanned_at).toLocaleString()}</span>
           </div>
         )}
-        {ban.desbaneado_por && (
+        {ban.unbanned_by && (
           <div>
             <span className="opacity-50">Desbaneado por: </span>
-            <span>{ban.desbaneado_por}</span>
+            <span>{ban.unbanned_by}</span>
           </div>
         )}
       </div>

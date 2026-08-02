@@ -103,7 +103,7 @@ export default function Reader({ book, chapters, bookmark }) {
 
   function markFinished() {
     if (!user) { toast.error('Inicia sesión para marcar como terminado'); return; }
-    api.put('/api/marcadores/' + book.id + '/finish', { terminado: true })
+    api.put('/api/marcadores/' + book.id + '/terminar', { terminado: true })
       .then(r => { if (!r.__error) toast.ok('Libro marcado como terminado'); });
   }
 

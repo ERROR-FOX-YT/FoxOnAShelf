@@ -74,8 +74,8 @@ export default function MediaLibrary() {
     const b = sorted[swapIdx];
     const aOrder = a.orden || 0;
     const bOrder = b.orden || 0;
-    const r1 = await updateUserImage(a.id, { orden: bOrder });
-    const r2 = await updateUserImage(b.id, { orden: aOrder });
+    const r1 = await updateUserImage(a.id, { orden_ordenamiento: bOrder });
+    const r2 = await updateUserImage(b.id, { orden_ordenamiento: aOrder });
     if (!r1 || !r2) { toast.error('Error al reordenar'); return; }
     setImages(prev => prev.map(i => {
       if (i.id === a.id) return { ...i, orden: bOrder };

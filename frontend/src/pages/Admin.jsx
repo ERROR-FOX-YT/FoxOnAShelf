@@ -87,7 +87,7 @@ export default function Admin() {
   const [confirm, setConfirm] = useState({ open: false, target: null });
 
   function loadCategories() {
-    api.get('/api/categorias').then(r => !r.__error && setCategories(r.categories || []));
+    api.get('/api/categorias').then(r => !r.__error && setCategories(r.categorias || []));
   }
   function cargarAnuncios() {
     api.get('/api/anuncios').then(r => !r.__error && setAnuncios(r.anuncios || []));
@@ -156,7 +156,7 @@ export default function Admin() {
 
   async function addCategory() {
     if (!newCat.trim()) { toast.error('Ingresa un nombre'); return; }
-    const r = await api.post('/api/categorias', { name: newCat.trim() });
+    const r = await api.post('/api/categorias', { nombre: newCat.trim() });
     if (!r.__error) { setNewCat(''); loadCategories(); toast.ok('Categoría añadida'); }
   }
 
@@ -209,7 +209,7 @@ export default function Admin() {
   async function executeRestore() {
     const entry = confirm.target;
     setConfirm({ open: false, target: null });
-    const r = await api.post('/api/usuarios/papelera/' + entry.id + '/restore');
+    const r = await api.post('/api/usuarios/papelera/' + entry.id + '/restaurar');
     if (r.__error) return;
     toast.ok('Usuario restaurado');
     loadTrash();
@@ -730,7 +730,7 @@ export default function Admin() {
         <p className="text-xs opacity-70">Si alguien intenta registrarse con uno de estos nombres, se rechazará y aparecerá <strong>ERROR 418: &lt;mensaje&gt;</strong>. La comparación no distingue mayúsculas y acepta variaciones (0=O, _=-, etc.).</p>
         <div className="space-y-1">
           {easterEggs.map((egg, idx) => {
-            const names = egg.names || ['ERROR_FOX'];
+            const names = egg.nombres || ['ERROR_FOX'];
             return (
               <div key={egg.id} className="border border-black/10 dark:border-white/10 rounded-lg overflow-hidden">
                 <div className="flex items-center gap-2 p-2 text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
@@ -764,10 +764,10 @@ export default function Admin() {
                     {/* Mensaje */}
                     <div className="flex gap-2 items-center">
                       <span className="opacity-70 shrink-0">Mensaje:</span>
-                      <input className="input text-xs flex-1" value={egg.message}
+                      <input className="input text-xs flex-1" value={egg.mensaje}
                              onChange={e => {
                                const updated = [...easterEggs];
-                               updated[idx] = { ...updated[idx], message: e.target.value };
+                               updated[idx] = { ...updated[idx], mensaje: e.target.value };
                                setEasterEggs(updated);
                              }} />
                     </div>
@@ -783,7 +783,7 @@ export default function Admin() {
                                     onClick={() => {
                                       const updated = [...easterEggs];
                                       const newNames = names.filter((_, i) => i !== ni);
-                                      updated[idx] = { ...updated[idx], names: newNames.length ? newNames : ['ERROR_FOX'] };
+                                      updated[idx] = { ...updated[idx], nombres: newNames.length ? newNames : ['ERROR_FOX'] };
                                       setEasterEggs(updated);
                                     }}>×</button>
                           </span>
@@ -792,7 +792,7 @@ export default function Admin() {
                       <AddNameInline onAdd={(name) => {
                         const updated = [...easterEggs];
                         const newNames = [...names, name];
-                        updated[idx] = { ...updated[idx], names: newNames };
+                        updated[idx] = { ...updated[idx], nombres: newNames };
                         setEasterEggs(updated);
                       }} />
                     </div>
@@ -877,19 +877,19 @@ export default function Admin() {
                   const daysLeft = Math.ceil((new Date(t.expira_en) - new Date()) / (1000*60*60*24));
                   return (
                     <tr key={t.id} className="border-b border-foxBrown/10 hover:bg-foxBrown/5 transition-colors">
-                      <td className="py-2 pr-3 font-medium">{t.usuario?.nombre_mostrado || '—'}</td>
+                      <td className="py-2 pr-3 font-medium">{t.user?.nombre_mostrado || '—'}</td>
                       <td className="py-2 pr-3 text-xs opacity-80">{t.email_usuario}</td>
-                      <td className="py-2 pr-3 text-xs">{t.usuario?.role || '—'}</td>
+                      <td className="py-2 pr-3 text-xs">{t.user?.role || '—'}</td>
                       <td className="py-2 pr-3 text-xs">{t.conteo_libros || 0}</td>
                       <td className="py-2 pr-3 text-xs whitespace-nowrap">
-                        {new Date(t.eliminado_en).toLocaleDateString()}
+                        {new Date(t.deleted_at).toLocaleDateString()}
                       </td>
                       <td className="py-2 pr-3 text-xs whitespace-nowrap">
                         <span className={daysLeft <= 3 ? 'text-red-600 font-semibold' : daysLeft <= 7 ? 'text-amber-600' : ''}>
                           {daysLeft > 0 ? daysLeft + ' días' : 'Expirado'}
                         </span>
                       </td>
-                      <td className="py-2 pr-3 text-xs opacity-70">{t.eliminado_por}</td>
+                      <td className="py-2 pr-3 text-xs opacity-70">{t.deleted_by}</td>
                       <td className="py-2 text-right whitespace-nowrap">
                         <button className="btn-ghost text-xs text-emerald-700 mr-1"
                                 onClick={() => openRestoreConfirm(t)}
@@ -952,7 +952,7 @@ export default function Admin() {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
               <span className="text-2xl">♻️</span>
               <div>
-                <div className="font-semibold">{confirmTarget.usuario?.nombre_mostrado || confirmTarget.email_usuario}</div>
+                <div className="font-semibold">{confirmTarget.user?.nombre_mostrado || confirmTarget.email_usuario}</div>
                 <div className="text-xs opacity-80">{confirmTarget.email_usuario}</div>
               </div>
             </div>
@@ -965,7 +965,7 @@ export default function Admin() {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <span className="text-2xl">🗑️</span>
               <div>
-                <div className="font-semibold">{confirmTarget.usuario?.nombre_mostrado || confirmTarget.email_usuario}</div>
+                <div className="font-semibold">{confirmTarget.user?.nombre_mostrado || confirmTarget.email_usuario}</div>
                 <div className="text-xs opacity-80">{confirmTarget.email_usuario}</div>
               </div>
             </div>

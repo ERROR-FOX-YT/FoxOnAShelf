@@ -43,7 +43,7 @@ export default function Book() {
       });
     }
     viewTimer.current = setTimeout(() => {
-      api.post('/api/libros/' + bookId + '/view');
+      api.post('/api/libros/' + bookId + '/vista');
     }, 10000);
     return () => { clearTimeout(viewTimer.current); cancelledRef.current = true; };
   }, [bookId]);
@@ -116,7 +116,7 @@ export default function Book() {
           )}
           {isAdmin() && (
             <button className="btn-ghost text-sm text-red-600" onClick={async () => {
-              const r = await api.post('/api/libros/' + bookId + '/reset-views');
+              const r = await api.post('/api/libros/' + bookId + '/reiniciar-vistas');
               if (!r.__error) { setBook(b => ({ ...b, vistas: 0 })); toast.ok('Vistas reiniciadas'); }
             }}>Reiniciar vistas</button>
           )}

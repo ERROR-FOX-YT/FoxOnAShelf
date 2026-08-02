@@ -12,7 +12,7 @@ export async function uploadUserImage(file, nombre_personalizado) {
   fd.append('nombre_personalizado', nombre_personalizado);
   const r = await api.form('/api/imagenes-usuario', fd);
   if (r && r.__error) return null;
-  return r.imagen || null;
+  return r.image || null;
 }
 
 export async function updateUserImage(id, body) {

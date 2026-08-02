@@ -80,7 +80,7 @@ export default function Anuncios() {
       rutaImagen = up.archivo.url;
       setSubiendo(false);
     }
-    const r = await api.post('/api/anuncios', { titulo, contenido, rutaImagen });
+    const r = await api.post('/api/anuncios', { titulo, contenido, ruta_imagen: rutaImagen });
     if (!r.__error) {
       setTitulo(''); setContenido(''); setArchivoImg(null); setVistaPrevia(null); setMostrarVista(false);
       if (refArchivo.current) refArchivo.current.value = '';
@@ -99,7 +99,7 @@ export default function Anuncios() {
   }
 
   async function guardarPublicadoPor(id) {
-    const r = await api.put('/api/anuncios/' + id + '/publicado-por', { publicadoPor: textoPublicado });
+    const r = await api.put('/api/anuncios/' + id + '/publicado-por', { publicado_por: textoPublicado });
     if (!r.__error) { setEditandoPublicado(null); cargar(); toast.ok('Texto actualizado'); }
   }
 

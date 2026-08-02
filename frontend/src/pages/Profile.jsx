@@ -46,7 +46,7 @@ export default function Profile() {
   }
 
   async function finishBook(bookId) {
-    const r = await api.put('/api/marcadores/' + bookId + '/finish', { terminado: true });
+    const r = await api.put('/api/marcadores/' + bookId + '/terminar', { terminado: true });
     if (!r.__error) {
       setBookmarks(prev => prev.map(b => b.id === bookId ? { ...b, terminado: true } : b));
       toast.ok('Libro terminado');
