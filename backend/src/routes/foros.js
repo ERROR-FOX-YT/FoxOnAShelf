@@ -441,7 +441,6 @@ router.post('/:hiloId/solucion',
         if (respRows[0].es_solucion) {
           await pgQuery('UPDATE foro_respuestas SET es_solucion = false WHERE id=$1', [respuesta_id]);
           await pgQuery('UPDATE foro_hilos SET resuelto = false WHERE id=$1', [hiloId]);
-          await pgQuery('UPDATE foro_votos SET tipo = tipo WHERE respuesta_id = $1', [respuesta_id]);
           return res.json({ ok: true, es_solucion: false, resuelto: false });
         }
 
@@ -470,6 +469,8 @@ router.put('/respuestas/:respuestaId/solucion',
         if (!rows.length) return res.status(404).json({ error: 'Respuesta no encontrada', code: 404 });
         const resp = rows[0];
         if (!resp.es_solucion) return res.status(400).json({ error: 'Esta respuesta no es la solución', code: 400 });
+        if (resp.autor_id !== req.user.sub && req.user.role !== 'admin' && req.user.role !== 'moderator')
+          return res.status(403).json({ error: 'No tienes permisos para editar esta solución', code: 403 });
 
         const contenidoAnterior = resp.contenido;
         const now = new Date().toISOString();

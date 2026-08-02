@@ -437,12 +437,30 @@ const api = {
   async listarPapelera() {
     if (isPg) {
       const rows = await pgQuery(
-        `SELECT id, email_usuario, eliminado_en, expira_en, eliminado_por
-           FROM papelera ORDER BY eliminado_en DESC`);
-      return rows.map(r => ({
-        ...r,
-        expired: new Date(r.expira_en) < new Date()
-      }));
+        `SELECT p.id, p.email_usuario, p.eliminado_en, p.expira_en, p.eliminado_por,
+                p.entrada,
+                u.email AS user_email, u.nombre_mostrado AS user_nombre, u.role AS user_role
+           FROM papelera p
+           LEFT JOIN usuarios u ON LOWER(u.email) = LOWER(p.email_usuario)
+           ORDER BY p.eliminado_en DESC`);
+      return rows.map(r => {
+        let user = null, has_libros = false, conteo_libros = 0;
+        try {
+          const data = typeof r.entrada === 'string' ? JSON.parse(r.entrada) : (r.entrada || {});
+          user = data.user || null;
+          has_libros = (data.libros || []).length > 0;
+          conteo_libros = (data.libros || []).length;
+        } catch {}
+        if (!user && r.user_email) {
+          user = { id: null, email: r.user_email, nombre_mostrado: r.user_nombre, role: r.user_role };
+        }
+        return {
+          id: r.id, email_usuario: r.email_usuario,
+          eliminado_en: r.eliminado_en, expira_en: r.expira_en, eliminado_por: r.eliminado_por,
+          user, has_libros, conteo_libros,
+          expired: new Date(r.expira_en) < new Date()
+        };
+      });
     }
     return withDb(db => {
       if (!db.papelera) db.papelera = [];
@@ -793,11 +811,12 @@ const api = {
       await pgQuery(
         `INSERT INTO libros (id,titulo,subtitulo,descripcion,autor_id,estado,es_gratis,precio_centavos,
                             categoria,grupo_edad,url_portada,archivo_original,original_publico,
-                            conteo_favoritos,vistas)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+                            conteo_favoritos,vistas,created_at,updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
         [full.id, full.titulo, full.subtitulo, full.descripcion, full.autor_id, full.estado,
          full.es_gratis, full.precio_centavos, full.categoria, full.grupo_edad, full.url_portada,
-         full.archivo_original, full.original_publico, full.conteo_favoritos, full.vistas]);
+         full.archivo_original, full.original_publico, full.conteo_favoritos, full.vistas,
+         full.created_at, full.updated_at]);
       return full;
     }
     return withDb(db => {
@@ -846,9 +865,9 @@ const api = {
                 created_at: new Date().toISOString(), ...chapter };
     if (isPg) {
       await pgQuery(
-        `INSERT INTO capitulos (id,libro_id,titulo,contenido,"orden",es_acceso_anticipado)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [c.id, c.libro_id, c.titulo, c.contenido, c.orden, c.es_acceso_anticipado]);
+        `INSERT INTO capitulos (id,libro_id,titulo,contenido,"orden",es_acceso_anticipado,created_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [c.id, c.libro_id, c.titulo, c.contenido, c.orden, c.es_acceso_anticipado, c.created_at]);
       return c;
     }
     return withDb(db => {
@@ -1035,9 +1054,12 @@ const api = {
   async obtenerAnuncio(id) {
     if (isPg) {
       const r = (await pgQuery(
-        `SELECT id, admin_id, titulo, contenido, ruta_imagen AS "rutaImagen",
-                visible, destacado, publicado_por AS "publicadoPor", created_at
-           FROM anuncios WHERE id=$1`, [id]))[0];
+        `SELECT a.id, a.admin_id, a.titulo, a.contenido, a.ruta_imagen AS "rutaImagen",
+                a.visible, a.destacado, a.publicado_por AS "publicadoPor", a.created_at,
+                u.nombre_mostrado AS "autorNombre", u.role AS "autorRol"
+           FROM anuncios a
+           LEFT JOIN usuarios u ON u.id = a.admin_id
+           WHERE a.id=$1`, [id]))[0];
       return r || null;
     }
     const db = loadJson();
@@ -1143,8 +1165,8 @@ const api = {
   async banearUsuario({ email, razon, banned_by }) {
     if (isPg) {
       await pgQuery(
-        `INSERT INTO usuarios_baneados (email,razon,banned_at) VALUES ($1,$2,now())`,
-        [email, razon]);
+        `INSERT INTO usuarios_baneados (email,razon,banned_at,banned_by) VALUES ($1,$2,now(),$3)`,
+        [email, razon, banned_by || null]);
       await pgQuery(`UPDATE usuarios SET role='user' WHERE email=$1 AND role='moderator'`, [email]);
       return;
     }
@@ -1485,11 +1507,12 @@ const api = {
   },
   async crearImagenUsuario({ usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento }) {
     const id = uuidv4();
+    const now = new Date().toISOString();
     if (isPg) {
       await pgQuery(
-        'INSERT INTO imagenes_usuario (id,usuario_id,ruta_almacenamiento,nombre_personalizado,orden_ordenamiento) VALUES ($1,$2,$3,$4,$5)',
-        [id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento ?? 0]);
-      return { id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento: orden_ordenamiento ?? 0 };
+        'INSERT INTO imagenes_usuario (id,usuario_id,ruta_almacenamiento,nombre_personalizado,orden_ordenamiento,created_at) VALUES ($1,$2,$3,$4,$5,$6)',
+        [id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento ?? 0, now]);
+      return { id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento: orden_ordenamiento ?? 0, created_at: now };
     }
     const img = { id, usuario_id, ruta_almacenamiento, nombre_personalizado, orden_ordenamiento: orden_ordenamiento ?? 0, created_at: new Date().toISOString() };
     return withDb(db => {

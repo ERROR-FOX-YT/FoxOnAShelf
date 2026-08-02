@@ -15,7 +15,10 @@ setInterval(() => {
     const toDelete = [...store.keys()].slice(0, Math.floor(max * 0.5));
     for (const k of toDelete) store.delete(k);
   }
-  for (const [k, ts] of store) {
+  const keysToCheck = [...store.keys()];
+  for (const k of keysToCheck) {
+    const ts = store.get(k);
+    if (!ts) continue;
     const fresh = ts.filter(t => now - t < 60000);
     if (fresh.length) store.set(k, fresh); else store.delete(k);
   }

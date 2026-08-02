@@ -241,7 +241,7 @@ router.get('/usuarios', auth, requireModerator,
         if (!emailsUsuarios.has(emailLower)) {
           const active = group.bans.some(b => !b.unbanned_at);
           // Solo incluirlas si el filtro es 'banned' o no hay filtro
-          if (active || role !== 'banned') {
+          if (!role || role === 'banned') {
             users.push({
               id: null,
               email: group.email,
@@ -292,6 +292,8 @@ router.post('/apelar',
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
+      if (req.body.email !== req.user.email && req.user.role !== 'admin')
+        return res.status(403).json({ error: 'No puedes apelar por otra cuenta', code: 403 });
       await db.enviarApelacion(req.body.email, req.body.apelacion);
       res.json({ ok: true });
     } catch (e) { next(e); }

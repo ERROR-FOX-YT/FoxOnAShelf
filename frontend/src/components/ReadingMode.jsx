@@ -72,7 +72,7 @@ function PageContent({ content, title, pageNum, theme, font, fontSize, lineHeigh
     }
     const userImg = p.match(/^@img:(.+)$/);
     if (userImg) {
-      const src = '/api/imagenes-usuario/resolver/' + authorId + '/' + encodeURIComponent(userImg[1]);
+      const src = '/api/imagenes-usuario/resolver/' + (authorId || '') + '/' + encodeURIComponent(userImg[1]);
       return <img key={i} src={src} alt={userImg[1]} className="max-w-full h-auto my-4 mx-auto rounded" />;
     }
     return <span key={i}>{p}</span>;

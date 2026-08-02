@@ -74,7 +74,8 @@ async function auth(req, res, next) {
 }
 
 async function optionalAuth(req, res, next) {
-  const token = req.headers.authorization?.replace('Bearer ', '');
+  const hdr = req.headers.authorization || '';
+  const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
   if (!token) return next();
   try {
     const payload = jwt.verify(token, cfg.JWT_SECRET);

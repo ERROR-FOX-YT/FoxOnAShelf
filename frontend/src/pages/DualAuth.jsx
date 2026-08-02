@@ -167,7 +167,7 @@ export default function DualAuth() {
             {banned && (
               <div className="da-banned">
                 <div className="da-banned__title">Cuenta baneada</div>
-                <div className="da-banned__reason">Motivo: {banned.reason}</div>
+                <div className="da-banned__reason">Motivo: {banned.motivo}</div>
                 {banned.puede_apelar && (
                   <div className="da-banned__appeal" onClick={e => e.stopPropagation()}>
                     <textarea className="da-textarea" value={appeal}

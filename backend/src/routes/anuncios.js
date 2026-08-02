@@ -61,7 +61,7 @@ router.put('/:id', auth,
     try {
       const ann = await db.obtenerAnuncio(req.params.id);
       if (!ann) return res.status(404).json({ error: 'Anuncio no encontrado', code: 404 });
-      if (ann.admin_id !== req.user.sub && req.user.role !== 'admin')
+      if (ann.admin_id !== req.user.sub && req.user.role !== 'admin' && req.user.role !== 'moderator')
         return res.status(403).json({ error: 'Solo el autor o un administrador pueden editar este anuncio', code: 403 });
       await db.actualizarAnuncio(req.params.id, {
         titulo: req.body.titulo, contenido: req.body.contenido,
@@ -79,7 +79,7 @@ router.delete('/:id', auth,
     try {
       const ann = await db.obtenerAnuncio(req.params.id);
       if (!ann) return res.status(404).json({ error: 'Anuncio no encontrado', code: 404 });
-      if (ann.admin_id !== req.user.sub && req.user.role !== 'admin')
+      if (ann.admin_id !== req.user.sub && req.user.role !== 'admin' && req.user.role !== 'moderator')
         return res.status(403).json({ error: 'Solo el autor o un administrador pueden eliminar este anuncio', code: 403 });
       await db.eliminarAnuncio(req.params.id);
       res.json({ ok: true });
