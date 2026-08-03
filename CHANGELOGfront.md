@@ -2,6 +2,18 @@
 
 Todas las fechas en formato YYYY-MM-DD.
 
+## [Desarrollo 15] — 2026-08-02 — ERROR_FOX
+
+### Corregido
+- **JWT refresh con race condition (CRITICAL)**: entre `validarTokenRefresco` y `revocarTokenRefresco` había dos queries separadas. Otro request podía usar el mismo token antes de que se revocara. Solución: nueva función atómica `validarYRevocarTokenRefresco()` con `UPDATE ... RETURNING *` en una sola query PostgreSQL.
+- **AlternarFavorito con race condition (CRITICAL)**: SELECT + DELETE/INSERT no era atómico. Dos requests concurrentes podían insertar favoritos duplicados y desincronizar `conteo_favoritos`. Solución: CTE atómico con `WITH del AS (DELETE...) ins AS (INSERT... WHERE NOT EXISTS)` + conteo recalculado con `COUNT(*)`.
+- **PUT libros — validators faltantes**: `subtitulo`, `url_portada`, `original_publico` se aceptaban sin validación. Agregados validators opcionales.
+- **POST libros — validator faltante**: `subtitulo` no tenía validator. Agregado `body('subtitulo').optional().isString()`.
+- **Anuncios — validación ruta_imagen**: `ruta_imagen` se aceptaba sin validación en POST y PUT. Agregado `body('ruta_imagen').optional({ values: 'falsy' }).isString()`.
+
+### Documentación
+- **CONTEXTO.md**: nuevo documento con contexto completo del proyecto, stack, reglas de código y variables de entorno críticas.
+
 ## [Desarrollo 14 | FoxOnAShelf] — 2026-08-01 — ERROR_FOX
 
 ### Modificado
