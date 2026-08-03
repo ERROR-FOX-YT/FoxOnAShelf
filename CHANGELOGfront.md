@@ -9,7 +9,11 @@ Todas las fechas en formato YYYY-MM-DD.
 - **AlternarFavorito con race condition (CRITICAL)**: SELECT + DELETE/INSERT no era atómico. Dos requests concurrentes podían insertar favoritos duplicados y desincronizar `conteo_favoritos`. Solución: CTE atómico con `WITH del AS (DELETE...) ins AS (INSERT... WHERE NOT EXISTS)` + conteo recalculado con `COUNT(*)`.
 - **PUT libros — validators faltantes**: `subtitulo`, `url_portada`, `original_publico` se aceptaban sin validación. Agregados validators opcionales.
 - **POST libros — validator faltante**: `subtitulo` no tenía validator. Agregado `body('subtitulo').optional().isString()`.
-- **Anuncios — validación ruta_imagen**: `ruta_imagen` se aceptaba sin validación en POST y PUT. Agregado `body('ruta_imagen').optional({ values: 'falsy' }).isString()`.
+- **Anuncios — ruta_imagen siempre null**: el parámetro se pasaba como `rutaImagen` pero la función esperaba `ruta_imagen`, causando que la imagen nunca se guardara. Corregido en `crearAnuncio`, `actualizarAnuncio`, `listarAnuncios` y `obtenerAnuncio`. También corregido el fallback en el frontend.
+- **Foros — edición de respuestas sin restricción**: cualquier usuario podía editar respuestas de otros. Ahora solo el autor puede editar su propia respuesta (mods/admins conservan acceso).
+- **Imágenes inline en capítulos rotas**: las URLs de `@img:` no se resolvían correctamente porque faltaba el prefijo `apiBase()`. Las funciones `pageTextToHTML` y `renderPart` ahora usan `apiBase()` como prefijo para `/api/imagenes-usuario/resolver/`.
+- **Lector — "Página X" visible en modo scroll**: cada sub-página (por `<!-- page -->`) mostraba "— Página X —" como separador, creando confusión en scroll continuo. Ahora se ocultan los números de página cuando hay múltiples sub-páginas.
+- **Lector — espaciado excesivo entre páginas en scroll**: cada sub-página tenía `py-10` creando enormes espacios en blanco. Ahora las páginas después de la primera usan padding compacto (`0.5rem`).
 
 ### Documentación
 - **CONTEXTO.md**: nuevo documento con contexto completo del proyecto, stack, reglas de código y variables de entorno críticas.
