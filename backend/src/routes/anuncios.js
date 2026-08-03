@@ -67,7 +67,7 @@ router.put('/:id', auth,
         return res.status(403).json({ error: 'Solo el autor o un administrador pueden editar este anuncio', code: 403 });
       await db.actualizarAnuncio(req.params.id, {
         titulo: req.body.titulo, contenido: req.body.contenido,
-        ruta_imagen: req.body.ruta_imagen !== undefined ? req.body.ruta_imagen : ann.ruta_imagen
+        ruta_imagen: req.body.ruta_imagen !== undefined ? req.body.ruta_imagen : ann.rutaImagen
       });
       res.json({ ok: true });
     } catch (e) { next(e); }

@@ -1,5 +1,6 @@
 ﻿import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { apiBase } from '../api/client.js';
 import { THEMES, OUTERS, FONTS, WIDTHS, FONT_SIZES, LINE_HEIGHTS } from './readerConstants.js';
 
 function splitIntoPages(text) {
@@ -56,7 +57,7 @@ function pageTextToHTML(text, authorId) {
     const img = part.match(/^!\[(.*?)\]\((.*?)\)$/);
     if (img) return `<img src="${img[2]}" alt="${img[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
     const userImg = part.match(/^@img:(.+)$/);
-    if (userImg) return `<img src="/api/imagenes-usuario/resolver/${authorId || ''}/${encodeURIComponent(userImg[1])}" alt="${userImg[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
+    if (userImg) return `<img src="${apiBase() || ''}/api/imagenes-usuario/resolver/${authorId || ''}/${encodeURIComponent(userImg[1])}" alt="${userImg[1]}" style="max-width:100%;height:auto;margin:1em auto;display:block" />`;
     const paras = part.split(/\n\n+/).filter(Boolean);
     return paras.map(p => `<p>${p.replace(/\n/g, ' ')}</p>`).join('');
   }).join('');
@@ -72,7 +73,7 @@ function PageContent({ content, title, pageNum, theme, font, fontSize, lineHeigh
     }
     const userImg = p.match(/^@img:(.+)$/);
     if (userImg) {
-      const src = '/api/imagenes-usuario/resolver/' + (authorId || '') + '/' + encodeURIComponent(userImg[1]);
+      const src = (apiBase() || '') + '/api/imagenes-usuario/resolver/' + (authorId || '') + '/' + encodeURIComponent(userImg[1]);
       return <img key={i} src={src} alt={userImg[1]} className="max-w-full h-auto my-4 mx-auto rounded" />;
     }
     return <span key={i}>{p}</span>;

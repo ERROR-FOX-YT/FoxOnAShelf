@@ -1034,13 +1034,14 @@ const api = {
                   || b.created_at.localeCompare(a.created_at));
     return arr.map(a => ({
       ...a,
+      rutaImagen: a.ruta_imagen || null,
       autorNombre: a.autorNombre || (db.usuarios.find(u => u.id === a.admin_id)||{}).nombre_mostrado,
       autorRol: a.autorRol || 'admin'
     }));
   },
-  async crearAnuncio({ admin_id, titulo, contenido, rutaImagen, autorNombre, autorRol }) {
+  async crearAnuncio({ admin_id, titulo, contenido, ruta_imagen, autorNombre, autorRol }) {
     const a = { id: uuidv4(), admin_id, titulo, contenido,
-                rutaImagen: rutaImagen||null, visible:true,
+                ruta_imagen: ruta_imagen||null, visible:true,
                 autorNombre: autorNombre||null,
                 autorRol: autorRol||'admin',
                 publicadoPor: null, destacado: false,
@@ -1050,7 +1051,7 @@ const api = {
         `INSERT INTO anuncios (id,admin_id,titulo,contenido,ruta_imagen,visible,
                                      autor_nombre,autor_rol,publicado_por,destacado)
          VALUES ($1,$2,$3,$4,$5,true,$6,$7,$8,false)`,
-        [a.id, a.admin_id, a.titulo, a.contenido, a.rutaImagen,
+        [a.id, a.admin_id, a.titulo, a.contenido, a.ruta_imagen,
          a.autorNombre, a.autorRol, a.publicadoPor]);
       return a;
     }
@@ -1072,7 +1073,9 @@ const api = {
       return r || null;
     }
     const db = loadJson();
-    return db.anuncios.find(x => x.id === id) || null;
+    const a = db.anuncios.find(x => x.id === id);
+    if (!a) return null;
+    return { ...a, rutaImagen: a.ruta_imagen || null };
   },
 
   async eliminarAnuncio(id) {
@@ -1104,14 +1107,14 @@ const api = {
       }
     });
   },
-  async actualizarAnuncio(id, { titulo, contenido, rutaImagen }) {
+  async actualizarAnuncio(id, { titulo, contenido, ruta_imagen }) {
     if (isPg) {
-      await pgQuery(`UPDATE anuncios SET titulo=$1, contenido=$2, ruta_imagen=$3 WHERE id=$4`, [titulo, contenido, rutaImagen, id]);
+      await pgQuery(`UPDATE anuncios SET titulo=$1, contenido=$2, ruta_imagen=$3 WHERE id=$4`, [titulo, contenido, ruta_imagen, id]);
       return;
     }
     await withDb(db => {
       const a = db.anuncios.find(x => x.id === id);
-      if (a) { a.titulo = titulo; a.contenido = contenido; a.rutaImagen = rutaImagen; }
+      if (a) { a.titulo = titulo; a.contenido = contenido; a.ruta_imagen = ruta_imagen; }
     });
   },
   async definirPublicadoPor(id, texto) {

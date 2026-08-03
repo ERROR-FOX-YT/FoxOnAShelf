@@ -373,8 +373,8 @@ router.put('/respuestas/:respuestaId',
         const rows = await pgQuery('SELECT * FROM foro_respuestas WHERE id=$1', [respuestaId]);
         if (!rows.length) return res.status(404).json({ error: 'Respuesta no encontrada', code: 404 });
         const resp = rows[0];
-        if (resp.autor_id !== req.user.sub && req.user.role !== 'admin' && req.user.role !== 'moderator') {
-          return res.status(403).json({ error: 'No tienes permisos', code: 403 });
+        if (resp.autor_id !== req.user.sub) {
+          return res.status(403).json({ error: 'Solo puedes editar tus propias respuestas', code: 403 });
         }
 
         await pgQuery(
