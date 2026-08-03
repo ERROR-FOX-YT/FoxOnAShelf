@@ -55,6 +55,10 @@ router.post('/',
   body('descripcion').optional().isString(),
   body('categoria').optional().isString(),
   body('grupo_edad').optional().isIn(['infantil','adolescente','adulto']),
+  body('tipo_libro').optional().isIn(['novela','comic']),
+  body('color_fondo').optional().isString(),
+  body('modo_lectura').optional().isIn(['vertical','lateral','paneles']),
+  body('permisos_lector').optional().isObject(),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
@@ -65,6 +69,10 @@ router.post('/',
         descripcion: req.body.descripcion,
         categoria: req.body.categoria,
         grupo_edad: req.body.grupo_edad,
+        tipo_libro: req.body.tipo_libro,
+        color_fondo: req.body.color_fondo,
+        modo_lectura: req.body.modo_lectura,
+        permisos_lector: req.body.permisos_lector,
         autor_id: req.user.sub,
         estado: 'borrador'
       });
@@ -84,14 +92,20 @@ router.put('/:id', auth, isAuthorOrModerator,
   body('url_portada').optional().isString(),
   body('original_publico').optional().isBoolean({ loose: true }),
   body('estado').optional().isIn(['borrador','publicado','eliminado']),
+  body('tipo_libro').optional().isIn(['novela','comic']),
+  body('color_fondo').optional().isString(),
+  body('modo_lectura').optional().isIn(['vertical','lateral','paneles']),
+  body('permisos_lector').optional().isObject(),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
       const allowed = ['titulo','subtitulo','descripcion','categoria','grupo_edad',
-                      'es_gratis','precio_centavos','url_portada','original_publico','estado'];
+                      'es_gratis','precio_centavos','url_portada','original_publico','estado',
+                      'tipo_libro','color_fondo','modo_lectura','permisos_lector'];
       const patch = {};
       for (const k of allowed) if (req.body[k] !== undefined) patch[k] = req.body[k];
+      if (patch.permisos_lector) patch.permisos_lector = JSON.stringify(patch.permisos_lector);
 
       const libro = await db.actualizarLibro(req.params.id, patch);
       if (!libro) return res.status(404).json({ error: 'Libro no encontrado', code: 404 });

@@ -809,16 +809,29 @@ const api = {
     const full = { ...book, id: book.id || uuidv4(), conteo_favoritos:0, vistas:0,
                    estado:'borrador', es_gratis:true, precio_centavos:0,
                    archivo_original:null, original_publico:false, url_portada:null,
+                   tipo_libro: book.tipo_libro || 'novela',
+                   color_fondo: book.color_fondo || '#FFFFFF',
+                   modo_lectura: book.modo_lectura || 'vertical',
+                   permisos_lector: book.permisos_lector || {
+                     permitir_cambiar_fondo: true, permitir_cambiar_tipografia: true,
+                     permitir_cambiar_tamano: true, permitir_cambiar_interlineado: true,
+                     permitir_cambiar_ancho: true, permitir_cambiar_color_hoja: true,
+                     imagen_fondo_prestablecida: null, tipografia_por_defecto: 'serif',
+                     tamano_por_defecto: 18, fondo_por_defecto: 'parchment',
+                     nota_comic: 'Este libro es ilustrado. La tipografía no aplica al contenido visual.'
+                   },
                    created_at: now, updated_at: now };
     if (isPg) {
       await pgQuery(
         `INSERT INTO libros (id,titulo,subtitulo,descripcion,autor_id,estado,es_gratis,precio_centavos,
                             categoria,grupo_edad,url_portada,archivo_original,original_publico,
-                            conteo_favoritos,vistas,created_at,updated_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+                            conteo_favoritos,vistas,tipo_libro,color_fondo,modo_lectura,permisos_lector,
+                            created_at,updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
         [full.id, full.titulo, full.subtitulo, full.descripcion, full.autor_id, full.estado,
          full.es_gratis, full.precio_centavos, full.categoria, full.grupo_edad, full.url_portada,
          full.archivo_original, full.original_publico, full.conteo_favoritos, full.vistas,
+         full.tipo_libro, full.color_fondo, full.modo_lectura, JSON.stringify(full.permisos_lector),
          full.created_at, full.updated_at]);
       return full;
     }
@@ -1862,6 +1875,148 @@ const api = {
   async eliminarDestacado() {
     if (isPg) { /* TODO: implement */ }
     return null;
+  },
+
+  // ---- COLECCIONES ----
+  async listarColecciones({ propietario_id, publicas_only } = {}) {
+    if (isPg) {
+      const where = []; const params = [];
+      if (propietario_id) { params.push(propietario_id); where.push(`c.propietario_id=$${params.length}`); }
+      if (publicas_only) { where.push(`c.es_publica=true`); }
+      const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
+      const rows = await pgQuery(
+        `SELECT c.*, u.nombre_mostrado AS nombre_propietario,
+                (SELECT COUNT(*) FROM libros_coleccion lc WHERE lc.coleccion_id=c.id) AS total_libros
+         FROM colecciones c
+         JOIN usuarios u ON u.id=c.propietario_id
+         ${whereClause}
+         ORDER BY c.created_at DESC`, params);
+      return rows;
+    }
+    const db = loadJson();
+    let arr = db.colecciones || [];
+    if (propietario_id) arr = arr.filter(c => c.propietario_id === propietario_id);
+    if (publicas_only) arr = arr.filter(c => c.es_publica);
+    return arr.map(c => ({
+      ...c,
+      nombre_propietario: (db.usuarios.find(u => u.id === c.propietario_id) || {}).nombre_mostrado,
+      total_libros: (db.libros_coleccion || []).filter(lc => lc.coleccion_id === c.id).length
+    }));
+  },
+  async obtenerColeccion(id) {
+    if (isPg) {
+      const rows = await pgQuery(
+        `SELECT c.*, u.nombre_mostrado AS nombre_propietario
+         FROM colecciones c JOIN usuarios u ON u.id=c.propietario_id WHERE c.id=$1`, [id]);
+      return rows[0] || null;
+    }
+    const db = loadJson();
+    const c = (db.colecciones || []).find(x => x.id === id);
+    if (!c) return null;
+    return { ...c, nombre_propietario: (db.usuarios.find(u => u.id === c.propietario_id) || {}).nombre_mostrado };
+  },
+  async obtenerLibrosColeccion(coleccion_id) {
+    if (isPg) {
+      return await pgQuery(
+        `SELECT b.*, u.nombre_mostrado AS nombre_autor, lc.orden
+         FROM libros_coleccion lc
+         JOIN libros b ON b.id=lc.libro_id
+         JOIN usuarios u ON u.id=b.autor_id
+         WHERE lc.coleccion_id=$1
+         ORDER BY lc.orden, b.created_at`, [coleccion_id]);
+    }
+    const db = loadJson();
+    const refs = (db.libros_coleccion || []).filter(lc => lc.coleccion_id === coleccion_id)
+      .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    return refs.map(r => {
+      const b = db.libros.find(x => x.id === r.libro_id);
+      return b ? { ...b, nombre_autor: (db.usuarios.find(u => u.id === b.autor_id) || {}).nombre_mostrado, orden: r.orden } : null;
+    }).filter(Boolean);
+  },
+  async crearColeccion({ propietario_id, titulo, descripcion, url_portada, color, es_publica }) {
+    const now = new Date().toISOString();
+    const id = uuidv4();
+    const col = { id, propietario_id, titulo, descripcion: descripcion || null,
+                  url_portada: url_portada || null, color: color || '#7B4B27',
+                  es_publica: es_publica !== false, created_at: now };
+    if (isPg) {
+      await pgQuery(
+        `INSERT INTO colecciones (id,propietario_id,titulo,descripcion,url_portada,color,es_publica,created_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [id, propietario_id, titulo, col.descripcion, col.url_portada, col.color, col.es_publica, now]);
+      return col;
+    }
+    return withDb(db => {
+      if (!db.colecciones) db.colecciones = [];
+      db.colecciones.push(col);
+      return col;
+    });
+  },
+  async actualizarColeccion(id, patch) {
+    if (isPg) {
+      const keys = Object.keys(patch); if (!keys.length) return await api.obtenerColeccion(id);
+      const sets = keys.map((k, i) => `"${k}"=$${i + 1}`).join(',');
+      await pgQuery(`UPDATE colecciones SET ${sets} WHERE id=$${keys.length + 1}`, [...Object.values(patch), id]);
+      return await api.obtenerColeccion(id);
+    }
+    return withDb(db => {
+      const c = (db.colecciones || []).find(x => x.id === id);
+      if (!c) return null;
+      Object.assign(c, patch);
+      return c;
+    });
+  },
+  async eliminarColeccion(id) {
+    if (isPg) {
+      await pgQuery(`DELETE FROM libros_coleccion WHERE coleccion_id=$1`, [id]);
+      await pgQuery(`DELETE FROM colecciones WHERE id=$1`, [id]);
+      return;
+    }
+    await withDb(db => {
+      db.libros_coleccion = (db.libros_coleccion || []).filter(lc => lc.coleccion_id !== id);
+      db.colecciones = (db.colecciones || []).filter(c => c.id !== id);
+    });
+  },
+  async agregarLibroAColeccion(coleccion_id, libro_id, orden) {
+    if (isPg) {
+      await pgQuery(
+        `INSERT INTO libros_coleccion (coleccion_id, libro_id, orden)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (coleccion_id, libro_id) DO UPDATE SET orden=$3`,
+        [coleccion_id, libro_id, orden || 0]);
+      return;
+    }
+    await withDb(db => {
+      if (!db.libros_coleccion) db.libros_coleccion = [];
+      const existing = db.libros_coleccion.find(lc => lc.coleccion_id === coleccion_id && lc.libro_id === libro_id);
+      if (existing) { existing.orden = orden || 0; }
+      else { db.libros_coleccion.push({ coleccion_id, libro_id, orden: orden || 0 }); }
+    });
+  },
+  async quitarLibroDeColeccion(coleccion_id, libro_id) {
+    if (isPg) {
+      await pgQuery(`DELETE FROM libros_coleccion WHERE coleccion_id=$1 AND libro_id=$2`, [coleccion_id, libro_id]);
+      return;
+    }
+    await withDb(db => {
+      db.libros_coleccion = (db.libros_coleccion || []).filter(lc => !(lc.coleccion_id === coleccion_id && lc.libro_id === libro_id));
+    });
+  },
+  async reordenarLibrosColeccion(coleccion_id, ordenLibros) {
+    if (isPg) {
+      for (let i = 0; i < ordenLibros.length; i++) {
+        await pgQuery(
+          `UPDATE libros_coleccion SET orden=$1 WHERE coleccion_id=$2 AND libro_id=$3`,
+          [i, coleccion_id, ordenLibros[i]]);
+      }
+      return;
+    }
+    await withDb(db => {
+      for (let i = 0; i < ordenLibros.length; i++) {
+        const ref = (db.libros_coleccion || []).find(lc => lc.coleccion_id === coleccion_id && lc.libro_id === ordenLibros[i]);
+        if (ref) ref.orden = i;
+      }
+    });
   }
 };
 

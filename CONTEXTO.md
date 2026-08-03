@@ -61,7 +61,7 @@ Plataforma de lectura digital abierta y justa para lectores y escritores. Los us
 | Fase | Estado |
 |------|--------|
 | 1. Base de Datos | ✅ Completada — migración 011 ejecutada en Supabase |
-| 2. Backend | ⏳ Pendiente |
+| 2. Backend | ✅ Completada — API colecciones + books actualizado |
 | 3. Editor WYSIWYG | ⏳ Pendiente |
 | 4. Pre-reading | ⏳ Pendiente |
 | 5. Modos de lectura | ⏳ Pendiente |

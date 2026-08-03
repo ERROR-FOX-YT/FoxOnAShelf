@@ -56,6 +56,7 @@ app.use('/api/equipo',        require('./routes/team'));
 app.use('/api/chat',          require('./routes/chat'));
 app.use('/api/foros',         require('./routes/foros'));
 app.use('/api/destacados',    require('./routes/destacados'));
+app.use('/api/colecciones',   require('./routes/colecciones'));
 
 // Error handlers
 const { notFound, errorHandler } = require('./middlewares/errors');
