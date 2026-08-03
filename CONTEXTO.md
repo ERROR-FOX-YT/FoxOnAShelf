@@ -62,7 +62,7 @@ Plataforma de lectura digital abierta y justa para lectores y escritores. Los us
 |------|--------|
 | 1. Base de Datos | ✅ Completada — migración 011 ejecutada en Supabase |
 | 2. Backend | ✅ Completada — API colecciones + books actualizado |
-| 3. Editor WYSIWYG | ⏳ Pendiente |
+| 3. Editor WYSIWYG | ✅ Completada — TipTap + toolbar + ModalImagenes + PanelComic |
 | 4. Pre-reading | ⏳ Pendiente |
 | 5. Modos de lectura | ⏳ Pendiente |
 | 6. Colecciones frontend | ⏳ Pendiente |
