@@ -6,19 +6,11 @@ export const THEMES = {
   forest:    { bg: '#2A3B2D', fg: '#E8E0CC', border: '#A8B5A0' }
 };
 
-export const OUTERS = {
-  walnut:  '#3E2A1A',
-  ebony:   '#1A1410',
-  mahogany:'#5C2E1A',
-  stone:   '#6B6258',
-  charcoal:'#222222',
-  shadow:  '#0D0D0D'
-};
-
 export const FONTS = {
-  serif: { label: 'Serif', stack: 'Georgia, "Times New Roman", serif' },
-  sans:  { label: 'Sans',  stack: '-apple-system, system-ui, sans-serif' },
-  mono:  { label: 'Mono',  stack: '"Fira Code", Consolas, monospace' }
+  serif:   { label: 'Serif',   stack: 'Georgia, "Times New Roman", serif' },
+  sans:    { label: 'Sans',    stack: '-apple-system, system-ui, sans-serif' },
+  mono:    { label: 'Mono',    stack: '"Fira Code", Consolas, monospace' },
+  dyslexic:{ label: 'Dyslexic', stack: 'Open Dyslexic, sans-serif' }
 };
 
 export const WIDTHS = {
@@ -40,5 +32,14 @@ export const LINE_HEIGHTS = {
   normal:  { value: 1.75, label: 'Normal' },
   wide:    { value: 2.0,  label: 'Amplio' }
 };
+
+export const GUTTER_SPACING = {
+  beat:   200,
+  escena: 600,
+  salto:  1500
+};
+
+// OUTERS eliminado — los bordes de "libro" ya no se usan
+export const OUTERS = {};
 
 export const DARK_THEMES = ['night', 'forest'];
