@@ -139,7 +139,7 @@ router.get('/:hiloId',
       if (isPg) {
         const rows = await pgQuery(`
           SELECT h.*, u.nombre_mostrado AS nombre_autor, u.url_avatar AS avatar_autor,
-            u.rol AS autor_rol
+            u.role AS autor_rol
           FROM foro_hilos h
           LEFT JOIN usuarios u ON u.id = h.autor_id
           WHERE h.id = $1
@@ -303,7 +303,7 @@ router.get('/:hiloId/respuestas',
 
         const respuestas = await pgQuery(`
           SELECT r.*, u.nombre_mostrado AS nombre_autor, u.url_avatar AS avatar_autor,
-            u.rol AS autor_rol,
+            u.role AS autor_rol,
             COALESCE(vu.votos_utiles, 0)::int AS votos_utiles,
             COALESCE(vn.votos_no_utiles, 0)::int AS votos_no_utiles
           FROM foro_respuestas r

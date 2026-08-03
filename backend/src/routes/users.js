@@ -27,6 +27,7 @@ router.get('/buscar/:email', auth, requireAdmin,
   });
 
 router.get('/:id',
+  auth,
   param('id').isString().isLength({ min: 1 }),
   async (req, res, next) => {
     const errs = validationResult(req);
@@ -34,9 +35,14 @@ router.get('/:id',
     try {
     const u = await db.obtenerUsuarioPorId(req.params.id);
     if (!u) return res.status(404).json({ error: 'Usuario no encontrado', code: 404 });
-    res.json({ user: { id: u.id, email: u.email, nombre_mostrado: u.nombre_mostrado,
-                       role: u.role, url_avatar: u.url_avatar,
-                       informacion_contacto: u.informacion_contacto } });
+    const isSelf = req.user.sub === u.id;
+    const isAdmin = req.user.role === 'admin';
+    const data = { id: u.id, nombre_mostrado: u.nombre_mostrado, role: u.role, url_avatar: u.url_avatar };
+    if (isSelf || isAdmin) {
+      data.email = u.email;
+      data.informacion_contacto = u.informacion_contacto;
+    }
+    res.json({ user: data });
   } catch (e) { next(e); }
 });
 

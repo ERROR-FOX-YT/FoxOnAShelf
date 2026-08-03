@@ -3,6 +3,7 @@ const router = express.Router();
 const cfg = require('../config');
 const { createClient } = require('@supabase/supabase-js');
 const { auth } = require('../middlewares/auth');
+const { rateLimit } = require('../middlewares/rate-limit');
 const db = require('../db');
 
 let supabase;
@@ -48,6 +49,7 @@ router.get('/mensajes', auth, async (req, res, next) => {
 
 router.post('/mensajes', auth, async (req, res, next) => {
   try {
+    if (rateLimit('chat:'+req.user.sub, 10, 60000)) return res.status(429).json({ error: 'Demasiados mensajes, espera un minuto', code: 429 });
     if (!tablaLista) { await asegurarTabla(); tablaLista = true; }
     const { contenido } = req.body;
     if (!contenido || !contenido.trim()) return res.status(400).json({ error: 'Mensaje requerido', code: 400 });

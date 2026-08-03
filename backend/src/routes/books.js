@@ -200,6 +200,7 @@ router.post('/:id/comentario', auth,
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
+      if (rateLimit('comentario:'+req.user.sub, 20, 60000)) return res.status(429).json({ error: 'Demasiados comentarios, espera un minuto', code: 429 });
       const c = await db.agregarComentario({ usuario_id: req.user.sub, libro_id: req.params.id,
                                              capitulo_id: req.body.capitulo_id,
                                              comentario_padre_id: req.body.comentario_padre_id,

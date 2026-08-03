@@ -282,6 +282,8 @@ const api = {
                 'SELECT * FROM imagenes_usuario WHERE usuario_id=$1', [id])).rows,
               colecciones: (await client.query(
                 'SELECT * FROM colecciones WHERE propietario_id=$1', [id])).rows,
+              libros_coleccion: (await client.query(
+                'SELECT lc.* FROM libros_coleccion lc JOIN colecciones c ON c.id = lc.coleccion_id WHERE c.propietario_id=$1', [id])).rows,
               libros: userBooks,
               capitulos: capitulosEnPapelera,
               vistas_libro_en_libros: vistasDeLibrosEnPapelera,
