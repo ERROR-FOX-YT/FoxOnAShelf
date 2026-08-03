@@ -44,3 +44,9 @@ Plataforma de lectura digital abierta y justa para lectores y escritores. Los us
 - Verificación de IP eliminada
 - JWT expiry: 12 horas
 - Rate limits: vistas (10/min por IP), comentarios (20/min por user), chat (10/min por user)
+- Changelog "Desarrollo 15" publicado con fixes de lector, anuncios, foros, imágenes
+
+## Próximo paso grande: Reescritura del Editor y Lector
+- **Archivo de plan completo**: `PLAN_REESCRITURA_EDITOR_LECTOR.md`
+- Cambios: editor WYSIWYG (TipTap), 3 modos de lectura, colecciones, comic/webtoon, control de permisos del lector por el autor
+- **IMPORTANTE**: Futuras sesiones DEBEN leer `PLAN_REESCRITURA_EDITOR_LECTOR.md` antes de empezar a implementar
