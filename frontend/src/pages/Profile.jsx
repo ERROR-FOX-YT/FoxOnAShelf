@@ -8,6 +8,7 @@ export default function Profile() {
   const { user, logout, canCreate } = useAuth();
   const [books, setBooks] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
+  const [colecciones, setColecciones] = useState([]);
   const [loading, setLoading]     = useState(true);
   const navigate = useNavigate();
   const toast = useToast();
@@ -17,6 +18,7 @@ export default function Profile() {
     Promise.all([
       api.get('/api/libros?autor_id=' + user.id + '&estado=all').then(r => setBooks(r.libros || [])),
       api.get('/api/marcadores').then(r => setBookmarks(r.marcadores || [])),
+      api.get('/api/colecciones?propietario_id=' + user.id).then(r => setColecciones(r.colecciones || [])),
     ]).finally(() => setLoading(false));
   }, [user, navigate]);
 
@@ -35,6 +37,14 @@ export default function Profile() {
       categoria: 'narrativa', grupo_edad: 'adulto'
     });
     if (!r.__error) navigate('/book/' + r.libro.id + '/edit');
+  }
+
+  async function createCollection() {
+    const r = await api.post('/api/colecciones', { titulo: 'Nueva colección' });
+    if (r && !r.__error) {
+      setColecciones(prev => [...prev, r.coleccion]);
+      navigate('/collections/' + r.coleccion.id);
+    }
   }
 
   async function unmarkBook(bookId) {
@@ -164,6 +174,35 @@ export default function Profile() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-serif text-xl font-bold">Mis colecciones</h2>
+          {canCreate() && (
+            <button className="btn-ghost text-sm" onClick={createCollection}>+ Nueva colección</button>
+          )}
+        </div>
+        {loading ? (
+          <div className="space-y-2">
+            {[1].map(i => (
+              <div key={i} className="animate-pulse card p-3 h-16"></div>
+            ))}
+          </div>
+        ) : colecciones.length === 0 ? (
+          <p className="opacity-70 text-sm">No tienes colecciones. Crea una para agrupar tus libros.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {colecciones.map(c => (
+              <Link key={c.id} to={'/collections/' + c.id}
+                    className="card p-4 hover:shadow-md transition-shadow"
+                    style={{ borderLeft: '4px solid ' + (c.color || '#7B4B27') }}>
+                <div className="font-serif font-bold">{c.titulo}</div>
+                <div className="text-xs opacity-50 mt-1">{c.total_libros || 0} libro{(c.total_libros || 0) !== 1 ? 's' : ''}</div>
+              </Link>
+            ))}
+          </div>
         )}
       </section>
     </div>
