@@ -50,3 +50,19 @@ Plataforma de lectura digital abierta y justa para lectores y escritores. Los us
 - **Archivo de plan completo**: `PLAN_REESCRITURA_EDITOR_LECTOR.md`
 - Cambios: editor WYSIWYG (TipTap), 3 modos de lectura, colecciones, comic/webtoon, control de permisos del lector por el autor
 - **IMPORTANTE**: Futuras sesiones DEBEN leer `PLAN_REESCRITURA_EDITOR_LECTOR.md` antes de empezar a implementar
+
+## Reglas de implementación
+1. **Todas las variables nuevas en español**: columnas BD, funciones, rutas API, nombres de archivos, comentarios. Esto evita problemas si se traduce el código en el futuro.
+2. **Verificación por fase**: al terminar cada fase del plan, hacer una revisión completa (revisar código, probar que no hay errores de sintaxis, verificar que los archivos están bien referenciados) antes de avanzar a la siguiente.
+3. **Commit por fase**: cada fase se commitea por separado para facilitar rollback si algo falla.
+4. **Merge a main al final**: después de que todas las fases estén completas y verificadas, merge a main y push.
+
+## Estado de implementación del plan
+| Fase | Estado |
+|------|--------|
+| 1. Base de Datos | ✅ Completada — migración 011 ejecutada en Supabase |
+| 2. Backend | ⏳ Pendiente |
+| 3. Editor WYSIWYG | ⏳ Pendiente |
+| 4. Pre-reading | ⏳ Pendiente |
+| 5. Modos de lectura | ⏳ Pendiente |
+| 6. Colecciones frontend | ⏳ Pendiente |
