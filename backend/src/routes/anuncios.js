@@ -13,6 +13,7 @@ router.get('/', async (req, res, next) => {
 router.post('/', auth, requireModerator,
   body('titulo').isString().isLength({ min: 1 }),
   body('contenido').isString().isLength({ min: 1 }),
+  body('ruta_imagen').optional({ values: 'falsy' }).isString(),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
@@ -55,6 +56,7 @@ router.put('/:id', auth,
   param('id').isString().isLength({ min: 1 }),
   body('titulo').isString().isLength({ min: 1 }),
   body('contenido').isString().isLength({ min: 1 }),
+  body('ruta_imagen').optional({ values: 'falsy' }).isString(),
   async (req, res, next) => {
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });

@@ -903,16 +903,22 @@ const api = {
   // ---- FAVORITES / RATINGS / COMMENTS ----
   async alternarFavorito(usuario_id, libro_id) {
     if (isPg) {
-      const existing = await pgQuery(
-        `SELECT id FROM favoritos WHERE usuario_id=$1 AND libro_id=$2`, [usuario_id, libro_id]);
-      if (existing.length) {
-        await pgQuery(`DELETE FROM favoritos WHERE id=$1`, [existing[0].id]);
-        await pgQuery(`UPDATE libros SET conteo_favoritos=GREATEST(0,conteo_favoritos-1) WHERE id=$1`, [libro_id]);
-        return { favorited: false };
-      }
-      await pgQuery(`INSERT INTO favoritos (usuario_id,libro_id) VALUES ($1,$2)`, [usuario_id, libro_id]);
-      await pgQuery(`UPDATE libros SET conteo_favoritos=conteo_favoritos+1 WHERE id=$1`, [libro_id]);
-      return { favorited: true };
+      const r = await pgQuery(`
+        WITH del AS (
+          DELETE FROM favoritos WHERE usuario_id=$1 AND libro_id=$2 RETURNING id
+        ),
+        ins AS (
+          INSERT INTO favoritos (usuario_id, libro_id)
+          SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM del)
+          RETURNING id
+        )
+        SELECT EXISTS (SELECT 1 FROM ins) AS favorited
+      `, [usuario_id, libro_id]);
+      const favorited = r[0]?.favorited || false;
+      await pgQuery(
+        `UPDATE libros SET conteo_favoritos = (SELECT COUNT(*)::int FROM favoritos WHERE libro_id=$1) WHERE id=$1`,
+        [libro_id]);
+      return { favorited };
     }
     return withDb(db => {
       const idx = db.favoritos.findIndex(f => f.usuario_id===usuario_id && f.libro_id===libro_id);
@@ -1323,6 +1329,24 @@ const api = {
     await withDb(db => {
       const t = db.tokens_refresco?.find(x => x.token === token);
       if (t) t.used_at = new Date().toISOString();
+    });
+  },
+  async validarYRevocarTokenRefresco(token) {
+    if (isPg) {
+      const r = await pgQuery(
+        `UPDATE tokens_refresco SET used_at=now()
+         WHERE token=$1 AND used_at IS NULL AND expires_at > now()
+         RETURNING *`,
+        [token]);
+      return r[0] || null;
+    }
+    return withDb(db => {
+      const now = new Date();
+      if (db.tokens_refresco)
+        db.tokens_refresco = db.tokens_refresco.filter(t => !t.used_at && new Date(t.expires_at) > now);
+      const t = db.tokens_refresco?.find(x => x.token === token && !x.used_at);
+      if (t) { t.used_at = new Date().toISOString(); return t; }
+      return null;
     });
   },
   async revocarTokensRefrescoUsuario(usuario_id) {

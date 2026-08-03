@@ -121,13 +121,12 @@ router.post('/refrescar',
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: 'Token inválido', code: 400 });
     try {
-      const entry = await db.validarTokenRefresco(req.body.refreshToken);
+      const entry = await db.validarYRevocarTokenRefresco(req.body.refreshToken);
       if (!entry) return res.status(401).json({ error: 'Refresh token inválido o expirado', code: 401 });
       const user = await db.obtenerUsuarioPorId(entry.usuario_id);
       if (!user) return res.status(401).json({ error: 'Usuario no encontrado', code: 401 });
       if (await db.emailEstaBaneado(user.email))
         return res.status(403).json({ error: 'Usuario baneado', code: 403 });
-      await db.revocarTokenRefresco(req.body.refreshToken);
       const token = signToken(user);
       const refreshToken = await db.crearTokenRefresco(user.id);
       res.json({ token, refreshToken, user: publicUser(user) });
