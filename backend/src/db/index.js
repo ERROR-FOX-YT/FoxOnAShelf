@@ -340,7 +340,7 @@ const api = {
         await client.query('COMMIT');
       } catch (e) { await client.query('ROLLBACK'); throw e; }
       finally { client.release(); }
-      return { deleted: true };
+      return { deleted: true, enPapelera: !permanent };
     }
     return withDb(db => {
       const u = db.usuarios.find(x => x.id === id);
@@ -442,6 +442,7 @@ const api = {
                 u.email AS user_email, u.nombre_mostrado AS user_nombre, u.role AS user_role
            FROM papelera p
            LEFT JOIN usuarios u ON LOWER(u.email) = LOWER(p.email_usuario)
+           WHERE p.expira_en > now()
            ORDER BY p.eliminado_en DESC`);
       return rows.map(r => {
         let user = null, has_libros = false, conteo_libros = 0;
@@ -1182,9 +1183,9 @@ const api = {
   async unbanearUsuario(email, unbanned_by) {
     if (isPg) {
       await pgQuery(
-        `UPDATE usuarios_baneados SET unbanned_at=now()
+        `UPDATE usuarios_baneados SET unbanned_at=now(), unbanned_by=$2
          WHERE email=$1 AND unbanned_at IS NULL`,
-        [email]);
+        [email, unbanned_by || null]);
       return;
     }
     await withDb(db => {

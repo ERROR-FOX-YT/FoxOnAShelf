@@ -119,12 +119,12 @@ export default function Editor({ book, chapters: initial, onSaved, user }) {
   function addPageBreak(chapterIdx) {
     const ta = textareaRefs.current[chapterIdx];
     const cursor = cursorRef.current[chapterIdx] || 0;
+    const marker = '\n\n<!-- page -->\n\n';
     setChapters(prev => {
       if (!prev[chapterIdx]) return prev;
       const contenido = prev[chapterIdx].contenido || '';
       const before = contenido.slice(0, cursor);
       const after = contenido.slice(cursor);
-      const marker = '\n\n<!-- page -->\n\n';
       const next = [...prev];
       next[chapterIdx] = { ...next[chapterIdx], contenido: before + marker + after };
       return next;

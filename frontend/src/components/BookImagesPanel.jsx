@@ -38,7 +38,7 @@ export default function BookImagesPanel({ bookId }) {
                 {img.nombre_personalizado}
               </span>
               <span className="text-[10px] opacity-60 truncate">
-                {img.propietario.nombre_mostrado}
+                {img.propietario?.nombre_mostrado}
               </span>
             </div>
           ))}

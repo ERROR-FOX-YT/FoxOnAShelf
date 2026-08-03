@@ -56,7 +56,7 @@ export default function Profile() {
   if (!user) return null;
 
   function statusLabel(s) {
-    return s === 'published' ? 'Publicado' : s === 'draft' ? 'Borrador' : s === 'deleted' ? 'Eliminado' : s;
+    return s === 'publicado' ? 'Publicado' : s === 'borrador' ? 'Borrador' : s === 'eliminado' ? 'Eliminado' : s;
   }
 
   // Separar marcadores activos de terminados

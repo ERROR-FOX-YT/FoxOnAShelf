@@ -52,7 +52,15 @@ router.put('/:id',
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
-      const perfil = await db.actualizarPerfilEquipo(req.params.id, req.body);
+      const allowed = {};
+      if (req.body.nombre !== undefined) allowed.nombre = req.body.nombre;
+      if (req.body.edad !== undefined) allowed.edad = req.body.edad;
+      if (req.body.role !== undefined) allowed.role = req.body.role;
+      if (req.body.admin_email !== undefined) allowed.admin_email = req.body.admin_email;
+      if (req.body.contacto !== undefined) allowed.contacto = req.body.contacto;
+      if (req.body.informacion !== undefined) allowed.informacion = req.body.informacion;
+      if (req.body.url_foto !== undefined) allowed.url_foto = req.body.url_foto;
+      const perfil = await db.actualizarPerfilEquipo(req.params.id, allowed);
       if (!perfil) return res.status(404).json({ error: 'Perfil no encontrado', code: 404 });
       res.json({ perfil });
     } catch (e) { next(e); }

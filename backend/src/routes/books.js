@@ -3,6 +3,7 @@ const path    = require('path');
 const { body, param, validationResult } = require('express-validator');
 const db    = require('../db');
 const { auth, optionalAuth, requireAdmin, isAuthorOrModerator, isOwnerOrAdmin } = require('../middlewares/auth');
+const { rateLimit } = require('../middlewares/rate-limit');
 const { upload } = require('../middlewares/upload');
 const { convertFileToChapters } = require('../services/conversion');
 const storageSvc = require('../services/storage');
@@ -239,6 +240,8 @@ router.post('/:id/vista', optionalAuth,
     const errs = validationResult(req);
     if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
     try {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+    if (rateLimit('vista:'+req.params.id+':'+ip, 10, 60000)) return res.json({ ok: true });
     const user_id = req.user ? req.user.sub : null;
     await db.incrementarVistas(req.params.id, user_id);
     res.json({ ok: true });

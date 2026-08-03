@@ -329,14 +329,14 @@ export default function ForoHilo() {
                   )}
 
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    {user && !hilo.cerrado && (
+                    {(esAutor || esModAdmin) && !hilo.cerrado && (
                       <button className="btn-ghost text-[10px] px-2 py-0.5 opacity-60 hover:opacity-100" onClick={() => marcarSolucion(resp.id)} title="Marcar como solución">✅ Solución</button>
                     )}
                   </div>
                 </div>
 
                 <div className="flex gap-1 shrink-0">
-                  {user && !hilo.cerrado && (
+                  {(esModAdmin || (user && user.id === resp.autor_id)) && !hilo.cerrado && (
                     <button className="btn-ghost text-[10px] px-1.5 py-0.5 opacity-50 hover:opacity-100"
                       onClick={() => { setEditandoId(resp.id); setContenidoEdicion(resp.contenido); }} title="Editar">✏</button>
                   )}
