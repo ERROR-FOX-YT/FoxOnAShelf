@@ -387,7 +387,7 @@ export default function Admin() {
           <div className="text-sm opacity-70 py-4">No se encontraron usuarios.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm admin-table">
               <thead>
                 <tr className="border-b border-foxBrown/15 text-xs uppercase opacity-70">
                   <th className="text-left py-2 pr-2 w-10"></th>
@@ -416,9 +416,9 @@ export default function Admin() {
                           {initials}
                         </div>
                       </td>
-                      <td className="py-2 pr-3 font-medium">{u.nombre_mostrado || '—'}</td>
-                      <td className="py-2 pr-3 text-xs opacity-80">{u.email}</td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pr-3 font-medium" data-label="Nombre">{u.nombre_mostrado || '—'}</td>
+                      <td className="py-2 pr-3 text-xs opacity-80" data-label="Correo">{u.email}</td>
+                      <td className="py-2 pr-3" data-label="Rol">
                         <span className={'text-[11px] uppercase px-1.5 py-0.5 rounded ' + (
                           u.role === 'admin' ? 'bg-amber-200/60 dark:bg-amber-600/40 font-semibold' :
                           u.role === 'moderator' ? 'bg-blue-100 dark:bg-blue-900/40' :
@@ -428,10 +428,10 @@ export default function Admin() {
                           {cap(u.role)}
                         </span>
                       </td>
-                      <td className="py-2 pr-3 text-xs opacity-70 whitespace-nowrap">
+                      <td className="py-2 pr-3 text-xs opacity-70 whitespace-nowrap" data-label="Registro">
                         {u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}
                       </td>
-                      <td className="py-2 text-right whitespace-nowrap">
+                      <td className="py-2 text-right whitespace-nowrap" data-label="Acciones">
                         {isSelf ? (
                           <span className="text-xs opacity-50">(tú)</span>
                         ) : u.role === 'admin' ? (

@@ -95,7 +95,7 @@ export default function Book() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="font-serif text-3xl font-bold text-foxBrown">{book.titulo || 'Sin título'}</h1>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foxBrown">{book.titulo || 'Sin título'}</h1>
             {book.subtitulo && <div className="opacity-80">{book.subtitulo}</div>}
             <div className="text-sm opacity-70 mt-1">
               por <strong>{bookAuthor}</strong> · <span className="rm-tag">{bookCategory}</span> · {bookAge}

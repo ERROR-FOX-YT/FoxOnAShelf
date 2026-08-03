@@ -158,7 +158,7 @@ body {
   box-shadow: 0 0 0 3px rgba(var(--accent-main-rgb), 0.20);
   background-color: var(--bg-base);
 }
-.toast      { @apply fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm; }
+.toast      { @apply fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm; max-width: calc(100vw - 3rem); }
 .toast-ok   { @apply toast bg-emerald-700 text-white; }
 .toast-err  { @apply toast bg-red-700 text-white; }
 .toast-info {
@@ -172,6 +172,7 @@ body {
   font-size: 0.875rem;
   background-color: var(--accent-main);
   color: var(--bg-base);
+  max-width: calc(100vw - 3rem);
 }
 
 a { color: inherit; }
@@ -1490,5 +1491,51 @@ main {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Mobile slide-in drawer ---------- */
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* ---------- Admin responsive tables ---------- */
+@media (max-width: 639px) {
+  .admin-table thead { display: none; }
+  .admin-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-subtle, rgba(0,0,0,0.08));
+  }
+  .admin-table tbody td {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.15rem 0;
+    border: none;
+    font-size: 0.8125rem;
+  }
+  .admin-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    opacity: 0.6;
+    min-width: 5rem;
+    flex-shrink: 0;
+  }
+  .admin-table tbody td:last-child {
+    justify-content: flex-end;
+  }
+}
+
+/* ---------- Touch-friendly buttons ---------- */
+@media (pointer: coarse) {
+  .btn-ghost, .rm-btn-primary, button[class*="text-xs"] {
+    min-height: 44px;
+    min-width: 44px;
   }
 }

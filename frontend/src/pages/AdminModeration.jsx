@@ -206,10 +206,10 @@ export default function AdminModeration() {
       <section className="card p-4 space-y-3">
         <div className="flex items-center gap-3 mb-1">
           <h2 className="font-serif text-xl font-bold">Usuarios</h2>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 overflow-x-auto pb-1">
             {ROLE_TABS.map(t => (
               <button key={t.key}
-                className={'px-2.5 py-1 rounded-md text-xs font-medium transition-colors '
+                className={'px-2.5 py-2 rounded-md text-xs font-medium transition-colors min-h-[44px] whitespace-nowrap '
                   + (roleFilter === t.key
                     ? 'bg-foxBrown/15 text-foxBrown dark:text-foxBrown'
                     : 'hover:bg-foxBrown/5 opacity-60')}
@@ -239,7 +239,7 @@ export default function AdminModeration() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm admin-table">
               <thead>
                 <tr className="border-b border-foxBrown/15 text-xs uppercase opacity-70">
                   <th className="text-left py-2 pr-3">Nombre</th>
@@ -563,9 +563,9 @@ function UserRow({ u, isAdmin, currentUser, onBan, onUnban, onDelete, onRemoveMo
 
   return (
     <tr className="border-b border-foxBrown/10 hover:bg-foxBrown/5 transition-colors">
-      <td className="py-2 pr-3 font-medium">{u.pre_baneado ? '(sin registro)' : (u.nombre_mostrado || '—')}</td>
-      <td className="py-2 pr-3 text-xs opacity-60">{u.email}</td>
-      <td className="py-2 pr-3">
+      <td className="py-2 pr-3 font-medium" data-label="Nombre">{u.pre_baneado ? '(sin registro)' : (u.nombre_mostrado || '—')}</td>
+      <td className="py-2 pr-3 text-xs opacity-60" data-label="Correo">{u.email}</td>
+      <td className="py-2 pr-3" data-label="Rol">
         {u.pre_baneado ? (
           <span className="text-[11px] uppercase px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700/40 text-gray-500 dark:text-gray-400 font-medium">
             Sin registrar
@@ -576,7 +576,7 @@ function UserRow({ u, isAdmin, currentUser, onBan, onUnban, onDelete, onRemoveMo
           </span>
         )}
       </td>
-      <td className="py-2 pr-3">
+      <td className="py-2 pr-3" data-label="Estado">
         {u.esta_baneado ? (
           <span className="text-[11px] uppercase px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 font-medium">
             Baneado
@@ -591,7 +591,7 @@ function UserRow({ u, isAdmin, currentUser, onBan, onUnban, onDelete, onRemoveMo
           </span>
         ) : null}
       </td>
-      <td className="py-2 text-right whitespace-nowrap">
+      <td className="py-2 text-right whitespace-nowrap" data-label="Acción">
         {canBan && !u.esta_baneado && (
           <button className="btn-ghost text-xs text-orange-700" onClick={onBan}>Banear</button>
         )}
