@@ -64,5 +64,5 @@ Plataforma de lectura digital abierta y justa para lectores y escritores. Los us
 | 2. Backend | ✅ Completada — API colecciones + books actualizado |
 | 3. Editor WYSIWYG | ✅ Completada — TipTap + toolbar + ModalImagenes + PanelComic |
 | 4. Pre-reading | ✅ Completada — permisos de autor en Reader.jsx |
-| 5. Modos de lectura | ⏳ Pendiente |
+| 5. Modos de lectura | ✅ Completada — ReadingMode reescrito (vertical, lateral, paneles) |
 | 6. Colecciones frontend | ⏳ Pendiente |
