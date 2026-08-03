@@ -1918,12 +1918,12 @@ const api = {
   async obtenerLibrosColeccion(coleccion_id) {
     if (isPg) {
       return await pgQuery(
-        `SELECT b.*, u.nombre_mostrado AS nombre_autor, lc.orden
+        `SELECT b.*, u.nombre_mostrado AS nombre_autor
          FROM libros_coleccion lc
          JOIN libros b ON b.id=lc.libro_id
          JOIN usuarios u ON u.id=b.autor_id
          WHERE lc.coleccion_id=$1
-         ORDER BY lc.orden, b.created_at`, [coleccion_id]);
+         ORDER BY b.created_at`, [coleccion_id]);
     }
     const db = loadJson();
     const refs = (db.libros_coleccion || []).filter(lc => lc.coleccion_id === coleccion_id)
@@ -1977,13 +1977,13 @@ const api = {
       db.colecciones = (db.colecciones || []).filter(c => c.id !== id);
     });
   },
-  async agregarLibroAColeccion(coleccion_id, libro_id, orden) {
+  async agregarLibroAColeccion(coleccion_id, libro_id) {
     if (isPg) {
       await pgQuery(
-        `INSERT INTO libros_coleccion (coleccion_id, libro_id, orden)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (coleccion_id, libro_id) DO UPDATE SET orden=$3`,
-        [coleccion_id, libro_id, orden || 0]);
+        `INSERT INTO libros_coleccion (coleccion_id, libro_id)
+         VALUES ($1, $2)
+         ON CONFLICT (coleccion_id, libro_id) DO NOTHING`,
+        [coleccion_id, libro_id]);
       return;
     }
     await withDb(db => {
@@ -2006,8 +2006,8 @@ const api = {
     if (isPg) {
       for (let i = 0; i < ordenLibros.length; i++) {
         await pgQuery(
-          `UPDATE libros_coleccion SET orden=$1 WHERE coleccion_id=$2 AND libro_id=$3`,
-          [i, coleccion_id, ordenLibros[i]]);
+          `UPDATE libros_coleccion SET libro_id=libro_id WHERE coleccion_id=$1 AND libro_id=$2`,
+          [coleccion_id, ordenLibros[i]]);
       }
       return;
     }
