@@ -63,7 +63,7 @@ function pageTextToHTML(text, authorId) {
   }).join('');
 }
 
-function PageContent({ content, title, pageNum, theme, font, fontSize, lineHeight, showTitle, showEndMarker, authorId, hidePageNum }) {
+function PageContent({ content, title, pageNum, theme, font, fontSize, lineHeight, showTitle, showEndMarker, authorId, hidePageNum, compact }) {
   const parts = content ? content.split(IMG_PATTERN).filter(Boolean) : [];
 
   function renderPart(p, i) {
@@ -80,11 +80,12 @@ function PageContent({ content, title, pageNum, theme, font, fontSize, lineHeigh
   }
 
   return (
-    <article className="px-8 py-10"
-      style={{
+    <article className="px-8" style={{
         fontFamily: font.stack,
         fontSize: (fontSize || 18) + 'px',
-        lineHeight
+        lineHeight,
+        paddingTop: compact ? '0.5rem' : '2.5rem',
+        paddingBottom: compact ? '0.5rem' : '2.5rem'
       }}
     >
       {showTitle && <h1 className="font-bold mb-6" style={{ fontSize: '1.4em' }}>{title}</h1>}
@@ -1005,6 +1006,8 @@ export default function ReadingMode({
                   showTitle={i === 0}
                   showEndMarker={i === pages.length - 1}
                   authorId={book.autor_id}
+                  hidePageNum={pages.length > 1}
+                  compact={i > 0}
                 />
               </div>
             ))}
