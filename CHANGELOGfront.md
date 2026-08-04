@@ -2,6 +2,39 @@
 
 Todas las fechas en formato YYYY-MM-DD.
 
+## [Desarrollo 16] — 2026-08-04 — ERROR_FOX
+
+### Añadido
+- **Editor WYSIWYG con TipTap**: el editor de capítulos ahora usa TipTap en vez de textarea/markdown. Toolbar completa: negrita, cursiva, subrayado, alineación, color de texto, tamaño, fuente, insertar imagen, regla horizontal, highlight, dropcursor. Dependencias: @tiptap/react, starter-kit, image, text-align, color, text-style, underline, placeholder, horizontal-rule, dropcursor, highlight, font-family.
+- **3 modos de lectura**: vertical (scroll continuo), lateral (scroll horizontal con slides), paneles (imágenes webtoon con gutter spacing). ReadingMode.jsx reescrito completamente (1169→250 líneas). Eliminado: splitIntoPages, buildDisplayPages, pairPages, pageTextToHTML, CoverPage, TitlePage, TOCPage, PageContent, page-flip animation (~800 líneas muertas). Nuevo: `tiptapToHTML()` para renderizar TipTap JSON como HTML.
+- **Sistema de colecciones**: nueva tabla `colecciones` + `libros_coleccion` en BD. API CRUD completa (`/api/colecciones`). Colecciones públicas/privadas, portada, color. Los usuarios pueden crear, editar, eliminar colecciones y agregar/quitar libros.
+- **Permisos del lector**: el autor controla qué opciones de personalización están disponibles al lector. Campo jsonb `permisos_lector` en tabla `libros` con flags: fondo, tipografia, tamano_texto, interlineado, ancho_contenido, color_hoja. Reader.jsx reescrito con `opcionesDisponibles()` que filtra opciones no permitidas.
+- **Pre-reading mejorado**: antes de leer, el usuario ve una pantalla de opciones (fondo, tipografía, tamaño, etc.) filtradas por los permisos del autor. Si el autor desactiva una opción, no aparece.
+- **Soporte comic/webtoon**: campo `tipo_libro` (`novela` o `comic`). Modo comic activa Paneles.jsx con imágenes apiladas. Modo novela usa contenido TipTap.
+- **Campos WYSIWYG en libros**: `tipo_libro`, `color_fondo`, `modo_lectura`, `permisos_lector` (jsonb) en tabla `libros`. `url_portada` y `color` en tabla `colecciones`.
+- **Migración 011_editor_wysiwyg.sql**: columnas nuevas en `libros` y `colecciones`.
+- **Componentes nuevos**: `EditorWYSIWYG.jsx` (editor con toolbar), `ModalImagenes.jsx` (selector de imágenes de usuario), `PanelComic.jsx` (editor modo comic/webtoon).
+- **Ruta PUT para comentarios**: `PUT /api/libros/:id/comentarios/:comentarioId` + función `db.actualizarComentario()`. Solo el autor puede editar sus propios comentarios.
+- **Datos de prueba**: 14 imágenes PNG subidas (verticales, horizontales, cuadradas, banners, paneles), 3 libros publicados (novela, comic, mixto), 1 colección pública "Mis Historias Favoritas".
+
+### Corregido
+- **CRITICAL — ReadingMode nextSlide()**: `nextSlide()` llamaba `onPrev()` en vez de `onNext()` al avanzar capítulo en modo lateral/paneles. El lector iba hacia atrás al pasar del último slide. Corregido en `ReadingMode.jsx:171`.
+- **deleteBanRecord sin error handling**: el botón "Eliminar registro" en cuentas eliminadas mostraba el modal pero si la API fallaba, no había feedback. Ahora muestra toast de error y cierra el modal.
+- **Backend banned_by/unbanned_by**: las columnas `banned_by` y `unbanned_by` no existían en la BD. `banearUsuario()` y `unbanearUsuario()` fallaban con error 500. Columnas agregadas via migración directa + queries restaurados.
+- **libros_coleccion columna orden inexistente**: `agregarLibroAColeccion()` usaba columna `orden` que no existía en la tabla. Queries corregidos para no usar esa columna.
+- **Home.jsx metrics**: `setM(r)` guardaba el objeto de error como estado de métricas si la API fallaba. Ahora verifica `__error` antes de setear.
+- **DevAccountSwitcher**: no manejaba respuestas no-OK del login. Ahora verifica `res.ok` antes de procesar.
+- **Eliminar registro de cuenta eliminada**: el backend rechazaba eliminar registros de cuentas que tenían `deleted_at` pero también `unbanned_at` activo. Ahora permite si todas las entradas tienen `deleted_at` (cuenta ya eliminada).
+
+### Eliminado
+- **~800 líneas muertas en ReadingMode.jsx**: splitIntoPages, buildDisplayPages, pairPages, pageTextToHTML, CoverPage, TitlePage, TOCPage, PageContent, page-flip animation. Bundle reducido de 345KB a 322KB.
+
+### Notas
+- Editor: Full WYSIWYG con TipTap (no markdown ni textarea). El contenido se guarda como JSON TipTap. Backward compatibility: si el contenido empieza con `{` se parsea como JSON, si no es texto plano.
+- Modo paneles: soporta gutter spacing configurable y fuente OpenDyslexic.
+- Permisos del lector: jsonb `permisos_lector` controla qué opciones de personalización ve el lector.
+- Cloudflare Pages deploya desde `main`. Render redeployea automáticamente al hacer push.
+
 ## [Desarrollo 15] — 2026-08-02 — ERROR_FOX
 
 ### Corregido
