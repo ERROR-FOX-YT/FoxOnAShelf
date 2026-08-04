@@ -5,149 +5,99 @@ Todas las fechas en formato YYYY-MM-DD.
 ## [Desarrollo 16] — 2026-08-04 — ERROR_FOX
 
 ### Añadido
-- **Editor WYSIWYG con TipTap**: el editor de capítulos ahora usa TipTap en vez de textarea/markdown. Toolbar completa: negrita, cursiva, subrayado, alineación, color de texto, tamaño, fuente, insertar imagen, regla horizontal, highlight, dropcursor. Dependencias: @tiptap/react, starter-kit, image, text-align, color, text-style, underline, placeholder, horizontal-rule, dropcursor, highlight, font-family.
-- **3 modos de lectura**: vertical (scroll continuo), lateral (scroll horizontal con slides), paneles (imágenes webtoon con gutter spacing). ReadingMode.jsx reescrito completamente (1169→250 líneas). Eliminado: splitIntoPages, buildDisplayPages, pairPages, pageTextToHTML, CoverPage, TitlePage, TOCPage, PageContent, page-flip animation (~800 líneas muertas). Nuevo: `tiptapToHTML()` para renderizar TipTap JSON como HTML.
-- **Sistema de colecciones**: nueva tabla `colecciones` + `libros_coleccion` en BD. API CRUD completa (`/api/colecciones`). Colecciones públicas/privadas, portada, color. Los usuarios pueden crear, editar, eliminar colecciones y agregar/quitar libros.
-- **Permisos del lector**: el autor controla qué opciones de personalización están disponibles al lector. Campo jsonb `permisos_lector` en tabla `libros` con flags: fondo, tipografia, tamano_texto, interlineado, ancho_contenido, color_hoja. Reader.jsx reescrito con `opcionesDisponibles()` que filtra opciones no permitidas.
-- **Pre-reading mejorado**: antes de leer, el usuario ve una pantalla de opciones (fondo, tipografía, tamaño, etc.) filtradas por los permisos del autor. Si el autor desactiva una opción, no aparece.
-- **Soporte comic/webtoon**: campo `tipo_libro` (`novela` o `comic`). Modo comic activa Paneles.jsx con imágenes apiladas. Modo novela usa contenido TipTap.
-- **Campos WYSIWYG en libros**: `tipo_libro`, `color_fondo`, `modo_lectura`, `permisos_lector` (jsonb) en tabla `libros`. `url_portada` y `color` en tabla `colecciones`.
-- **Migración 011_editor_wysiwyg.sql**: columnas nuevas en `libros` y `colecciones`.
-- **Componentes nuevos**: `EditorWYSIWYG.jsx` (editor con toolbar), `ModalImagenes.jsx` (selector de imágenes de usuario), `PanelComic.jsx` (editor modo comic/webtoon).
-- **Ruta PUT para comentarios**: `PUT /api/libros/:id/comentarios/:comentarioId` + función `db.actualizarComentario()`. Solo el autor puede editar sus propios comentarios.
-- **Datos de prueba**: 14 imágenes PNG subidas (verticales, horizontales, cuadradas, banners, paneles), 3 libros publicados (novela, comic, mixto), 1 colección pública "Mis Historias Favoritas".
+- **Editor de escritura visual**: los autores ahora escriben con un editor completo y fácil de usar: negrita, cursiva, subrayado, alineación, colores, tamaños de letra, tipos de fuente e inserción de imágenes, todo con botones.
+- **3 modos de lectura**: vertical (desplazamiento continuo hacia abajo), lateral (desplazamiento horizontal entre páginas) y paneles (ideal para cómics, con las imágenes apiladas al estilo webtoon).
+- **Colecciones de libros**: ahora puedes crear listas con tus libros favoritos. Pueden ser públicas o privadas, con portada y color propio.
+- **Permisos del lector**: el autor decide qué opciones de personalización (fondo, letra, tamaño, etc.) puede usar quien lee su libro. Las opciones no permitidas simplemente no aparecen.
+- **Opciones antes de leer**: al abrir un libro, primero se muestra una pantalla para configurar tu lectura según lo que el autor permitió.
+- **Soporte para cómics**: los autores pueden marcar su libro como cómic y las imágenes se muestran apiladas, estilo webtoon.
+- **Edición de comentarios**: ahora puedes corregir tus propios comentarios después de publicarlos.
 
 ### Corregido
-- **CRITICAL — ReadingMode nextSlide()**: `nextSlide()` llamaba `onPrev()` en vez de `onNext()` al avanzar capítulo en modo lateral/paneles. El lector iba hacia atrás al pasar del último slide. Corregido en `ReadingMode.jsx:171`.
-- **deleteBanRecord sin error handling**: el botón "Eliminar registro" en cuentas eliminadas mostraba el modal pero si la API fallaba, no había feedback. Ahora muestra toast de error y cierra el modal.
-- **Backend banned_by/unbanned_by**: las columnas `banned_by` y `unbanned_by` no existían en la BD. `banearUsuario()` y `unbanearUsuario()` fallaban con error 500. Columnas agregadas via migración directa + queries restaurados.
-- **libros_coleccion columna orden inexistente**: `agregarLibroAColeccion()` usaba columna `orden` que no existía en la tabla. Queries corregidos para no usar esa columna.
-- **Home.jsx metrics**: `setM(r)` guardaba el objeto de error como estado de métricas si la API fallaba. Ahora verifica `__error` antes de setear.
-- **DevAccountSwitcher**: no manejaba respuestas no-OK del login. Ahora verifica `res.ok` antes de procesar.
-- **Eliminar registro de cuenta eliminada**: el backend rechazaba eliminar registros de cuentas que tenían `deleted_at` pero también `unbanned_at` activo. Ahora permite si todas las entradas tienen `deleted_at` (cuenta ya eliminada).
+- **Avance de capítulo en modos lateral y paneles**: el lector retrocedía en vez de avanzar al pasar del último slide. Ahora avanza correctamente.
+- **Eliminación de registros de cuentas baneadas**: el botón "Eliminar registro" en cuentas eliminadas no avisaba si algo fallaba. Ahora muestra un mensaje de error claro.
+- **Bloqueo y desbloqueo de usuarios**: se guarda correctamente quién hizo cada bloqueo y desbloqueo.
+- **Colecciones**: agregar libros a una colección ya funciona sin errores.
+- **Estadísticas de la página de inicio**: ya no se muestran datos incorrectos si el servidor falla al cargarlas.
+- **Cuentas de prueba**: la herramienta de desarrollo ahora avisa correctamente si el inicio de sesión falla.
+- **Registros de cuentas ya eliminadas**: ahora se puede eliminar el registro de una cuenta baneada que ya fue eliminada.
 
 ### Eliminado
-- **~800 líneas muertas en ReadingMode.jsx**: splitIntoPages, buildDisplayPages, pairPages, pageTextToHTML, CoverPage, TitlePage, TOCPage, PageContent, page-flip animation. Bundle reducido de 345KB a 322KB.
-
-### Notas
-- Editor: Full WYSIWYG con TipTap (no markdown ni textarea). El contenido se guarda como JSON TipTap. Backward compatibility: si el contenido empieza con `{` se parsea como JSON, si no es texto plano.
-- Modo paneles: soporta gutter spacing configurable y fuente OpenDyslexic.
-- Permisos del lector: jsonb `permisos_lector` controla qué opciones de personalización ve el lector.
-- Cloudflare Pages deploya desde `main`. Render redeployea automáticamente al hacer push.
+- **Código antiguo del lector**: se eliminaron alrededor de 800 líneas de código obsoleto, haciendo la página más liviana y rápida.
 
 ## [Desarrollo 15] — 2026-08-02 — ERROR_FOX
 
 ### Corregido
-- **JWT refresh con race condition (CRITICAL)**: entre `validarTokenRefresco` y `revocarTokenRefresco` había dos queries separadas. Otro request podía usar el mismo token antes de que se revocara. Solución: nueva función atómica `validarYRevocarTokenRefresco()` con `UPDATE ... RETURNING *` en una sola query PostgreSQL.
-- **AlternarFavorito con race condition (CRITICAL)**: SELECT + DELETE/INSERT no era atómico. Dos requests concurrentes podían insertar favoritos duplicados y desincronizar `conteo_favoritos`. Solución: CTE atómico con `WITH del AS (DELETE...) ins AS (INSERT... WHERE NOT EXISTS)` + conteo recalculado con `COUNT(*)`.
-- **PUT libros — validators faltantes**: `subtitulo`, `url_portada`, `original_publico` se aceptaban sin validación. Agregados validators opcionales.
-- **POST libros — validator faltante**: `subtitulo` no tenía validator. Agregado `body('subtitulo').optional().isString()`.
-- **Anuncios — ruta_imagen siempre null**: el parámetro se pasaba como `rutaImagen` pero la función esperaba `ruta_imagen`, causando que la imagen nunca se guardara. Corregido en `crearAnuncio`, `actualizarAnuncio`, `listarAnuncios` y `obtenerAnuncio`. También corregido el fallback en el frontend.
-- **Foros — edición de respuestas sin restricción**: cualquier usuario podía editar respuestas de otros. Ahora solo el autor puede editar su propia respuesta (mods/admins conservan acceso).
-- **Imágenes inline en capítulos rotas**: las URLs de `@img:` no se resolvían correctamente porque faltaba el prefijo `apiBase()`. Las funciones `pageTextToHTML` y `renderPart` ahora usan `apiBase()` como prefijo para `/api/imagenes-usuario/resolver/`.
-- **Lector — "Página X" visible en modo scroll**: cada sub-página (por `<!-- page -->`) mostraba "— Página X —" como separador, creando confusión en scroll continuo. Ahora se ocultan los números de página cuando hay múltiples sub-páginas.
-- **Lector — espaciado excesivo entre páginas en scroll**: cada sub-página tenía `py-10` creando enormes espacios en blanco. Ahora las páginas después de la primera usan padding compacto (`0.5rem`).
+- **Renovación de sesión (crítico)**: al renovar tu sesión de forma automática, la página podía fallar si el proceso se repetía. Ahora es estable y seguro.
+- **Botón de favorito (crítico)**: marcar o desmarcar un favorito rápidamente ya no duplica ni desincroniza el conteo.
+- **Validación al editar libros**: al guardar un libro se verifican correctamente datos como subtítulo y portada.
+- **Imagen de anuncios**: la imagen de los anuncios ahora se guarda y se muestra correctamente.
+- **Foros**: antes cualquier usuario podía editar respuestas de otros. Ahora solo el autor puede editar su propia respuesta (moderadores y administradores conservan acceso).
+- **Imágenes dentro de capítulos**: las imágenes insertadas en el contenido de un capítulo ahora se muestran correctamente al leer.
+- **Modo de lectura continua**: ya no aparecen etiquetas "Página X" confusas entre secciones, y se eliminaron los espacios enormes en blanco entre páginas.
 
 ### Documentación
-- **CONTEXTO.md**: nuevo documento con contexto completo del proyecto, stack, reglas de código y variables de entorno críticas.
+- Se agregó un documento con el contexto completo del proyecto.
 
 ## [Desarrollo 14 | FoxOnAShelf] — 2026-08-01 — ERROR_FOX
 
 ### Modificado
-- **Renombrado de BookShelf a FoxOnAShelf**: el proyecto pasa a llamarse oficialmente FoxOnAShelf™
-  - Marca visible actualizada: header, login, lector (ediciones digitales), panel admin, piezas del sitio
-  - `index.html`: título y meta description actualizados a FoxOnAShelf™
-  - Backend: nombre de servicio, mensajes de arranque, comentarios y nombres de paquete (`foxonashelf-backend`, `foxonashelf-frontend`)
-  - Se conservan los emails `*@bookshelf.app` (cuentas reales en BD), el bucket de Supabase `bookshelf` (almacenamiento en uso) y las claves `localStorage` existentes para no romper sesiones y datos
-- **Header con nombre alternado por colores**: "Fox" y "A" en azul oscuro (`foxBlue`), "On" y "Shelf" en azul claro (`foxBlueLight`)
-- **Clases CSS renombradas**: `bookshelfBrown` → `foxBrown`, `bookshelfAccent` → `foxAccent` en tailwind.config.js, index.css y todos los componentes (25 archivos JSX)
+- **Nuevo nombre del proyecto**: el sitio ahora se llama oficialmente FoxOnAShelf™. La marca se actualizó en toda la página: encabezado, inicio de sesión, lector, panel de administración y pie de página.
+- **Encabezado con colores**: el nombre alterna entre azul oscuro y azul claro para verse más llamativo.
+- Se conservaron las cuentas, datos y sesiones existentes de los usuarios.
 
 ### Añadido
-- **Rediseño completo del foro → Soporte**:
-  - Eliminadas las 6 categorías del foro. Ahora solo existe una categoría: **Soporte**
-  - Nuevo layout de 3 columnas: **Pendientes** (izquierda), **Resueltos** (centro), **Anuncios** (derecha)
-  - **Solución colaborativa**: cualquier usuario puede marcar su respuesta como solución (solo 1 por hilo); los mods/admins también. La solución se fija arriba con borde verde
-  - **Edición de solución**: solo el creador o un mod/admin puede editar el contenido de la solución
-  - **Votación** 👍/👎 en cada respuesta; se reinicia al editar la solución
-  - **Auto-desmarcación**: si una solución recibe 80% votos "no útil" con 10+ votos, se desmarca automáticamente
-  - **Historial de ediciones** de la solución: cada edición queda registrada y es visible con un desplegable
-  - **Anuncios del foro**: columna derecha más pequeña que muestra anuncios de mods/admins
-  - **Publicidad intercalada**: cada N hilos en pendientes/resueltos; si la columna está vacía, el anuncio se muestra primero
-  - **Permisos visuales**: owner puede editar/eliminar su hilo pero NO cerrarlo ni borrar subcomentarios; mod/admin puede todo; soluciones de mod/admin llevan tag azul y color de fondo especial
-  - Búsqueda por título/contenido dentro del hilo
-  - Paginación por columna independiente
-- **ForoHilo.jsx reescrito**: solución fijada arriba, votación, historial desplegable, permisos mod/admin visibles
-- **`_redirects`** para Cloudflare Pages SPA routing
+- **Foro rediseñado → Soporte**:
+  - Ahora solo existe una categoría: **Soporte**.
+  - Nuevo diseño de 3 columnas: **Pendientes**, **Resueltos** y **Anuncios**.
+  - **Solución colaborativa**: cualquier usuario puede marcar su respuesta como la solución del problema (solo una por hilo). La solución se fija arriba con un borde verde.
+  - **Edición de soluciones**: solo el creador o un moderador/administrador puede editar el contenido de la solución.
+  - **Votación** 👍/👎 en cada respuesta.
+  - **Auto-desmarcación**: si una solución recibe muchos votos "no útil", se desmarca automáticamente.
+  - **Historial de ediciones**: cada cambio en una solución queda registrado y es visible.
+  - **Anuncios en el foro**: columna lateral con anuncios de moderadores y administradores.
+  - **Publicidad intercalada**: los anuncios aparecen cada cierto número de hilos.
+  - **Permisos claros**: el dueño de un hilo puede editarlo y eliminarlo, pero no cerrarlo ni borrar respuestas; moderadores y administradores pueden todo.
+  - Búsqueda y paginación en cada columna.
 - **Moderación de imágenes de usuarios**:
-  - Nueva sección "Imágenes de usuarios" en Panel de Moderación con galería de todas las imágenes subidas
-  - Búsqueda por nombre de usuario o correo electrónico
-  - Botón para moderar imágenes (solo mods/admins)
-  - Pestaña "Moderadas" con contador de imágenes pendientes de revisión
-  - Imágenes moderadas aparecen con badge "EN REVISIÓN" y efecto grayscale
-  - Usuario no puede usar, renombrar ni eliminar imágenes moderadas
-  - Mensaje informativo en la biblioteca del usuario cuando su imagen está en revisión
-- **MediaLibrary.jsx actualizado**: badge "moderada" con estilo rojo, botones deshabilitados para imágenes en revisión
+  - Nueva sección "Imágenes de usuarios" en el Panel de Moderación con la galería de todas las imágenes subidas.
+  - Búsqueda por nombre de usuario o correo.
+  - Los moderadores pueden marcar imágenes en revisión.
+  - Las imágenes en revisión aparecen con marca "EN REVISIÓN" y no pueden usarse hasta ser aprobadas.
 
 ## [Desarrollo 13] — 2026-07-31 — ERROR_FOX
 
 ### Añadido
-- **Barra de progreso de lectura** (`ReadingProgress.jsx`): nuevo componente que muestra una barra animada del porcentaje de lectura en las tarjetas de libro.
-- **Sistema de foros completo** (`/foros`):
-  - 3 páginas: Foros.jsx (inicio con categorías), ForoCategoria.jsx (hilos), ForoHilo.jsx (detalle con respuestas)
-  - 6 categorías predeterminadas: General, Discusión de Libros, Recomendaciones, Escritura y Creatividad, Ayuda y Soporte, Off-Topic
-  - CRUD completo: crear/editar/eliminar hilos, crear/editar/eliminar respuestas
-  - Reacciones con emojis (👍❤️😂😮😢🔥)
-  - Búsqueda de hilos por título/contenido
-  - Estadísticas del foro
-  - Paginación en todas las vistas
-  - Control de hilos: fijar (admin), cerrar (admin)
-- **Sistema de highlights/notas** (`/api/destacados`):
-  - Marcar texto en el lector con 5 colores (amarillo, verde, azul, rosa, naranja)
-  - Agregar notas personales a cada highlight
-  - Panel lateral deslizante con todos los highlights del libro
-  - Búsqueda y filtrado de highlights
-  - Exportar highlights copiados al portapapeles
-  - Botón 🎯 en el header del lector
-- **Diseño de login renovado** (`DualAuth.jsx`):
-  - Vista dual: login a la izquierda, registro a la derecha en desktop
-  - Pestañas en móvil para alternar entre login/registro
-  - Mensaje de bienvenida "Únete a la comunidad lectora"
-  - Efectos visuales mejorados: gradientes, sombras, focus rings
-- **Fondo de textura en más páginas**: Foros, ForoCategoria, ForoHilo, Changelog, Anuncios ahora tienen fondo de papel sutil (`.page-bg`)
-- **Lazy loading de páginas pesadas**: Admin, AdminModeration, ForoHilo, BookEdit, MediaLibrary ahora se cargan bajo demanda (chunks separados)
-- **Debounce en búsqueda de Explorar**: 300ms de delay para evitar llamadas API excesivas
-- **Memoización de BookCard**: componente envuelto en `React.memo` para evitar re-renders innecesarios
-- **Migraciones de base de datos**:
-  - `007_crear_foros.sql`: tablas foro_categorias, foro_hilos, foro_respuestas, foro_reacciones
-  - `008_crear_destacados_notas.sql`: tabla destacados para highlights del lector
-  - `001_reiniciar_vistas.sql`: script para reiniciar contadores de vistas manteniendo datos relevantes
+- **Barra de progreso de lectura**: las tarjetas de libros ahora muestran cuánto has avanzado en la lectura.
+- **Sistema de foros completo**:
+  - 3 páginas: inicio con categorías, lista de hilos por categoría y detalle del hilo con respuestas.
+  - 6 categorías: General, Discusión de Libros, Recomendaciones, Escritura y Creatividad, Ayuda y Soporte, Off-Topic.
+  - Crear, editar y eliminar hilos y respuestas.
+  - Reacciones con emojis (👍❤️😂😮😢🔥).
+  - Búsqueda de hilos, estadísticas y paginación.
+  - Los administradores pueden fijar y cerrar hilos.
+- **Resaltados y notas**:
+  - Marca texto en el lector con 5 colores (amarillo, verde, azul, rosa, naranja).
+  - Agrega notas personales a cada resaltado.
+  - Panel lateral con todos tus resaltados del libro, con búsqueda y filtros.
+  - Copia tus resaltados al portapapeles.
+- **Inicio de sesión renovado**: login y registro lado a lado en escritorio, pestañas en móvil, con mensaje de bienvenida y mejores efectos visuales.
+- **Fondo de textura**: foros, novedades y anuncios ahora tienen un fondo de papel sutil.
+- **Rendimiento mejorado**: las páginas pesadas cargan más rápido y la búsqueda de libros es más eficiente.
 
 ### Corregido
-- **Bug de contenido vacío en modo páginas**: `chapter.content` vs `chapter.contenido` — el reader mostraba páginas vacías porque usaba el nombre de campo en inglés
-- **Bug de restauración de scroll**: la posición de scroll no se restauraba al reabrir un capítulo desde el marcador
-- **Bug de marcador en modo páginas**: siempre guardaba `scrollTop=0` porque el modo páginas no usa scroll; ahora guarda `currentSpread`
-- **Bug de traducción foro**: nombres de campo no coordinados entre backend y frontend (20 issues encontrados y corregidos)
-- **Bug de HighlightsPanel**: datos no se cargaban porque el backend agrupa por capítulo y el frontend esperaba array plano
-- **Bug de import en Reader.jsx**: `HighlightsPanel` es default export, no named export
-- **Bug de paginación en foro**: parámetro `?pagina=` no coincidía con `req.query.page`
-- **Bug de UUID en ForoCategoria**: `parseInt()` en un UUID retornaba NaN
-- **Bug de estadísticas en Foros.jsx**: respuesta anidada no se desempaquetaba correctamente
+- **Modo de lectura**: ya no se mostraban páginas vacías al abrir un capítulo.
+- **Marcadores**: la posición de lectura se restaura correctamente al volver a abrir un capítulo; el marcador en modo de páginas guardaba la posición equivocada.
+- **Foro**: se corrigieron más de 20 fallos de coordinación entre las distintas vistas.
+- **Panel de resaltados**: los datos se cargaban incorrectamente y ahora se muestran bien.
+- **Estadísticas del foro**: se mostraban datos equivocados y ahora son correctos.
 
 ### Eliminado
-- **Imports no usados**: `useToast` en Foros.jsx, `useMemo` en DualAuth.jsx, `HighlightsToggle` en ReadingMode.jsx
-- **Estilos de accesibilidad**: `:focus-visible` para navegación por teclado, `prefers-reduced-motion` para usuarios con sensibilidad al movimiento.
-- **Animación de entrada suave**: fade-in en el contenido principal de cada página.
-- **Estilos de pestañas mejorados**: Explorar usa pestañas con mejor contraste y estado activo.
-- **Estilos de tarjetas mejorados**: mejor hover effect, z-index dinámico, y transiciones suaves.
+- Código sin usar y ajustes visuales que afectaban la accesibilidad.
 
 ### Notas
-- **Traducción global completa**: toda la aplicación (backend, frontend, base de datos, estados) ahora usa español.
-- **Revisión de código exhaustiva**: se hicieron 3 revisiones completas del código, encontrando y corrigiendo 30+ bugs de coordinación entre backend y frontend.
-- **Sistema de foros**: plataforma completa de discusión con categorías, hilos, respuestas y reacciones.
-- **Sistema de highlights/notas**: marcadores de texto y notas personales en el lector.
-- **Diseño de login renovado**: vista dual lado a lado en escritorio, pestañas en móvil.
-- **Optimización de rendimiento**: lazy loading, debounce, memoización.
-- **Investigación**: análisis de plataformas innovadoras (Sinai.ai, Chaptera, Folio, Booky, SocialBook).
+- Toda la plataforma ahora está en español.
+- Se hicieron revisiones completas del código, corrigiendo 30+ fallos de coordinación.
 
 ## [Intermedio 12/13] — 2026-07-30 — ERROR_FOX
 
