@@ -1190,8 +1190,8 @@ const api = {
   async banearUsuario({ email, razon, banned_by }) {
     if (isPg) {
       await pgQuery(
-        `INSERT INTO usuarios_baneados (email,razon,banned_at,banned_by) VALUES ($1,$2,now(),$3)`,
-        [email, razon, banned_by || null]);
+        `INSERT INTO usuarios_baneados (email,razon,banned_at) VALUES ($1,$2,now())`,
+        [email, razon]);
       await pgQuery(`UPDATE usuarios SET role='user' WHERE email=$1 AND role='moderator'`, [email]);
       return;
     }
@@ -1207,9 +1207,9 @@ const api = {
   async unbanearUsuario(email, unbanned_by) {
     if (isPg) {
       await pgQuery(
-        `UPDATE usuarios_baneados SET unbanned_at=now(), unbanned_by=$2
+        `UPDATE usuarios_baneados SET unbanned_at=now()
          WHERE email=$1 AND unbanned_at IS NULL`,
-        [email, unbanned_by || null]);
+        [email]);
       return;
     }
     await withDb(db => {
