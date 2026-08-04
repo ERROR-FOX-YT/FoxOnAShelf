@@ -168,7 +168,7 @@ export default function ReadingMode({
   function nextSlide() {
     const total = esComic ? paneles.length : 1;
     if (currentSlide < total - 1) setCurrentSlide(s => s + 1);
-    else if (chapterIndex < totalChapters - 1) { onPrev?.(); setCurrentSlide(0); }
+    else if (chapterIndex < totalChapters - 1) { onNext?.(); setCurrentSlide(0); }
   }
 
   function prevSlide() {

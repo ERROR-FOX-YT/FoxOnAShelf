@@ -115,8 +115,8 @@ router.delete('/baneados/:email', auth, requireAdmin,
       const { email } = req.params;
       const group = (await db.listarBaneados()).find(g => g.email.toLowerCase() === email.toLowerCase());
       if (!group) return res.status(404).json({ error: 'Registro no encontrado', code: 404 });
-      const hasActive = group.bans.some(b => !b.unbanned_at);
-      if (hasActive) return res.status(400).json({ error: 'El usuario aún está baneado, desbanéalo primero', code: 400 });
+      const hasActive = group.bans.some(b => !b.unbanned_at && !b.deleted_at);
+      if (hasActive) return res.status(400).json({ error: 'El usuario aún está baneado activamente, desbanéalo primero', code: 400 });
       await db.eliminarRegistroBaneo(email);
       await db.registrarModeracion({
         email_actor: req.user.email, accion: 'eliminar-registro-baneo',

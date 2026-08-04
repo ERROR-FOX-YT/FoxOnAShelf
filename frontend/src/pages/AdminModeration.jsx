@@ -100,7 +100,14 @@ export default function AdminModeration() {
 
   async function deleteBanRecord(email) {
     const r = await api.del('/api/moderacion/baneados/' + encodeURIComponent(email));
-    if (!r.__error) { setDeleteBanConfirm(null); toast.ok('Registro eliminado'); loadAll(); }
+    if (r.__error) {
+      toast.error(r.error || 'No se pudo eliminar el registro');
+      setDeleteBanConfirm(null);
+      return;
+    }
+    setDeleteBanConfirm(null);
+    toast.ok('Registro eliminado');
+    loadAll();
   }
 
   async function exportCsv() {

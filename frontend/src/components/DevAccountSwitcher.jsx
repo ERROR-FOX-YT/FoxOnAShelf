@@ -34,12 +34,14 @@ export default function DevAccountSwitcher() {
         body: JSON.stringify({ email: acc.email, password: acc.password }),
       });
       const data = await res.json();
-      if (data.token) {
-        localStorage.setItem('bookshelf.token', data.token);
-        localStorage.setItem('bookshelf.refreshToken', data.refreshToken);
-        localStorage.setItem('bookshelf.user', JSON.stringify(data.user));
-        window.location.reload();
+      if (!res.ok || !data.token) {
+        console.warn('[DevSwitch] Error:', data.error || res.status);
+        return;
       }
+      localStorage.setItem('bookshelf.token', data.token);
+      localStorage.setItem('bookshelf.refreshToken', data.refreshToken);
+      localStorage.setItem('bookshelf.user', JSON.stringify(data.user));
+      window.location.reload();
     } catch (e) {
       console.warn('[DevSwitch]', e);
     } finally {

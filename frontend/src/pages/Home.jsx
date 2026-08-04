@@ -15,9 +15,9 @@ export default function Home() {
 
   useEffect(() => {
     Promise.all([
-      api.get('/api/anuncios').then(r => setAnuncios(r.anuncios || [])),
-      api.get('/api/metricas/destacados').then(r => setF(r.destacados || [])),
-      api.get('/api/metricas').then(r => setM(r)),
+      api.get('/api/anuncios').then(r => { if (!r.__error) setAnuncios(r.anuncios || []); }),
+      api.get('/api/metricas/destacados').then(r => { if (!r.__error) setF(r.destacados || []); }),
+      api.get('/api/metricas').then(r => { if (!r.__error) setM(r); }),
     ]).finally(() => setLoaded(true));
   }, []);
 
