@@ -19,7 +19,6 @@ Todas las fechas en formato YYYY-MM-DD.
 - **Bloqueo y desbloqueo de usuarios**: se guarda correctamente quién hizo cada bloqueo y desbloqueo.
 - **Colecciones**: agregar libros a una colección ya funciona sin errores.
 - **Estadísticas de la página de inicio**: ya no se muestran datos incorrectos si el servidor falla al cargarlas.
-- **Cuentas de prueba**: la herramienta de desarrollo ahora avisa correctamente si el inicio de sesión falla.
 - **Registros de cuentas ya eliminadas**: ahora se puede eliminar el registro de una cuenta baneada que ya fue eliminada.
 
 ### Eliminado
@@ -35,9 +34,7 @@ Todas las fechas en formato YYYY-MM-DD.
 - **Foros**: antes cualquier usuario podía editar respuestas de otros. Ahora solo el autor puede editar su propia respuesta (moderadores y administradores conservan acceso).
 - **Imágenes dentro de capítulos**: las imágenes insertadas en el contenido de un capítulo ahora se muestran correctamente al leer.
 - **Modo de lectura continua**: ya no aparecen etiquetas "Página X" confusas entre secciones, y se eliminaron los espacios enormes en blanco entre páginas.
-
-### Documentación
-- Se agregó un documento con el contexto completo del proyecto.
+- **Estabilidad general**: se corrigieron varios fallos internos que podían causar errores al guardar o cargar información.
 
 ## [Desarrollo 14 | FoxOnAShelf] — 2026-08-01 — ERROR_FOX
 
