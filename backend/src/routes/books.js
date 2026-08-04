@@ -244,6 +244,24 @@ router.delete('/:id/comentarios/:comentarioId', auth,
     } catch (e) { next(e); }
   });
 
+router.put('/:id/comentarios/:comentarioId', auth,
+  param('id').isString().isLength({ min: 1 }),
+  param('comentarioId').isString().isLength({ min: 1 }),
+  body('contenido').isString().isLength({ min: 1, max: 2000 }),
+  async (req, res, next) => {
+    const errs = validationResult(req);
+    if (!errs.isEmpty()) return res.status(400).json({ error: errs.array()[0].msg, code: 400 });
+    try {
+      const comentario = await db.obtenerComentario(req.params.comentarioId);
+      if (!comentario || comentario.libro_id !== req.params.id)
+        return res.status(404).json({ error: 'Comentario no encontrado', code: 404 });
+      if (comentario.usuario_id !== req.user.sub)
+        return res.status(403).json({ error: 'Solo puedes editar tus propios comentarios', code: 403 });
+      await db.actualizarComentario(req.params.comentarioId, { contenido: req.body.contenido });
+      res.json({ ok: true });
+    } catch (e) { next(e); }
+  });
+
 router.get('/:id/comentarios',
   param('id').isString().isLength({ min: 1 }),
   async (req, res, next) => {

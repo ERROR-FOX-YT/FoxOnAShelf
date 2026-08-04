@@ -1026,6 +1026,22 @@ const api = {
       db.comentarios = db.comentarios.filter(c => !ids.has(c.id));
     });
   },
+  async actualizarComentario(comment_id, patch) {
+    if (isPg) {
+      const sets = [];
+      const vals = [];
+      let i = 1;
+      if (patch.contenido !== undefined) { sets.push(`contenido=$${i++}`); vals.push(patch.contenido); }
+      if (sets.length === 0) return;
+      vals.push(comment_id);
+      await pgQuery(`UPDATE comentarios SET ${sets.join(', ')} WHERE id=$${i}`, vals);
+      return;
+    }
+    await withDb(db => {
+      const c = db.comentarios.find(x => x.id === comment_id);
+      if (c && patch.contenido !== undefined) c.contenido = patch.contenido;
+    });
+  },
 
   // ---- ANUNCIOS ----
   async listarAnuncios() {
