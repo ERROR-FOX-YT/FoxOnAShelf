@@ -87,11 +87,16 @@ export default function ReadingMode({
 }) {
   const [scrollPct, setScrollPct] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showUI, setShowUI] = useState(true);
+  const [showChapterSelect, setShowChapterSelect] = useState(false);
   const scrollRef = useRef(null);
   const lastSavedIdx = useRef(chapterIndex);
   const exitingRef = useRef(false);
   const modeRef = useRef({ onNext, onPrev, onExit });
   const isRestoredRef = useRef(false);
+  const touchStartRef = useRef(null);
+  const autoHideTimerRef = useRef(null);
+  const uiTimerRef = useRef(null);
 
   const theme = THEMES[prefs.theme] || THEMES.parchment;
   const font = FONTS[prefs.font] || FONTS.serif;
@@ -144,20 +149,67 @@ export default function ReadingMode({
     isRestoredRef.current = false;
   }, [chapterIndex]);
 
+  function resetAutoHide() {
+    setShowUI(true);
+    clearTimeout(uiTimerRef.current);
+    uiTimerRef.current = setTimeout(() => setShowUI(false), 4000);
+  }
+
+  useEffect(() => {
+    resetAutoHide();
+    return () => clearTimeout(uiTimerRef.current);
+  }, []);
+
+  function handleTouchStart(e) {
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY, time: Date.now() };
+  }
+
+  function handleTouchEnd(e) {
+    if (!touchStartRef.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStartRef.current.x;
+    const dy = t.clientY - touchStartRef.current.y;
+    const dt = Date.now() - touchStartRef.current.time;
+    touchStartRef.current = null;
+    if (dt > 500 || Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 50) return;
+    if (dx < 0) nextSlide();
+    else prevSlide();
+  }
+
+  useEffect(() => {
+    function handleInteraction() { resetAutoHide(); }
+    window.addEventListener('mousemove', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
+    return () => {
+      window.removeEventListener('mousemove', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+    };
+  }, []);
+
   useEffect(() => {
     function handleKey(e) {
+      resetAutoHide();
       if (e.key === 'Escape') { modeRef.current.onExit?.(); return; }
+      if (e.key === 'c' || e.key === 'C') { setShowChapterSelect(v => !v); return; }
+      setShowChapterSelect(false);
       if (modoLectura === 'lateral') {
         if (e.key === 'ArrowRight' || e.key === 'PageDown') { nextSlide(); return; }
         if (e.key === 'ArrowLeft' || e.key === 'PageUp') { prevSlide(); return; }
       } else {
         if (e.key === 'ArrowRight' || e.key === 'PageDown') {
           e.preventDefault();
-          if (chapterIndex < totalChapters - 1) modeRef.current.onNext?.();
+          if (chapterIndex < totalChapters - 1) {
+            onMarkPage?.(chapterIndex, scrollRef.current?.scrollTop || 0);
+            modeRef.current.onNext?.();
+          }
         }
         if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
           e.preventDefault();
-          if (chapterIndex > 0) modeRef.current.onPrev?.();
+          if (chapterIndex > 0) {
+            onMarkPage?.(chapterIndex, scrollRef.current?.scrollTop || 0);
+            modeRef.current.onPrev?.();
+          }
         }
       }
     }
@@ -168,12 +220,18 @@ export default function ReadingMode({
   function nextSlide() {
     const total = esComic ? paneles.length : 1;
     if (currentSlide < total - 1) setCurrentSlide(s => s + 1);
-    else if (chapterIndex < totalChapters - 1) { onNext?.(); setCurrentSlide(0); }
+    else if (chapterIndex < totalChapters - 1) {
+      onMarkPage?.(chapterIndex, scrollRef.current?.scrollTop || 0);
+      onNext?.(); setCurrentSlide(0);
+    }
   }
 
   function prevSlide() {
     if (currentSlide > 0) setCurrentSlide(s => s - 1);
-    else if (chapterIndex > 0) { onPrev?.(); setCurrentSlide(0); }
+    else if (chapterIndex > 0) {
+      onMarkPage?.(chapterIndex, scrollRef.current?.scrollTop || 0);
+      onPrev?.(); setCurrentSlide(0);
+    }
   }
 
   function exitReading() {
@@ -230,18 +288,35 @@ export default function ReadingMode({
   if (modoLectura === 'lateral') {
     const totalSlides = esComic ? paneles.length : 1;
     return (
-      <div className="fixed inset-0 z-30 flex flex-col" style={{ backgroundColor: theme.bg }}>
+      <div className="fixed inset-0 z-30 flex flex-col" style={{ backgroundColor: theme.bg }}
+           onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2 shrink-0"
+        <div className={`flex items-center justify-between px-4 py-3 shrink-0 transition-all duration-300 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}
              style={{ backgroundColor: theme.bg, borderBottom: '1px solid ' + theme.border + '33' }}>
-          <button onClick={exitReading} className="text-sm opacity-70 hover:opacity-100">✕ Salir</button>
-          <span className="text-xs opacity-50">{chapter?.titulo || 'Capítulo ' + (chapterIndex + 1)}</span>
-          <span className="text-xs opacity-50">{currentSlide + 1} / {totalSlides}</span>
+          <button onClick={exitReading} className="text-base px-3 py-1.5 rounded-lg opacity-70 hover:opacity-100 active:scale-95 transition-all">✕ Salir</button>
+          <button onClick={() => setShowChapterSelect(v => !v)} className="text-sm opacity-70 hover:opacity-100 px-3 py-1.5 rounded-lg truncate max-w-[50%]">
+            {chapter?.titulo || 'Capítulo ' + (chapterIndex + 1)} ▾
+          </button>
+          <span className="text-sm opacity-50">{currentSlide + 1} / {totalSlides}</span>
         </div>
+
+        {/* Chapter selector dropdown */}
+        {showChapterSelect && (
+          <div className="absolute top-14 left-0 right-0 z-50 max-h-[60vh] overflow-y-auto shadow-xl"
+               style={{ backgroundColor: theme.bg, borderBottom: '2px solid ' + theme.border }}>
+            {chapters.map((c, i) => (
+              <button key={c.id || i} onClick={() => { modeRef.current.onGoToChapter?.(i); setCurrentSlide(0); setShowChapterSelect(false); resetAutoHide(); }}
+                className={`w-full text-left px-4 py-3 text-sm transition-colors ${i === chapterIndex ? 'font-bold' : 'opacity-70 hover:opacity-100'}`}
+                style={{ color: theme.fg, backgroundColor: i === chapterIndex ? theme.border + '22' : 'transparent' }}>
+                Capítulo {i + 1}: {c.titulo || 'Sin título'}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Slide area */}
         <div ref={scrollRef} className="flex-1 flex items-center justify-center overflow-hidden relative">
-          <button onClick={prevSlide} className="absolute left-2 z-10 text-3xl opacity-30 hover:opacity-70 p-4">‹</button>
+          <button onClick={prevSlide} className="absolute left-1 z-10 text-4xl opacity-20 hover:opacity-60 active:opacity-80 p-6 transition-all">‹</button>
           <div className="max-w-2xl w-full px-16">
             {esComic && paneles[currentSlide] ? (
               <div>
@@ -258,24 +333,24 @@ export default function ReadingMode({
               <div style={contenidoEstilos} dangerouslySetInnerHTML={{ __html: htmlContent }} />
             )}
           </div>
-          <button onClick={nextSlide} className="absolute right-2 z-10 text-3xl opacity-30 hover:opacity-70 p-4">›</button>
+          <button onClick={nextSlide} className="absolute right-1 z-10 text-4xl opacity-20 hover:opacity-60 active:opacity-80 p-6 transition-all">›</button>
         </div>
 
         {/* Progress */}
-        <div className="h-1 shrink-0" style={{ backgroundColor: theme.border + '22' }}>
-          <div className="h-full transition-all" style={{ width: ((currentSlide + 1) / totalSlides * 100) + '%', backgroundColor: theme.border }} />
+        <div className="h-1.5 shrink-0" style={{ backgroundColor: theme.border + '22' }}>
+          <div className="h-full transition-all duration-300" style={{ width: ((currentSlide + 1) / totalSlides * 100) + '%', backgroundColor: theme.border }} />
         </div>
 
         {/* Chapter nav */}
-        <div className="flex items-center justify-center gap-4 px-4 py-2 shrink-0"
+        <div className={`flex items-center justify-center gap-6 px-4 py-3 shrink-0 transition-all duration-300 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'}`}
              style={{ backgroundColor: theme.bg, borderTop: '1px solid ' + theme.border + '33' }}>
-          <button onClick={() => { if (chapterIndex > 0) { onPrev?.(); setCurrentSlide(0); } }}
+          <button onClick={() => { if (chapterIndex > 0) { onMarkPage?.(chapterIndex, 0); onPrev?.(); setCurrentSlide(0); } }}
                   disabled={chapterIndex === 0}
-                  className="text-xs opacity-50 hover:opacity-100 disabled:opacity-20">← Anterior</button>
-          <span className="text-xs opacity-50">{chapterIndex + 1} / {totalChapters}</span>
-          <button onClick={() => { if (chapterIndex < totalChapters - 1) { onNext?.(); setCurrentSlide(0); } }}
+                  className="text-sm px-4 py-2 rounded-lg opacity-50 hover:opacity-100 disabled:opacity-20 active:scale-95 transition-all">← Anterior</button>
+          <span className="text-sm opacity-50">{chapterIndex + 1} / {totalChapters}</span>
+          <button onClick={() => { if (chapterIndex < totalChapters - 1) { onMarkPage?.(chapterIndex, 0); onNext?.(); setCurrentSlide(0); } }}
                   disabled={chapterIndex === totalChapters - 1}
-                  className="text-xs opacity-50 hover:opacity-100 disabled:opacity-20">Siguiente →</button>
+                  className="text-sm px-4 py-2 rounded-lg opacity-50 hover:opacity-100 disabled:opacity-20 active:scale-95 transition-all">Siguiente →</button>
         </div>
       </div>
     );
@@ -283,40 +358,58 @@ export default function ReadingMode({
 
   // Modo vertical (default) o paneles
   return (
-    <div className="fixed inset-0 z-30 flex flex-col" style={{ backgroundColor: theme.bg }}>
+    <div className="fixed inset-0 z-30 flex flex-col" style={{ backgroundColor: theme.bg }}
+         onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 shrink-0"
+      <div className={`flex items-center justify-between px-4 py-3 shrink-0 transition-all duration-300 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}`}
            style={{ backgroundColor: theme.bg, borderBottom: '1px solid ' + theme.border + '33' }}>
-        <button onClick={exitReading} className="text-sm opacity-70 hover:opacity-100">✕ Salir</button>
-        <span className="text-xs opacity-50 truncate max-w-[50%]">{chapter?.titulo || 'Capítulo ' + (chapterIndex + 1)}</span>
-        <div className="flex items-center gap-3">
-          <button onClick={() => onToggleHighlights?.()} className="text-sm opacity-50 hover:opacity-100" title="Destacados">🎯</button>
-          <button onClick={onBookmark} className="text-sm opacity-50 hover:opacity-100" title="Marcar">🔖</button>
+        <button onClick={exitReading} className="text-base px-3 py-1.5 rounded-lg opacity-70 hover:opacity-100 active:scale-95 transition-all">✕ Salir</button>
+        <button onClick={() => setShowChapterSelect(v => !v)} className="text-sm opacity-70 hover:opacity-100 px-3 py-1.5 rounded-lg truncate max-w-[50%]">
+          {chapter?.titulo || 'Capítulo ' + (chapterIndex + 1)} ▾
+        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => onToggleHighlights?.()} className="text-base px-2 py-1.5 opacity-50 hover:opacity-100 active:scale-95 transition-all" title="Destacados">🎯</button>
+          <button onClick={onBookmark} className="text-base px-2 py-1.5 opacity-50 hover:opacity-100 active:scale-95 transition-all" title="Marcar">🔖</button>
         </div>
       </div>
 
+      {/* Chapter selector dropdown */}
+      {showChapterSelect && (
+        <div className="absolute top-14 left-0 right-0 z-50 max-h-[60vh] overflow-y-auto shadow-xl"
+             style={{ backgroundColor: theme.bg, borderBottom: '2px solid ' + theme.border }}>
+          {chapters.map((c, i) => (
+            <button key={c.id || i} onClick={() => { modeRef.current.onGoToChapter?.(i); setShowChapterSelect(false); resetAutoHide(); }}
+              className={`w-full text-left px-4 py-3 text-sm transition-colors ${i === chapterIndex ? 'font-bold' : 'opacity-70 hover:opacity-100'}`}
+              style={{ color: theme.fg, backgroundColor: i === chapterIndex ? theme.border + '22' : 'transparent' }}>
+              Capítulo {i + 1}: {c.titulo || 'Sin título'}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Content */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div className="flex justify-center">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto"
+           onClick={(e) => { if (e.target === scrollRef.current || e.target.closest('.rm-content-area')) { resetAutoHide(); } }}>
+        <div className="flex justify-center rm-content-area">
           {renderContenido()}
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 shrink-0" style={{ backgroundColor: theme.border + '22' }}>
-        <div className="h-full transition-all" style={{ width: scrollPct + '%', backgroundColor: theme.border }} />
+      <div className="h-1.5 shrink-0" style={{ backgroundColor: theme.border + '22' }}>
+        <div className="h-full transition-all duration-300" style={{ width: scrollPct + '%', backgroundColor: theme.border }} />
       </div>
 
       {/* Chapter nav */}
-      <div className="flex items-center justify-center gap-4 px-4 py-2 shrink-0"
+      <div className={`flex items-center justify-center gap-6 px-4 py-3 shrink-0 transition-all duration-300 ${showUI ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full pointer-events-none'}`}
            style={{ backgroundColor: theme.bg, borderTop: '1px solid ' + theme.border + '33' }}>
-        <button onClick={() => { if (chapterIndex > 0) onPrev?.(); }}
+        <button onClick={() => { if (chapterIndex > 0) { onMarkPage?.(chapterIndex, scrollRef.current?.scrollTop || 0); onPrev?.(); } }}
                 disabled={chapterIndex === 0}
-                className="text-xs opacity-50 hover:opacity-100 disabled:opacity-20">← Anterior</button>
-        <span className="text-xs opacity-50">{chapterIndex + 1} / {totalChapters}</span>
-        <button onClick={() => { if (chapterIndex < totalChapters - 1) onNext?.(); }}
+                className="text-sm px-4 py-2 rounded-lg opacity-50 hover:opacity-100 disabled:opacity-20 active:scale-95 transition-all">← Anterior</button>
+        <span className="text-sm opacity-50">{chapterIndex + 1} / {totalChapters}</span>
+        <button onClick={() => { if (chapterIndex < totalChapters - 1) { onMarkPage?.(chapterIndex, scrollRef.current?.scrollTop || 0); onNext?.(); } }}
                 disabled={chapterIndex === totalChapters - 1}
-                className="text-xs opacity-50 hover:opacity-100 disabled:opacity-20">Siguiente →</button>
+                className="text-sm px-4 py-2 rounded-lg opacity-50 hover:opacity-100 disabled:opacity-20 active:scale-95 transition-all">Siguiente →</button>
       </div>
     </div>
   );
