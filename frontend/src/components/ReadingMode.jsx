@@ -85,6 +85,8 @@ export default function ReadingMode({
   prefs, onPrev, onNext, onExit, onMarkPage, onBookmark, onPrefsChange, onGoToChapter,
   savedScrollPos, onToggleHighlights
 }) {
+  const onGoToChapterRef = useRef(onGoToChapter);
+  useEffect(() => { onGoToChapterRef.current = onGoToChapter; }, [onGoToChapter]);
   const [scrollPct, setScrollPct] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showUI, setShowUI] = useState(true);
@@ -305,7 +307,7 @@ export default function ReadingMode({
           <div className="absolute top-14 left-0 right-0 z-50 max-h-[60vh] overflow-y-auto shadow-xl"
                style={{ backgroundColor: theme.bg, borderBottom: '2px solid ' + theme.border }}>
             {chapters.map((c, i) => (
-              <button key={c.id || i} onClick={() => { modeRef.current.onGoToChapter?.(i); setCurrentSlide(0); setShowChapterSelect(false); resetAutoHide(); }}
+              <button key={c.id || i} onClick={() => { onGoToChapterRef.current?.(i); setCurrentSlide(0); setShowChapterSelect(false); resetAutoHide(); }}
                 className={`w-full text-left px-4 py-3 text-sm transition-colors ${i === chapterIndex ? 'font-bold' : 'opacity-70 hover:opacity-100'}`}
                 style={{ color: theme.fg, backgroundColor: i === chapterIndex ? theme.border + '22' : 'transparent' }}>
                 Capítulo {i + 1}: {c.titulo || 'Sin título'}
@@ -378,7 +380,7 @@ export default function ReadingMode({
         <div className="absolute top-14 left-0 right-0 z-50 max-h-[60vh] overflow-y-auto shadow-xl"
              style={{ backgroundColor: theme.bg, borderBottom: '2px solid ' + theme.border }}>
           {chapters.map((c, i) => (
-            <button key={c.id || i} onClick={() => { modeRef.current.onGoToChapter?.(i); setShowChapterSelect(false); resetAutoHide(); }}
+            <button key={c.id || i} onClick={() => { onGoToChapterRef.current?.(i); setShowChapterSelect(false); resetAutoHide(); }}
               className={`w-full text-left px-4 py-3 text-sm transition-colors ${i === chapterIndex ? 'font-bold' : 'opacity-70 hover:opacity-100'}`}
               style={{ color: theme.fg, backgroundColor: i === chapterIndex ? theme.border + '22' : 'transparent' }}>
               Capítulo {i + 1}: {c.titulo || 'Sin título'}
